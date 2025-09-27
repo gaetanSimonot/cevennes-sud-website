@@ -212,6 +212,29 @@
 
         /* Mobile Optimizations */
         @media (max-width: 640px) {
+            .hero-background {
+                background-attachment: scroll;
+                min-height: 90vh;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+                line-height: 1.2;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .feed-container {
+                padding: 1rem;
+            }
+
             .post-card {
                 margin-bottom: 16px;
                 border-radius: 12px;
@@ -240,6 +263,29 @@
 
         .reaction-bounce {
             animation: bounce 0.6s;
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+
+            .post-card {
+                padding: 1rem;
+            }
+
+            .post-header img {
+                width: 32px;
+                height: 32px;
+            }
+
+            .create-post {
+                padding: 1rem;
+            }
         }
     </style>
 </head>

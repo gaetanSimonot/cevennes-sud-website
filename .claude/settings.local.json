@@ -9,7 +9,12 @@
       "Bash(for file in index.html acteurs-locaux.html evenements.html echangeons.html parlons-en.html troc-tout.html panneau-village.html)",
       "Bash(do echo \"=== $file ===\")",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nInitial commit: Complete Cévennes Sud community website\n\n- Modern glassmorphism design with unified navigation\n- 7 pages: Accueil, Acteurs Locaux, Événements, Petites Annonces, Parlons-en, Troc Tout, Panneau du Village\n- Facebook-like social interface for Parlons-en\n- Premium/standard distinction for classified ads\n- Interactive maps with Leaflet.js\n- Fully responsive design with Tailwind CSS\n\n🤖 Generated with [Claude Code](https://claude.ai/code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(gh repo create:*)",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

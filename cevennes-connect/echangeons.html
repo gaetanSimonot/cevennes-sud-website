@@ -260,12 +260,55 @@
         @media (max-width: 640px) {
             .hero-background {
                 background-attachment: scroll;
+                min-height: 90vh;
             }
 
             .premium-card:hover,
             .ad-card:hover,
             .ad-card-premium:hover {
                 transform: none;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+                line-height: 1.2;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+
+            #adsList {
+                gap: 1rem !important;
+            }
+
+            .ad-card, .ad-card-premium {
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+
+            .filters-container {
+                padding: 1rem;
+                gap: 0.5rem;
+            }
+
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+
+            .container {
+                padding-left: 1rem;
+                padding-right: 1rem;
             }
         }
 
@@ -453,7 +496,7 @@
                     Annonces Récentes
                 </h2>
 
-                <div id="adsList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                <div id="adsList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
                     <!-- Ad cards will be dynamically generated -->
                 </div>
 

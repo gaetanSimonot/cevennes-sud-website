@@ -242,7 +242,7 @@
         /* Services Grid Enhancement */
         .services-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2rem;
         }
 
@@ -253,16 +253,53 @@
             }
         }
 
+        @media (max-width: 480px) {
+            .services-grid {
+                gap: 1rem;
+            }
+        }
+
         /* Mobile Optimizations */
         @media (max-width: 640px) {
             .hero-background {
                 background-attachment: scroll;
+                min-height: 90vh;
             }
 
             .premium-card:hover,
             .glass-card:hover,
             .news-card:hover {
                 transform: none;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+                line-height: 1.2;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+                line-height: 1.5;
+            }
+
+            .nav-backdrop .max-w-7xl {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+
+            .premium-card,
+            .glass-card {
+                padding: 1.5rem;
             }
         }
 
