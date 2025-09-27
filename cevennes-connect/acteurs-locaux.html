@@ -198,6 +198,49 @@
         .category-service { color: #06b6d4; }
         .category-association { color: #f59e0b; }
 
+        /* View Toggle */
+        .view-toggle {
+            color: #64748b;
+            background: transparent;
+        }
+
+        .view-toggle.active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .view-toggle:hover:not(.active) {
+            background: #f1f5f9;
+            color: #334155;
+        }
+
+        /* List View Styles */
+        .actors-list-view {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .actors-list-view .actor-card {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            padding: 1.5rem;
+            max-width: none;
+        }
+
+        .actors-list-view .actor-card .actor-image {
+            width: 80px;
+            height: 80px;
+            min-width: 80px;
+            margin-right: 1.5rem;
+        }
+
+        .actors-list-view .actor-card .actor-content {
+            flex: 1;
+        }
+
         /* Hero Text Animations */
         .hero-title {
             animation: fadeInUp 1s ease-out 0.2s both;
@@ -316,7 +359,7 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero-background pt-20 pb-16 text-white relative overflow-hidden">
+    <section class="hero-background pt-20 pb-12 text-white relative overflow-hidden">
         <!-- Floating Elements -->
         <div class="absolute top-20 left-10 floating opacity-20">
             <div class="w-20 h-20 bg-white/10 rounded-full blur-sm"></div>
@@ -377,7 +420,7 @@
                     </div>
 
                     <!-- Category Filters -->
-                    <div class="flex flex-wrap gap-3">
+                    <div class="flex flex-wrap gap-3 justify-center">
                         <button class="filter-btn active px-6 py-3 rounded-xl font-semibold text-sm transition-all" data-category="all">
                             <i class="fas fa-th-large mr-2"></i>Tous
                         </button>
@@ -400,6 +443,18 @@
                             <i class="fas fa-users mr-2 category-association"></i>Associations
                         </button>
                     </div>
+
+                    <!-- View Toggle -->
+                    <div class="flex justify-center mt-6">
+                        <div class="bg-white rounded-xl p-1 shadow-lg border border-gray-200">
+                            <button id="cardView" class="view-toggle active px-4 py-2 rounded-lg font-medium text-sm transition-all">
+                                <i class="fas fa-th-large mr-2"></i>Cartes
+                            </button>
+                            <button id="listView" class="view-toggle px-4 py-2 rounded-lg font-medium text-sm transition-all">
+                                <i class="fas fa-list mr-2"></i>Liste
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -414,9 +469,6 @@
                         <div class="flex space-x-3">
                             <button onclick="centerMap()" class="bg-blue-100 text-blue-600 px-4 py-2 rounded-xl font-medium hover:bg-blue-200 transition-colors">
                                 <i class="fas fa-crosshairs mr-2"></i>Centrer
-                            </button>
-                            <button onclick="toggleFullscreen()" class="bg-gray-100 text-gray-600 px-4 py-2 rounded-xl font-medium hover:bg-gray-200 transition-colors">
-                                <i class="fas fa-expand mr-2"></i>Plein écran
                             </button>
                         </div>
                     </div>
@@ -830,6 +882,19 @@
             // Add business button
             document.getElementById('addBusinessBtn').addEventListener('click', function() {
                 alert('Fonctionnalité bientôt disponible ! Contactez-nous pour publier votre commerce ou service dans l\'annuaire local.');
+            });
+
+            // View toggle
+            document.getElementById('cardView').addEventListener('click', function() {
+                document.querySelectorAll('.view-toggle').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('actorsList').className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8';
+            });
+
+            document.getElementById('listView').addEventListener('click', function() {
+                document.querySelectorAll('.view-toggle').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById('actorsList').className = 'actors-list-view';
             });
         }
 
