@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Petites annonces du Sud Cévennes. Achetez, vendez, échangez entre voisins. Trouvez des bonnes affaires près de Ganges.">
+    <title>Petites annonces - Cévennes Connect</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav container">
+            <div class="logo">
+                <i class="fas fa-mountain"></i>
+                <a href="index.html" style="color: inherit; text-decoration: none;">Cévennes Connect</a>
+            </div>
+
+            <ul class="nav-menu" id="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">Accueil</a>
+                </li>
+                <li class="nav-item">
+                    <a href="carte.html" class="nav-link">Carte</a>
+                </li>
+                <li class="nav-item">
+                    <a href="evenements.html" class="nav-link">Événements</a>
+                </li>
+                <li class="nav-item">
+                    <a href="annonces.html" class="nav-link active">Annonces</a>
+                </li>
+            </ul>
+
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <h1>Petites annonces locales</h1>
+            <p>Achetez, vendez et échangez entre voisins dans le Sud Cévennes</p>
+            <div class="breadcrumb">
+                <a href="index.html">Accueil</a> / <span>Annonces</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Action Bar -->
+    <section style="padding: 20px 0; background: var(--color-accent); color: white;">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <h3 style="margin: 0; color: white;">
+                        <i class="fas fa-handshake"></i>
+                        Échangez en toute confiance
+                    </h3>
+                    <p style="margin: 5px 0 0 0; color: rgba(255,255,255,0.9);">
+                        Achetez et vendez près de chez vous
+                    </p>
+                </div>
+                <button class="btn" style="background: white; color: var(--color-accent); font-weight: 600;" onclick="showAddListingForm()">
+                    <i class="fas fa-plus"></i>
+                    Déposer une annonce
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filter Bar -->
+    <section class="filter-bar">
+        <div class="container">
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="fas fa-search"></i>
+                    Rechercher :
+                </label>
+                <input type="text" id="search-input" class="search-input" placeholder="Titre, description, lieu...">
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="fas fa-exchange-alt"></i>
+                    Type :
+                </label>
+                <div class="filter-buttons" id="type-filters">
+                    <button class="filter-btn active" data-type="all">Tous</button>
+                    <button class="filter-btn" data-type="vente">💰 Je vends</button>
+                    <button class="filter-btn" data-type="cherche">🔍 Je cherche</button>
+                    <button class="filter-btn" data-type="donne">🎁 Je donne</button>
+                    <button class="filter-btn" data-type="echange">🔄 J'échange</button>
+                    <button class="filter-btn" data-type="propose">🤝 Je propose</button>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="fas fa-tags"></i>
+                    Catégories :
+                </label>
+                <div class="filter-buttons" id="category-filters">
+                    <button class="filter-btn active" data-category="all">Toutes</button>
+                    <button class="filter-btn" data-category="vehicules">🚗 Véhicules</button>
+                    <button class="filter-btn" data-category="immobilier">🏠 Immobilier</button>
+                    <button class="filter-btn" data-category="high_tech">📱 High-Tech</button>
+                    <button class="filter-btn" data-category="maison">🏡 Maison</button>
+                    <button class="filter-btn" data-category="sport">🚴‍♂️ Sport</button>
+                    <button class="filter-btn" data-category="services">🛠️ Services</button>
+                    <button class="filter-btn" data-category="enfants">👶 Enfants</button>
+                    <button class="filter-btn" data-category="jardin">🌱 Jardin</button>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">
+                    <i class="fas fa-euro-sign"></i>
+                    Prix :
+                </label>
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <input type="number" id="price-min" class="search-input" placeholder="Min" style="width: 80px; min-width: 80px;">
+                    <span>-</span>
+                    <input type="number" id="price-max" class="search-input" placeholder="Max" style="width: 80px; min-width: 80px;">
+                    <button class="btn btn-outline" onclick="applyPriceFilter()">Appliquer</button>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <button class="btn btn-outline" onclick="resetFilters()">
+                    <i class="fas fa-undo"></i>
+                    Réinitialiser
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Listings Count -->
+    <section style="padding: 20px 0; background: var(--color-background);">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <span id="listings-count" class="badge badge-primary" style="font-size: 1rem; padding: 8px 16px;">12 annonces</span>
+                    <span style="margin-left: 15px; color: var(--color-text-light);">
+                        Trier par :
+                        <select id="sort-select" class="search-input" style="display: inline-block; width: auto; min-width: 150px; margin-left: 5px; padding: 5px 10px;" onchange="sortListings()">
+                            <option value="date">Plus récentes</option>
+                            <option value="date-asc">Plus anciennes</option>
+                            <option value="price-asc">Prix croissant</option>
+                            <option value="price-desc">Prix décroissant</option>
+                            <option value="title">Titre A-Z</option>
+                            <option value="location">Lieu A-Z</option>
+                        </select>
+                    </span>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <span style="font-size: 0.9rem; color: var(--color-text-light);">Affichage :</span>
+                    <button class="filter-btn active" id="view-grid" onclick="setView('grid')">
+                        <i class="fas fa-th"></i>
+                    </button>
+                    <button class="filter-btn" id="view-list" onclick="setView('list')">
+                        <i class="fas fa-list"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Listings -->
+    <section class="content">
+        <div class="container">
+            <div id="listings-container" class="ads-grid">
+                <!-- Annonces générées dynamiquement -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Listing Detail Modal -->
+    <div class="modal-overlay" id="listing-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modal-listing-title">Titre de l'annonce</h2>
+                <button class="modal-close" onclick="closeListing
+
+Modal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-listing-content">
+                <!-- Contenu généré dynamiquement -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Listing Modal -->
+    <div class="modal-overlay" id="add-listing-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Déposer une annonce</h2>
+                <button class="modal-close" onclick="closeAddListingModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="add-listing-form" style="display: grid; gap: 20px;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Type d'annonce *</label>
+                            <select required class="search-input" style="width: 100%;">
+                                <option value="">Choisir...</option>
+                                <option value="vente">Je vends</option>
+                                <option value="cherche">Je cherche</option>
+                                <option value="donne">Je donne</option>
+                                <option value="echange">J'échange</option>
+                                <option value="propose">Je propose un service</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Catégorie *</label>
+                            <select required class="search-input" style="width: 100%;">
+                                <option value="">Choisir...</option>
+                                <option value="vehicules">Véhicules</option>
+                                <option value="immobilier">Immobilier</option>
+                                <option value="high_tech">High-Tech</option>
+                                <option value="maison">Maison & Jardin</option>
+                                <option value="sport">Sport & Loisirs</option>
+                                <option value="services">Services</option>
+                                <option value="enfants">Enfants & Bébés</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Titre de l'annonce *</label>
+                        <input type="text" required class="search-input" placeholder="Ex: Vélo VTT excellent état" style="width: 100%;">
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Ville *</label>
+                            <select required class="search-input" style="width: 100%;">
+                                <option value="">Choisir...</option>
+                                <option value="Ganges">Ganges</option>
+                                <option value="Saint-Hippolyte-du-Fort">Saint-Hippolyte-du-Fort</option>
+                                <option value="Moules-et-Baucels">Moules-et-Baucels</option>
+                                <option value="Laroque">Laroque</option>
+                                <option value="Cazilhac">Cazilhac</option>
+                                <option value="Sumène">Sumène</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Prix (€)</label>
+                            <input type="number" class="search-input" placeholder="0" style="width: 100%;" min="0">
+                            <p style="font-size: 0.8rem; color: var(--color-text-light); margin-top: 3px;">Laisser vide si gratuit</p>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 600;">Description *</label>
+                        <textarea required class="search-input" rows="4" placeholder="Décrivez votre annonce en détail..." style="width: 100%; resize: vertical; font-family: inherit;"></textarea>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Votre nom *</label>
+                            <input type="text" required class="search-input" placeholder="Prénom N." style="width: 100%;">
+                        </div>
+
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Téléphone *</label>
+                            <input type="tel" required class="search-input" placeholder="06.12.34.56.78" style="width: 100%;">
+                        </div>
+
+                        <div>
+                            <label style="display: block; margin-bottom: 5px; font-weight: 600;">Email (optionnel)</label>
+                            <input type="email" class="search-input" placeholder="votre@email.fr" style="width: 100%;">
+                        </div>
+                    </div>
+
+                    <div style="background: var(--color-background); padding: 15px; border-radius: var(--border-radius); border-left: 4px solid var(--color-primary);">
+                        <h4 style="margin: 0 0 10px 0;"><i class="fas fa-info-circle"></i> Informations importantes</h4>
+                        <ul style="margin: 0; font-size: 0.9rem; color: var(--color-text-light);">
+                            <li>Votre annonce sera visible pendant 30 jours</li>
+                            <li>Vous pouvez la modifier ou la supprimer à tout moment</li>
+                            <li>Les annonces sont modérées avant publication</li>
+                            <li>Service gratuit pour les particuliers</li>
+                        </ul>
+                    </div>
+
+                    <div style="text-align: center;">
+                        <button type="submit" class="btn btn-primary" style="padding: 12px 30px;">
+                            <i class="fas fa-paper-plane"></i>
+                            Publier l'annonce
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Cévennes Connect</h3>
+                    <p>La plateforme d'échange local du Sud Cévennes. Achetez, vendez et échangez en toute confiance entre voisins.</p>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Navigation</h3>
+                    <ul style="list-style: none;">
+                        <li><a href="index.html">Accueil</a></li>
+                        <li><a href="carte.html">Carte des commerces</a></li>
+                        <li><a href="evenements.html">Événements</a></li>
+                        <li><a href="annonces.html">Petites annonces</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Sécurité</h3>
+                    <ul style="list-style: none;">
+                        <li><a href="#" onclick="showSafetyTips()">Conseils de sécurité</a></li>
+                        <li><a href="#" onclick="reportListing()">Signaler une annonce</a></li>
+                        <li><a href="#">Conditions d'utilisation</a></li>
+                        <li><a href="#">Politique de confidentialité</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h3>Aide</h3>
+                    <p>Besoin d'aide ?</p>
+                    <p><i class="fas fa-envelope"></i> support@cevennes-connect.fr</p>
+                    <p><i class="fas fa-phone"></i> 04 67 73 XX XX</p>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2024 Cévennes Connect. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/data.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/filters.js"></script>
+
+    <script>
+        let currentView = 'grid';
+        let filteredListings = [...listings];
+
+        // Initialisation de la page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadListings();
+            updateListingsCount();
+
+            // Gestionnaire de recherche
+            document.getElementById('search-input').addEventListener('input', function() {
+                filterListings();
+            });
+
+            // Gestionnaires de filtres
+            document.querySelectorAll('#type-filters .filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#type-filters .filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    filterListings();
+                });
+            });
+
+            document.querySelectorAll('#category-filters .filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('#category-filters .filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    filterListings();
+                });
+            });
+        });
+
+        function loadListings() {
+            const container = document.getElementById('listings-container');
+
+            container.innerHTML = filteredListings.map(listing => `
+                <div class="listing-card card" data-listing-id="${listing.id}" data-category="${listing.category}" data-type="${listing.type}">
+                    <div class="card-body">
+                        <!-- En-tête avec type et prix -->
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 1.2rem;">${categories.listingTypes[listing.type].icon}</span>
+                                <span class="badge" style="background: ${categories.listingTypes[listing.type].color}20; color: ${categories.listingTypes[listing.type].color}; border: 1px solid ${categories.listingTypes[listing.type].color};">
+                                    ${categories.listingTypes[listing.type].name}
+                                </span>
+                            </div>
+                            ${listing.price !== null ? `<div style="font-size: 1.2rem; font-weight: 700; color: var(--color-accent);">
+                                ${formatPrice(listing.price)}
+                            </div>` : ''}
+                        </div>
+
+                        <!-- Titre et catégorie -->
+                        <h3 style="margin: 0 0 8px 0; font-size: 1.1rem; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                            ${listing.title}
+                        </h3>
+
+                        <div style="margin-bottom: 12px;">
+                            <span class="badge badge-primary" style="font-size: 0.8rem;">
+                                ${categories.listings[listing.category].icon} ${categories.listings[listing.category].name}
+                            </span>
+                        </div>
+
+                        <!-- Description -->
+                        <p style="margin: 10px 0; color: var(--color-text-light); font-size: 0.9rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4;">
+                            ${listing.description}
+                        </p>
+
+                        <!-- Lieu et date -->
+                        <div style="margin: 12px 0; font-size: 0.85rem; color: var(--color-text-light);">
+                            <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                                <i class="fas fa-map-marker-alt" style="margin-right: 6px; width: 12px;"></i>
+                                ${listing.location}
+                            </div>
+                            <div style="display: flex; align-items: center;">
+                                <i class="fas fa-clock" style="margin-right: 6px; width: 12px;"></i>
+                                ${getTimeAgo(listing.date)}
+                                <span style="margin-left: 15px;">
+                                    <i class="fas fa-eye" style="margin-right: 4px;"></i>
+                                    ${listing.views} vues
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; flex-wrap: wrap; gap: 8px;">
+                            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--color-text-light);">
+                                <i class="fas fa-user"></i>
+                                ${listing.contactName}
+                                ${listing.premium ? '<i class="fas fa-star" style="color: var(--color-accent); margin-left: 5px;" title="Annonce premium"></i>' : ''}
+                            </div>
+
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-outline" style="padding: 6px 12px; font-size: 0.8rem;" onclick="showListingDetails(${listing.id})">
+                                    <i class="fas fa-info-circle"></i>
+                                    Détails
+                                </button>
+                                <button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem;" onclick="contactSeller(${listing.id})">
+                                    <i class="fas fa-envelope"></i>
+                                    Contacter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showListingDetails(listingId) {
+            const listing = listings.find(l => l.id === listingId);
+            if (!listing) return;
+
+            document.getElementById('modal-listing-title').textContent = listing.title;
+            document.getElementById('modal-listing-content').innerHTML = `
+                <div style="display: grid; gap: 20px;">
+                    <div style="text-align: center;">
+                        <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 15px;">
+                            <span style="font-size: 3rem;">${categories.listings[listing.category].icon}</span>
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 8px; justify-content: center; margin-bottom: 8px;">
+                                    <span style="font-size: 1.5rem;">${categories.listingTypes[listing.type].icon}</span>
+                                    <span class="badge" style="background: ${categories.listingTypes[listing.type].color}20; color: ${categories.listingTypes[listing.type].color}; border: 1px solid ${categories.listingTypes[listing.type].color}; font-size: 1rem; padding: 8px 16px;">
+                                        ${categories.listingTypes[listing.type].name}
+                                    </span>
+                                </div>
+                                <span class="badge badge-primary" style="font-size: 0.9rem;">
+                                    ${categories.listings[listing.category].name}
+                                </span>
+                            </div>
+                        </div>
+                        ${listing.price !== null ? `<div style="font-size: 2rem; font-weight: 700; color: var(--color-accent); margin-bottom: 10px;">
+                            ${formatPrice(listing.price)}
+                        </div>` : ''}
+                    </div>
+
+                    <div>
+                        <h4><i class="fas fa-info-circle"></i> Description</h4>
+                        <p style="line-height: 1.6; white-space: pre-line;">${listing.description}</p>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                        <div>
+                            <h4><i class="fas fa-map-marker-alt"></i> Localisation</h4>
+                            <p>${listing.location}</p>
+                        </div>
+
+                        <div>
+                            <h4><i class="fas fa-clock"></i> Publié</h4>
+                            <p>${getTimeAgo(listing.date)}</p>
+                            <p style="font-size: 0.9rem; color: var(--color-text-light);">
+                                <i class="fas fa-eye"></i> ${listing.views} vues
+                            </p>
+                        </div>
+                    </div>
+
+                    <div style="background: var(--color-background); padding: 20px; border-radius: var(--border-radius); border-left: 4px solid var(--color-primary);">
+                        <h4 style="margin-top: 0;"><i class="fas fa-user"></i> Vendeur</h4>
+                        <p style="font-size: 1.1rem; font-weight: 600; margin-bottom: 5px;">${listing.contactName}</p>
+                        <p style="color: var(--color-text-light); margin-bottom: 15px;">Membre depuis 2023</p>
+
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <a href="tel:${listing.contact}" class="btn btn-primary">
+                                <i class="fas fa-phone"></i> ${listing.contact}
+                            </a>
+                            ${listing.contact.includes('@') ? `<a href="mailto:${listing.contact}" class="btn btn-secondary">
+                                <i class="fas fa-envelope"></i> Envoyer un email
+                            </a>` : ''}
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(255, 140, 0, 0.1); padding: 15px; border-radius: var(--border-radius); border-left: 4px solid var(--color-accent);">
+                        <h4 style="margin-top: 0; color: var(--color-accent);"><i class="fas fa-shield-alt"></i> Conseils de sécurité</h4>
+                        <ul style="margin-bottom: 0; font-size: 0.9rem;">
+                            <li>Rencontrez le vendeur en lieu public</li>
+                            <li>Vérifiez l'état de l'objet avant l'achat</li>
+                            <li>Privilégiez le paiement en espèces</li>
+                            <li>Méfiez-vous des prix trop attractifs</li>
+                        </ul>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <button class="btn btn-outline" onclick="shareListing(${listing.id})">
+                            <i class="fas fa-share"></i> Partager
+                        </button>
+                        <button class="btn btn-outline" onclick="reportListing(${listing.id})">
+                            <i class="fas fa-flag"></i> Signaler
+                        </button>
+                        <button class="btn btn-outline" onclick="saveListing(${listing.id})">
+                            <i class="fas fa-heart"></i> Sauvegarder
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('listing-modal').classList.add('active');
+        }
+
+        function closeListingModal() {
+            document.getElementById('listing-modal').classList.remove('active');
+        }
+
+        function showAddListingForm() {
+            document.getElementById('add-listing-modal').classList.add('active');
+        }
+
+        function closeAddListingModal() {
+            document.getElementById('add-listing-modal').classList.remove('active');
+        }
+
+        function setView(view) {
+            currentView = view;
+
+            // Mettre à jour les boutons
+            document.querySelectorAll('[id^="view-"]').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`view-${view}`).classList.add('active');
+
+            const container = document.getElementById('listings-container');
+
+            if (view === 'list') {
+                container.className = 'ads-list';
+                container.style.display = 'grid';
+                container.style.gridTemplateColumns = '1fr';
+                container.style.gap = '15px';
+            } else {
+                container.className = 'ads-grid';
+                container.style.display = '';
+                container.style.gridTemplateColumns = '';
+                container.style.gap = '';
+            }
+        }
+
+        function filterListings() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const selectedType = document.querySelector('#type-filters .filter-btn.active').dataset.type;
+            const selectedCategory = document.querySelector('#category-filters .filter-btn.active').dataset.category;
+
+            filteredListings = listings.filter(listing => {
+                const matchesSearch = !searchTerm ||
+                    listing.title.toLowerCase().includes(searchTerm) ||
+                    listing.description.toLowerCase().includes(searchTerm) ||
+                    listing.location.toLowerCase().includes(searchTerm);
+
+                const matchesType = selectedType === 'all' || listing.type === selectedType;
+                const matchesCategory = selectedCategory === 'all' || listing.category === selectedCategory;
+
+                return matchesSearch && matchesType && matchesCategory;
+            });
+
+            loadListings();
+            updateListingsCount();
+        }
+
+        function applyPriceFilter() {
+            const minPrice = parseFloat(document.getElementById('price-min').value) || 0;
+            const maxPrice = parseFloat(document.getElementById('price-max').value) || Infinity;
+
+            filteredListings = filteredListings.filter(listing => {
+                if (listing.price === null || listing.price === 0) return minPrice === 0;
+                return listing.price >= minPrice && listing.price <= maxPrice;
+            });
+
+            loadListings();
+            updateListingsCount();
+        }
+
+        function sortListings() {
+            const sortBy = document.getElementById('sort-select').value;
+
+            filteredListings.sort((a, b) => {
+                switch (sortBy) {
+                    case 'date':
+                        return new Date(b.date) - new Date(a.date);
+                    case 'date-asc':
+                        return new Date(a.date) - new Date(b.date);
+                    case 'price-asc':
+                        if (a.price === null || a.price === 0) return -1;
+                        if (b.price === null || b.price === 0) return 1;
+                        return a.price - b.price;
+                    case 'price-desc':
+                        if (a.price === null || a.price === 0) return 1;
+                        if (b.price === null || b.price === 0) return -1;
+                        return b.price - a.price;
+                    case 'title':
+                        return a.title.localeCompare(b.title);
+                    case 'location':
+                        return a.location.localeCompare(b.location);
+                    default:
+                        return 0;
+                }
+            });
+
+            loadListings();
+        }
+
+        function updateListingsCount() {
+            document.getElementById('listings-count').textContent = `${filteredListings.length} annonce${filteredListings.length > 1 ? 's' : ''}`;
+        }
+
+        function resetFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('price-min').value = '';
+            document.getElementById('price-max').value = '';
+            document.querySelectorAll('.filter-btn.active').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('[data-type="all"], [data-category="all"]').forEach(btn => btn.classList.add('active'));
+            document.getElementById('sort-select').value = 'date';
+
+            filteredListings = [...listings];
+            loadListings();
+            updateListingsCount();
+        }
+
+        function contactSeller(listingId) {
+            const listing = listings.find(l => l.id === listingId);
+            if (!listing) return;
+
+            const message = `Bonjour,\n\nJe suis intéressé(e) par votre annonce "${listing.title}" sur Cévennes Connect.\n\nPourriez-vous me donner plus d'informations ?\n\nMerci !`;
+
+            if (listing.contact.includes('@')) {
+                window.location.href = `mailto:${listing.contact}?subject=Annonce: ${listing.title}&body=${encodeURIComponent(message)}`;
+            } else {
+                window.location.href = `tel:${listing.contact}`;
+            }
+        }
+
+        function shareListing(listingId) {
+            const listing = listings.find(l => l.id === listingId);
+            if (!listing) return;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: listing.title,
+                    text: `${listing.description} - ${formatPrice(listing.price)}`,
+                    url: window.location.href
+                });
+            } else {
+                const shareText = `${listing.title}\n${listing.description}\nPrix: ${formatPrice(listing.price)}\nLieu: ${listing.location}\n\nVoir sur Cévennes Connect: ${window.location.href}`;
+                navigator.clipboard.writeText(shareText);
+                alert('Lien copié dans le presse-papier !');
+            }
+        }
+
+        function reportListing(listingId) {
+            const reasons = [
+                'Contenu inapproprié',
+                'Prix surévalué',
+                'Produit défaillant',
+                'Vendeur suspect',
+                'Doublon',
+                'Autre raison'
+            ];
+
+            const reason = prompt('Pourquoi signalez-vous cette annonce ?\n\n' + reasons.map((r, i) => `${i+1}. ${r}`).join('\n') + '\n\nTapez le numéro correspondant:');
+
+            if (reason && reason >= 1 && reason <= reasons.length) {
+                alert(`Merci pour votre signalement. L'annonce sera examinée par notre équipe.\n\nMotif: ${reasons[reason-1]}`);
+            }
+        }
+
+        function saveListing(listingId) {
+            alert('Annonce sauvegardée dans vos favoris !\n\nVous pouvez retrouver vos annonces sauvegardées dans votre profil utilisateur.');
+        }
+
+        function showSafetyTips() {
+            alert('Conseils de sécurité Cévennes Connect :\n\n' +
+                  '🔒 RENCONTRES SÉCURISÉES :\n' +
+                  '• Privilégiez les lieux publics\n' +
+                  '• Venez accompagné si possible\n' +
+                  '• Informez vos proches du rendez-vous\n\n' +
+                  '💰 PAIEMENTS SÛRS :\n' +
+                  '• Préférez le cash pour les petites sommes\n' +
+                  '• Virement bancaire pour les gros montants\n' +
+                  '• Évitez les chèques et virements douteux\n\n' +
+                  '🔍 VÉRIFICATIONS :\n' +
+                  '• Testez l\'objet avant achat\n' +
+                  '• Demandez la facture si nécessaire\n' +
+                  '• Méfiez-vous des prix trop bas');
+        }
+
+        // Gestionnaire du formulaire d'ajout
+        document.getElementById('add-listing-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Merci ! Votre annonce a été soumise avec succès.\n\nElle sera vérifiée par notre équipe et publiée sous 24h.\n\nVous recevrez une confirmation par email.');
+            closeAddListingModal();
+        });
+
+        // Fermer les modales en cliquant à l'extérieur
+        document.getElementById('listing-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeListingModal();
+        });
+
+        document.getElementById('add-listing-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeAddListingModal();
+        });
+    </script>
+</body>
+</html>

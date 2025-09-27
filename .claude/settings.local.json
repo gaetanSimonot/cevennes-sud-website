@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(python:*)",
+      "Bash(for file in ./cevennes-connect/{index,acteurs-locaux,evenements,echangeons,parlons-en,troc-tout,panneau-village}.html)",
+      "Bash(grep:*)",
+      "Bash(done)",
+      "Bash(for file in index.html acteurs-locaux.html evenements.html echangeons.html parlons-en.html troc-tout.html panneau-village.html)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
