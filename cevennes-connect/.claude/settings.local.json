@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nRemplace Leaflet par Google Maps API\n\n- Intègre Google Maps avec clé API AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw\n- Mise à jour de acteurs-locaux.html avec google.maps.Map\n- Mise à jour de carte.html avec google.maps.Map\n- Adaptation des markers et InfoWindows pour Google Maps\n- Amélioration de la géolocalisation et des contrôles de carte\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "Bash(python:*)",
+      "Bash(python3:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

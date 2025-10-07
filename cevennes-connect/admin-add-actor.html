@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajouter un Commerce/Service - Cévennes Sud</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Maps API for location picker -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&libraries=places"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+        }
+        #map {
+            height: 300px;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1 class="text-4xl font-bold text-gray-900 mb-2 text-center">
+            <i class="fas fa-store text-blue-600 mr-3"></i>
+            Ajouter un Commerce/Service
+        </h1>
+        <p class="text-center text-gray-600 mb-8">Remplissez le formulaire pour ajouter un acteur local</p>
+
+        <form id="actorForm" class="space-y-6">
+            <!-- Catégorie -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-tags mr-2 text-blue-500"></i>Catégorie *
+                </label>
+                <select id="category" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <option value="">-- Sélectionnez une catégorie --</option>
+                    <option value="commerce">🛒 Commerce</option>
+                    <option value="restaurant">🍽️ Restaurant / Café</option>
+                    <option value="artisan">🔧 Artisan</option>
+                    <option value="therapeute">💚 Thérapeute / Bien-être</option>
+                    <option value="service">💼 Service</option>
+                    <option value="association">👥 Association</option>
+                </select>
+            </div>
+
+            <!-- Nom -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-building mr-2 text-blue-500"></i>Nom du commerce/service *
+                </label>
+                <input type="text" id="name" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Ex: Boulangerie des Cévennes">
+            </div>
+
+            <!-- Description -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-align-left mr-2 text-blue-500"></i>Description *
+                </label>
+                <textarea id="description" required rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Décrivez votre activité..."></textarea>
+            </div>
+
+            <!-- Adresse avec recherche Google -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-map-marker-alt mr-2 text-blue-500"></i>Adresse *
+                </label>
+                <input type="text" id="address" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="15 rue de la République, Ganges">
+                <div id="map"></div>
+                <div class="mt-2 text-sm text-gray-600">
+                    <span>Coordonnées: </span>
+                    <span id="coordinates">Non définies</span>
+                </div>
+            </div>
+
+            <!-- Téléphone -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-phone mr-2 text-blue-500"></i>Téléphone *
+                </label>
+                <input type="tel" id="phone" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="04 67 73 XX XX">
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-envelope mr-2 text-blue-500"></i>Email
+                </label>
+                <input type="email" id="email" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="contact@commerce.fr">
+            </div>
+
+            <!-- Site web -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-globe mr-2 text-blue-500"></i>Site web
+                </label>
+                <input type="url" id="website" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://www.commerce.fr">
+            </div>
+
+            <!-- Horaires -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-clock mr-2 text-blue-500"></i>Horaires d'ouverture
+                </label>
+                <textarea id="horaires" rows="2" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Lun-Ven: 9h-18h, Sam: 9h-12h"></textarea>
+            </div>
+
+            <!-- Spécialités -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-star mr-2 text-blue-500"></i>Spécialités (séparées par des virgules)
+                </label>
+                <input type="text" id="specialites" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Pain bio, Viennoiseries, Pâtisseries">
+            </div>
+
+            <!-- URL Image -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-image mr-2 text-blue-500"></i>URL de l'image
+                </label>
+                <input type="url" id="image" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="https://...">
+            </div>
+
+            <!-- Coordonnées cachées -->
+            <input type="hidden" id="lat" value="43.9339">
+            <input type="hidden" id="lng" value="3.7086">
+
+            <!-- Boutons -->
+            <div class="flex gap-4 pt-6">
+                <button type="submit" class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition-all">
+                    <i class="fas fa-save mr-2"></i>Générer JSON
+                </button>
+                <button type="button" onclick="resetForm()" class="px-8 py-4 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-all">
+                    <i class="fas fa-redo mr-2"></i>Réinitialiser
+                </button>
+            </div>
+        </form>
+
+        <!-- Résultat JSON -->
+        <div id="result" class="mt-8 hidden">
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">
+                <i class="fas fa-code mr-2 text-green-600"></i>JSON Généré
+            </h3>
+            <div class="bg-gray-900 text-green-400 p-6 rounded-xl overflow-x-auto">
+                <pre id="jsonOutput" class="text-sm"></pre>
+            </div>
+            <div class="mt-4 flex gap-4">
+                <button onclick="copyJSON()" class="flex-1 bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-all">
+                    <i class="fas fa-copy mr-2"></i>Copier JSON
+                </button>
+                <button onclick="downloadJSON()" class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all">
+                    <i class="fas fa-download mr-2"></i>Télécharger
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let map, marker, autocomplete;
+        let generatedData = null;
+
+        // Initialiser la carte
+        function initMap() {
+            const ganges = { lat: 43.9339, lng: 3.7086 };
+
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: ganges,
+                zoom: 14
+            });
+
+            marker = new google.maps.Marker({
+                position: ganges,
+                map: map,
+                draggable: true
+            });
+
+            // Autocomplete pour l'adresse
+            const addressInput = document.getElementById('address');
+            autocomplete = new google.maps.places.Autocomplete(addressInput, {
+                componentRestrictions: { country: 'fr' },
+                fields: ['geometry', 'formatted_address']
+            });
+
+            autocomplete.addListener('place_changed', () => {
+                const place = autocomplete.getPlace();
+                if (place.geometry) {
+                    const location = place.geometry.location;
+                    updateLocation(location.lat(), location.lng());
+                    map.setCenter(location);
+                    marker.setPosition(location);
+                }
+            });
+
+            // Drag du marker
+            marker.addListener('dragend', () => {
+                const position = marker.getPosition();
+                updateLocation(position.lat(), position.lng());
+            });
+        }
+
+        function updateLocation(lat, lng) {
+            document.getElementById('lat').value = lat.toFixed(6);
+            document.getElementById('lng').value = lng.toFixed(6);
+            document.getElementById('coordinates').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        }
+
+        // Soumettre le formulaire
+        document.getElementById('actorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = {
+                id: Date.now(),
+                name: document.getElementById('name').value,
+                category: document.getElementById('category').value,
+                description: document.getElementById('description').value,
+                address: document.getElementById('address').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                website: document.getElementById('website').value,
+                horaires: document.getElementById('horaires').value || 'Horaires non renseignés',
+                specialites: document.getElementById('specialites').value.split(',').map(s => s.trim()).filter(s => s),
+                lat: parseFloat(document.getElementById('lat').value),
+                lng: parseFloat(document.getElementById('lng').value),
+                image: document.getElementById('image').value || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                rating: 0,
+                reviews_count: 0
+            };
+
+            generatedData = formData;
+
+            // Afficher le JSON
+            document.getElementById('jsonOutput').textContent = JSON.stringify(formData, null, 2);
+            document.getElementById('result').classList.remove('hidden');
+
+            // Scroll vers le résultat
+            document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        function resetForm() {
+            document.getElementById('actorForm').reset();
+            document.getElementById('result').classList.add('hidden');
+            updateLocation(43.9339, 3.7086);
+            marker.setPosition({ lat: 43.9339, lng: 3.7086 });
+            map.setCenter({ lat: 43.9339, lng: 3.7086 });
+        }
+
+        function copyJSON() {
+            const jsonText = document.getElementById('jsonOutput').textContent;
+            navigator.clipboard.writeText(jsonText).then(() => {
+                alert('✅ JSON copié dans le presse-papier !');
+            });
+        }
+
+        function downloadJSON() {
+            const dataStr = JSON.stringify(generatedData, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
+            const exportFileDefaultName = `actor-${generatedData.id}.json`;
+
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+
+            alert('✅ Fichier JSON téléchargé !');
+        }
+
+        // Initialiser la carte au chargement
+        window.addEventListener('load', initMap);
+    </script>
+</body>
+</html>

@@ -578,8 +578,8 @@
     </footer>
 
     <script>
-        // Sample data for local actors
-        const actorsData = [
+        // Données des acteurs locaux (chargées depuis JSON ou données par défaut)
+        let actorsData = [
             {
                 id: 1,
                 name: "Boulangerie des Cévennes",
@@ -722,8 +722,39 @@
         let markers = [];
         let filteredActors = [...actorsData];
 
+        // Charger les données depuis le fichier JSON
+        async function loadActorsData() {
+            try {
+                const response = await fetch('data/actors-data.json');
+                const data = await response.json();
+
+                // Fusionner toutes les catégories en un seul tableau
+                const allActors = [
+                    ...data.commerce,
+                    ...data.restaurant,
+                    ...data.artisan,
+                    ...data.therapeute,
+                    ...data.service,
+                    ...data.association
+                ];
+
+                // Si on a des données dans le JSON, les utiliser
+                if (allActors.length > 0) {
+                    actorsData = allActors;
+                    filteredActors = [...actorsData];
+                    console.log(`✅ ${actorsData.length} acteurs chargés depuis actors-data.json`);
+                } else {
+                    console.log('ℹ️  Utilisation des données par défaut (JSON vide)');
+                }
+            } catch (error) {
+                console.log('ℹ️  Impossible de charger actors-data.json, utilisation des données par défaut');
+                console.log(error);
+            }
+        }
+
         // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadActorsData(); // Charger les données d'abord
             initMap();
             renderActors();
             setupEventListeners();
