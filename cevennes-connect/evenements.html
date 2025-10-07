@@ -626,13 +626,17 @@
         // Variables
         let map;
         let markers = [];
-        let filteredEvents = [...eventsData];
+        let filteredEvents = [];
         let currentDate = new Date();
 
         // Removed - initialization now happens after data loads
 
         // Initialize page after data is loaded
         function initializePage() {
+            // Initialize filteredEvents with loaded data
+            filteredEvents = [...eventsData];
+            console.log('Initializing with', eventsData.length, 'events');
+
             renderCalendar();
             renderEvents();
             setupEventListeners();
