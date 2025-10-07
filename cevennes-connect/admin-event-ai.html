@@ -265,7 +265,11 @@
                 // Préparer le prompt
                 const prompt = `Tu es un assistant spécialisé dans l'extraction d'informations d'événements.
 
-Analyse les informations fournies (image d'affiche et/ou texte) et extrais les données suivantes pour créer un événement :
+Analyse les informations fournies (images, texte, liens) et détecte TOUS les événements distincts présents.
+
+**IMPORTANT** : Si tu détectes plusieurs événements différents, retourne un TABLEAU d'objets JSON. Si un seul événement, retourne un tableau avec un seul objet.
+
+Pour chaque événement, extrais les données suivantes :
 
 1. **title** (obligatoire) : Le titre de l'événement
 2. **category** : Catégorie parmi: "concert", "festival", "marche", "exposition", "theatre", "sport", "conference", "autre"
@@ -281,21 +285,23 @@ Analyse les informations fournies (image d'affiche et/ou texte) et extrais les d
 
 ${textInput ? `\n**Texte fourni :**\n${textInput}` : ''}
 
-Retourne UNIQUEMENT un objet JSON valide sans texte additionnel, au format suivant :
-{
-  "title": "...",
-  "category": "...",
-  "description": "...",
-  "date": "YYYY-MM-DD",
-  "time": "HH:MM",
-  "location": "...",
-  "address": "...",
-  "price": "...",
-  "organizer": "...",
-  "contact": "...",
-  "website": "...",
-  "image": ""
-}
+Retourne UNIQUEMENT un tableau JSON valide sans texte additionnel, au format suivant :
+[
+  {
+    "title": "...",
+    "category": "...",
+    "description": "...",
+    "date": "YYYY-MM-DD",
+    "time": "HH:MM",
+    "location": "...",
+    "address": "...",
+    "price": "...",
+    "organizer": "...",
+    "contact": "...",
+    "website": "...",
+    "image": ""
+  }
+]
 
 Si une information n'est pas disponible, utilise une chaîne vide "".`;
 
@@ -320,20 +326,48 @@ Si une information n'est pas disponible, utilise une chaîne vide "".`;
                     });
                 }
 
-                // Appeler notre API sécurisée (pas directement OpenAI)
-                log('⏳ Analyse en cours avec GPT-4 Vision...', 'info');
-                const response = await fetch('/api/openai', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        model: 'gpt-4o',
-                        messages: messages,
-                        max_tokens: 1000,
-                        temperature: 0.7
-                    })
-                });
+                // Détecter si on est en local ou en production
+                const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:';
+
+                let response;
+
+                if (isLocal) {
+                    // En local : appeler directement OpenAI (nécessite OPENAI_API_KEY dans config.js)
+                    log('⏳ Mode LOCAL : Appel direct à OpenAI API...', 'info');
+
+                    if (!CONFIG.OPENAI_API_KEY) {
+                        throw new Error('OPENAI_API_KEY manquante dans config.js pour le mode local');
+                    }
+
+                    response = await fetch('https://api.openai.com/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${CONFIG.OPENAI_API_KEY}`
+                        },
+                        body: JSON.stringify({
+                            model: 'gpt-4o',
+                            messages: messages,
+                            max_tokens: 4000,
+                            temperature: 0.7
+                        })
+                    });
+                } else {
+                    // En production : utiliser notre API serverless sécurisée
+                    log('⏳ Mode PRODUCTION : Appel via API sécurisée...', 'info');
+                    response = await fetch('/api/openai', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: 'gpt-4o',
+                            messages: messages,
+                            max_tokens: 4000,
+                            temperature: 0.7
+                        })
+                    });
+                }
 
                 if (!response.ok) {
                     const error = await response.json();
@@ -349,30 +383,45 @@ Si une information n'est pas disponible, utilise une chaîne vide "".`;
                 // Nettoyer le texte (enlever les balises markdown si présentes)
                 jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
 
-                const eventData = JSON.parse(jsonText);
+                let eventsArray = JSON.parse(jsonText);
 
-                // Ajouter l'ID et l'image
-                eventData.id = Date.now();
-                if (uploadedImages.length > 0) {
-                    eventData.image = uploadedImages[0].data;
-                } else {
-                    eventData.image = 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
+                // S'assurer que c'est un tableau
+                if (!Array.isArray(eventsArray)) {
+                    eventsArray = [eventsArray];
                 }
 
-                // Ajouter coordonnées par défaut (Ganges)
-                eventData.lat = 43.9339;
-                eventData.lng = 3.7086;
+                log(`✅ ${eventsArray.length} événement(s) détecté(s) !`, 'success');
 
-                generatedEvent = eventData;
+                // Traiter chaque événement
+                eventsArray.forEach((eventData, index) => {
+                    // Ajouter l'ID unique
+                    eventData.id = Date.now() + index;
+
+                    // Ajouter l'image (une image différente par événement si possible)
+                    if (uploadedImages.length > index) {
+                        eventData.image = uploadedImages[index].data;
+                    } else if (uploadedImages.length > 0) {
+                        eventData.image = uploadedImages[0].data; // Utiliser la première image par défaut
+                    } else {
+                        eventData.image = 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
+                    }
+
+                    // Ajouter coordonnées par défaut (Ganges)
+                    eventData.lat = 43.9339;
+                    eventData.lng = 3.7086;
+
+                    log(`📅 ${eventData.title}`, 'info');
+                    log(`📍 ${eventData.location}`, 'info');
+                });
+
+                generatedEvent = eventsArray;
 
                 // Afficher le résultat
-                document.getElementById('jsonOutput').textContent = JSON.stringify(eventData, null, 2);
+                document.getElementById('jsonOutput').textContent = JSON.stringify(eventsArray, null, 2);
                 document.getElementById('resultSection').classList.remove('hidden');
                 document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
 
-                log('✅ Événement généré avec succès !', 'success');
-                log(`📅 ${eventData.title}`, 'info');
-                log(`📍 ${eventData.location}`, 'info');
+                log('✅ Événements générés avec succès !', 'success');
 
             } catch (error) {
                 log(`❌ Erreur: ${error.message}`, 'error');
@@ -394,9 +443,13 @@ Si une information n'est pas disponible, utilise une chaîne vide "".`;
         function downloadJSON() {
             if (!generatedEvent) return;
 
+            const isMultiple = Array.isArray(generatedEvent) && generatedEvent.length > 1;
             const dataStr = JSON.stringify(generatedEvent, null, 2);
             const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-            const exportFileDefaultName = `event-${generatedEvent.id}.json`;
+
+            const exportFileDefaultName = isMultiple
+                ? `events-batch-${Date.now()}.json`
+                : `event-${generatedEvent[0]?.id || Date.now()}.json`;
 
             const linkElement = document.createElement('a');
             linkElement.setAttribute('href', dataUri);
@@ -404,7 +457,9 @@ Si une information n'est pas disponible, utilise une chaîne vide "".`;
             linkElement.click();
 
             log('✅ Fichier JSON téléchargé !', 'success');
-            alert(`✅ Fichier téléchargé: ${exportFileDefaultName}\n\n📝 PROCHAINE ÉTAPE:\n1. Va dans le dossier data/\n2. Ouvre events-data.json\n3. Ajoute cet événement dans le tableau JSON\n4. Commit sur GitHub`);
+
+            const count = Array.isArray(generatedEvent) ? generatedEvent.length : 1;
+            alert(`✅ Fichier téléchargé: ${exportFileDefaultName}\n\n📊 ${count} événement(s) généré(s)\n\n📝 PROCHAINE ÉTAPE:\n1. Va dans le dossier data/\n2. Ouvre events-data.json\n3. Ajoute ${count > 1 ? 'ces événements' : 'cet événement'} dans le tableau JSON\n4. Commit sur GitHub`);
         }
     </script>
 </body>
