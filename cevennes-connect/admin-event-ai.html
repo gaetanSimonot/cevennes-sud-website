@@ -285,6 +285,8 @@ Pour chaque événement, extrais les données suivantes :
 
 ${textInput ? `\n**Texte fourni :**\n${textInput}` : ''}
 
+**IMPORTANT : NE PAS inclure d'images base64 dans le JSON. Utilise toujours une chaîne vide "" pour le champ "image".**
+
 Retourne UNIQUEMENT un tableau JSON valide sans texte additionnel, au format suivant :
 [
   {
@@ -303,7 +305,7 @@ Retourne UNIQUEMENT un tableau JSON valide sans texte additionnel, au format sui
   }
 ]
 
-Si une information n'est pas disponible, utilise une chaîne vide "".`;
+Si une information n'est pas disponible, utilise une chaîne vide "". **N'inclus JAMAIS de données base64 dans le champ image.**`;
 
                 // Préparer les messages pour l'API
                 const messages = [
@@ -397,14 +399,8 @@ Si une information n'est pas disponible, utilise une chaîne vide "".`;
                     // Ajouter l'ID unique
                     eventData.id = Date.now() + index;
 
-                    // Ajouter l'image (une image différente par événement si possible)
-                    if (uploadedImages.length > index) {
-                        eventData.image = uploadedImages[index].data;
-                    } else if (uploadedImages.length > 0) {
-                        eventData.image = uploadedImages[0].data; // Utiliser la première image par défaut
-                    } else {
-                        eventData.image = 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
-                    }
+                    // NE PAS inclure les images base64 - utiliser des URLs
+                    eventData.image = 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
 
                     // Ajouter coordonnées par défaut (Ganges)
                     eventData.lat = 43.9339;
