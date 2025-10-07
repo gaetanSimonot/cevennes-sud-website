@@ -11,8 +11,13 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Google Maps API for location picker -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&libraries=places"></script>
+    <!-- Configuration -->
+    <script src="js/config.js"></script>
+
+    <!-- Google Maps API for location picker (clé chargée depuis config.js) -->
+    <script>
+        document.write('<script src="https://maps.googleapis.com/maps/api/js?key=' + CONFIG.GOOGLE_MAPS_API_KEY + '&libraries=places"><\/script>');
+    </script>
 
     <style>
         body {
@@ -144,8 +149,8 @@
 
             <!-- Boutons -->
             <div class="flex gap-4 pt-6">
-                <button type="submit" class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition-all">
-                    <i class="fas fa-save mr-2"></i>Générer JSON
+                <button type="submit" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition-all">
+                    <i class="fas fa-cloud-upload-alt mr-2"></i>Sauvegarder sur GitHub
                 </button>
                 <button type="button" onclick="resetForm()" class="px-8 py-4 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-all">
                     <i class="fas fa-redo mr-2"></i>Réinitialiser
@@ -175,6 +180,11 @@
     <script>
         let map, marker, autocomplete;
         let generatedData = null;
+
+        // Configuration chargée depuis config.js
+        const GITHUB_TOKEN = CONFIG.GITHUB_TOKEN;
+        const GITHUB_REPO = CONFIG.GITHUB_REPO;
+        const FILE_PATH = CONFIG.FILE_PATH;
 
         // Initialiser la carte
         function initMap() {
@@ -221,9 +231,64 @@
             document.getElementById('coordinates').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
         }
 
+        // Sauvegarder sur GitHub
+        async function saveToGitHub(actorData) {
+            try {
+                // 1. Récupérer le fichier actuel
+                const getResponse = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}`, {
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+
+                if (!getResponse.ok) {
+                    throw new Error('Impossible de récupérer le fichier actors-data.json');
+                }
+
+                const fileData = await getResponse.json();
+                const currentContent = JSON.parse(atob(fileData.content));
+
+                // 2. Ajouter le nouvel acteur dans la bonne catégorie
+                if (!currentContent[actorData.category]) {
+                    currentContent[actorData.category] = [];
+                }
+                currentContent[actorData.category].push(actorData);
+
+                // 3. Mettre à jour le fichier sur GitHub
+                const updateResponse = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Ajout de ${actorData.name} dans la catégorie ${actorData.category}`,
+                        content: btoa(unescape(encodeURIComponent(JSON.stringify(currentContent, null, 2)))),
+                        sha: fileData.sha
+                    })
+                });
+
+                if (!updateResponse.ok) {
+                    throw new Error('Impossible de sauvegarder sur GitHub');
+                }
+
+                return true;
+            } catch (error) {
+                console.error('Erreur:', error);
+                return false;
+            }
+        }
+
         // Soumettre le formulaire
-        document.getElementById('actorForm').addEventListener('submit', function(e) {
+        document.getElementById('actorForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+
+            const submitButton = e.target.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sauvegarde en cours...';
 
             const formData = {
                 id: Date.now(),
@@ -245,12 +310,36 @@
 
             generatedData = formData;
 
-            // Afficher le JSON
-            document.getElementById('jsonOutput').textContent = JSON.stringify(formData, null, 2);
-            document.getElementById('result').classList.remove('hidden');
+            // Sauvegarder sur GitHub
+            const success = await saveToGitHub(formData);
 
-            // Scroll vers le résultat
-            document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalText;
+
+            if (success) {
+                alert('✅ Commerce ajouté avec succès sur GitHub !\n\nIl sera visible sur le site dans quelques secondes.');
+
+                // Afficher le JSON
+                document.getElementById('jsonOutput').textContent = JSON.stringify(formData, null, 2);
+                document.getElementById('result').classList.remove('hidden');
+                document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+
+                // Proposer de retourner à la page ou réinitialiser
+                setTimeout(() => {
+                    if (confirm('Voulez-vous retourner à la page Acteurs Locaux ?')) {
+                        window.location.href = 'acteurs-locaux.html';
+                    } else {
+                        resetForm();
+                    }
+                }, 2000);
+            } else {
+                alert('❌ Erreur lors de la sauvegarde sur GitHub.\n\nVérifiez la console pour plus de détails.');
+
+                // Afficher quand même le JSON pour copie manuelle
+                document.getElementById('jsonOutput').textContent = JSON.stringify(formData, null, 2);
+                document.getElementById('result').classList.remove('hidden');
+                document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+            }
         });
 
         function resetForm() {

@@ -1,0 +1,10 @@
+# Configuration avec clés API (ne pas commiter)
+js/config.js
+
+# Fichiers temporaires
+.DS_Store
+Thumbs.db
+*.log
+
+# Claude settings
+.claude/settings.local.json

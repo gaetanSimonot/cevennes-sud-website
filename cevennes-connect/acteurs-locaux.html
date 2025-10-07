@@ -396,9 +396,9 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Add Business Button -->
             <div class="mb-12 text-center reveal">
-                <button id="addBusinessBtn" class="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-10 py-4 rounded-2xl text-lg font-semibold shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300">
+                <a href="admin-add-actor.html" class="inline-block bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-10 py-4 rounded-2xl text-lg font-semibold shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300">
                     <i class="fas fa-plus mr-3"></i>Publier un commerce/service
-                </button>
+                </a>
             </div>
 
             <!-- Search and Filters -->
@@ -928,10 +928,7 @@
                 });
             });
 
-            // Add business button
-            document.getElementById('addBusinessBtn').addEventListener('click', function() {
-                alert('Fonctionnalité bientôt disponible ! Contactez-nous pour publier votre commerce ou service dans l\'annuaire local.');
-            });
+            // Add business button (maintenant un lien, plus besoin d'event listener)
 
             // View toggle
             document.getElementById('cardView').addEventListener('click', function() {
