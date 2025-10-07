@@ -287,6 +287,19 @@
             }
         }
 
+        function downloadJSON(allActors) {
+            const dataStr = JSON.stringify(allActors, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            const exportFileDefaultName = 'actors-data.json';
+
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+
+            log('✅ Fichier actors-data.json téléchargé !', 'success');
+        }
+
         async function startImport() {
             if (isRunning) return;
 
