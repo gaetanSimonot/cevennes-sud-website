@@ -347,18 +347,19 @@
             }
 
             if (isRunning && totalFound > 0) {
-                const success = await saveToGitHub(allActors);
+                log('\n✅ Import terminé !', 'success');
+                log(`📊 Total: ${totalFound} commerces trouvés`, 'success');
+                log('\n💾 Téléchargement du fichier JSON...', 'info');
 
-                if (success) {
-                    log('\n🎉 Import terminé avec succès !', 'success');
-                    log(`📊 Total: ${totalFound} commerces importés et sauvegardés`, 'success');
+                // Télécharger directement le JSON
+                downloadJSON(allActors);
 
-                    setTimeout(() => {
-                        if (confirm('Import terminé ! Voulez-vous voir les résultats ?')) {
-                            window.location.href = 'acteurs-locaux.html';
-                        }
-                    }, 2000);
-                }
+                totalSaved = totalFound;
+                updateStats();
+
+                setTimeout(() => {
+                    alert(`✅ Import terminé !\n\n${totalFound} commerces trouvés\n\n💾 Le fichier "actors-data.json" a été téléchargé.\n\n📝 PROCHAINE ÉTAPE :\n1. Va sur GitHub\n2. Ouvre : cevennes-connect/data/actors-data.json\n3. Remplace tout le contenu par le fichier téléchargé\n4. Commit et c'est fini !`);
+                }, 1000);
             } else {
                 log('\n⚠️  Aucun commerce trouvé ou import annulé', 'warning');
             }
