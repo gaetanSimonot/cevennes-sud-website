@@ -14,6 +14,17 @@
     <!-- Configuration -->
     <script src="js/config.js"></script>
 
+    <!-- Google Maps avec Places Library -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${CONFIG.GOOGLE_MAPS_API_KEY}&libraries=places&callback=initApp`;
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+        });
+    </script>
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -76,8 +87,8 @@
         </div>
 
         <div class="mb-6">
-            <button id="startBtn" onclick="startImport()" class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition-all">
-                <i class="fas fa-play mr-2"></i>Démarrer l'import automatique
+            <button id="startBtn" onclick="startImport()" disabled class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                <i class="fas fa-spinner fa-spin mr-2"></i>Chargement de Google Maps...
             </button>
         </div>
 
@@ -96,7 +107,6 @@
 
     <script>
         // Configuration chargée depuis config.js
-        const GOOGLE_API_KEY = CONFIG.GOOGLE_PLACES_API_KEY;
         const GITHUB_TOKEN = CONFIG.GITHUB_TOKEN;
         const GITHUB_REPO = CONFIG.GITHUB_REPO;
         const FILE_PATH = CONFIG.FILE_PATH;
@@ -116,6 +126,27 @@
         let totalFound = 0;
         let totalSaved = 0;
         let isRunning = false;
+        let map, placesService;
+
+        // Initialiser Google Maps et Places Service
+        function initApp() {
+            log('✅ Google Maps chargé', 'success');
+
+            // Créer une carte invisible juste pour le service
+            const mapDiv = document.createElement('div');
+            map = new google.maps.Map(mapDiv, {
+                center: CENTER,
+                zoom: 14
+            });
+
+            placesService = new google.maps.places.PlacesService(map);
+            log('✅ Places Service initialisé', 'success');
+
+            // Activer le bouton
+            const startBtn = document.getElementById('startBtn');
+            startBtn.disabled = false;
+            startBtn.innerHTML = '<i class="fas fa-play mr-2"></i>Démarrer l\'import automatique';
+        }
 
         function log(message, type = 'info') {
             const console = document.getElementById('console');
@@ -131,47 +162,65 @@
             document.getElementById('totalSaved').textContent = totalSaved;
         }
 
-        async function searchPlaces(type) {
-            const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${CENTER.lat},${CENTER.lng}&radius=${RADIUS}&type=${type}&key=${GOOGLE_API_KEY}`;
+        // Rechercher des lieux avec Places Service
+        function searchPlaces(type) {
+            return new Promise((resolve) => {
+                const request = {
+                    location: CENTER,
+                    radius: RADIUS,
+                    type: type
+                };
 
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (data.status === 'OK') {
-                    return data.results || [];
-                } else {
-                    log(`⚠️  ${type}: ${data.status}`, 'warning');
-                    return [];
-                }
-            } catch (error) {
-                log(`❌ Erreur ${type}: ${error.message}`, 'error');
-                return [];
-            }
+                placesService.nearbySearch(request, (results, status) => {
+                    if (status === google.maps.places.PlacesServiceStatus.OK) {
+                        resolve(results || []);
+                    } else if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+                        log(`  ℹ️  ${type}: Aucun résultat`, 'info');
+                        resolve([]);
+                    } else {
+                        log(`  ⚠️  ${type}: ${status}`, 'warning');
+                        resolve([]);
+                    }
+                });
+            });
         }
 
-        async function getPlaceDetails(placeId) {
-            const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,formatted_address,formatted_phone_number,website,opening_hours,geometry,types,photos,rating,user_ratings_total&key=${GOOGLE_API_KEY}`;
+        // Obtenir les détails d'un lieu
+        function getPlaceDetails(placeId) {
+            return new Promise((resolve) => {
+                const request = {
+                    placeId: placeId,
+                    fields: ['name', 'formatted_address', 'formatted_phone_number', 'website',
+                             'opening_hours', 'geometry', 'types', 'photos', 'rating', 'user_ratings_total']
+                };
 
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (data.status === 'OK') {
-                    return data.result;
-                }
-                return null;
-            } catch (error) {
-                return null;
-            }
+                placesService.getDetails(request, (place, status) => {
+                    if (status === google.maps.places.PlacesServiceStatus.OK) {
+                        resolve(place);
+                    } else {
+                        resolve(null);
+                    }
+                });
+            });
         }
 
         function createActorData(place, category) {
-            const photo = place.photos && place.photos[0]
-                ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${place.photos[0].photo_reference}&key=${GOOGLE_API_KEY}`
-                : 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
+            // Gérer les photos
+            let photo = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
+            if (place.photos && place.photos[0]) {
+                photo = place.photos[0].getUrl({ maxWidth: 800 });
+            }
 
+            // Gérer les horaires
             const horaires = place.opening_hours?.weekday_text?.join(', ') || 'Horaires non renseignés';
+
+            // Gérer la géolocalisation
+            const lat = typeof place.geometry.location.lat === 'function'
+                ? place.geometry.location.lat()
+                : place.geometry.location.lat;
+            const lng = typeof place.geometry.location.lng === 'function'
+                ? place.geometry.location.lng()
+                : place.geometry.location.lng;
 
             return {
                 id: place.place_id,
@@ -184,8 +233,8 @@
                 website: place.website || '',
                 horaires: horaires,
                 specialites: place.types?.slice(0, 5) || [],
-                lat: place.geometry.location.lat,
-                lng: place.geometry.location.lng,
+                lat: lat,
+                lng: lng,
                 image: photo,
                 rating: place.rating || 0,
                 reviews_count: place.user_ratings_total || 0
