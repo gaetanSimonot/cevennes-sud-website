@@ -279,8 +279,8 @@ Pour chaque événement, extrais les données suivantes :
 3. **description** : Description détaillée et attrayante de l'événement (2-3 phrases, reformulée de manière professionnelle)
 4. **date** : Date au format YYYY-MM-DD
 5. **time** : Heure au format HH:MM (24h)
-6. **location** : Lieu précis de l'événement
-7. **address** : Adresse complète
+6. **location** : Lieu précis de l'événement (nom du lieu)
+7. **address** : Adresse COMPLÈTE et PRÉCISE avec numéro, rue, code postal et ville (ex: "590 Route du Pont de la Croix, 30120 Le Vigan"). TRÈS IMPORTANT pour la géolocalisation sur la carte.
 8. **price** : Prix (ex: "Gratuit", "10€", "5-15€")
 9. **organizer** : Organisateur de l'événement
 10. **contact** : Email ou téléphone de contact
@@ -397,21 +397,48 @@ Si une information n'est pas disponible, utilise une chaîne vide "". **N'inclus
 
                 log(`✅ ${eventsArray.length} événement(s) détecté(s) !`, 'success');
 
-                // Traiter chaque événement
-                eventsArray.forEach((eventData, index) => {
+                // Géocoder les adresses pour obtenir les coordonnées
+                log('🗺️ Géocodage des adresses en cours...', 'info');
+
+                const geocodePromises = eventsArray.map(async (eventData, index) => {
                     // Ajouter l'ID unique
                     eventData.id = Date.now() + index;
 
                     // NE PAS inclure les images base64 - utiliser des URLs
                     eventData.image = 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
 
-                    // Ajouter coordonnées par défaut (Ganges)
-                    eventData.lat = 43.9339;
-                    eventData.lng = 3.7086;
+                    // Géocoder l'adresse si elle existe
+                    if (eventData.address && eventData.address.trim() !== '') {
+                        try {
+                            const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(eventData.address)}&key=${CONFIG.GOOGLE_MAPS_API_KEY}`;
+                            const geoResponse = await fetch(geocodeUrl);
+                            const geoData = await geoResponse.json();
 
-                    log(`📅 ${eventData.title}`, 'info');
-                    log(`📍 ${eventData.location}`, 'info');
+                            if (geoData.results && geoData.results.length > 0) {
+                                eventData.lat = geoData.results[0].geometry.location.lat;
+                                eventData.lng = geoData.results[0].geometry.location.lng;
+                                log(`✓ ${eventData.title} : ${eventData.lat.toFixed(4)}, ${eventData.lng.toFixed(4)}`, 'success');
+                            } else {
+                                // Coordonnées par défaut (Ganges)
+                                eventData.lat = 43.9339;
+                                eventData.lng = 3.7086;
+                                log(`⚠ ${eventData.title} : adresse non trouvée, coordonnées par défaut`, 'info');
+                            }
+                        } catch (error) {
+                            // Coordonnées par défaut en cas d'erreur
+                            eventData.lat = 43.9339;
+                            eventData.lng = 3.7086;
+                            log(`⚠ ${eventData.title} : erreur géocodage`, 'info');
+                        }
+                    } else {
+                        // Pas d'adresse : coordonnées par défaut (Ganges)
+                        eventData.lat = 43.9339;
+                        eventData.lng = 3.7086;
+                        log(`⚠ ${eventData.title} : pas d'adresse`, 'info');
+                    }
                 });
+
+                await Promise.all(geocodePromises);
 
                 generatedEvent = eventsArray;
 
