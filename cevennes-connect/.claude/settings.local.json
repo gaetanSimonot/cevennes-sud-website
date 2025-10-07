@@ -6,7 +6,10 @@
       "Bash(git push:*)",
       "Bash(git commit:*)",
       "Bash(python:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "WebFetch(domain:snazzymaps.com)",
+      "Bash(git ls-tree:*)",
+      "Bash(curl -s https://cevennes-sud-website.vercel.app/evenements.html)"
     ],
     "deny": [],
     "ask": []

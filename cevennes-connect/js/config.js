@@ -3,5 +3,7 @@ const CONFIG = {
       GOOGLE_PLACES_API_KEY: 'AIzaSyBe9S2a8Afc67NtS9UmvEwOoLt3BFne0eI',
       GITHUB_TOKEN: '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',
       GITHUB_REPO: 'gaetanSimonot/cevennes-sud-website',
-      FILE_PATH: 'cevennes-connect/data/actors-data.json'
+      FILE_PATH: 'cevennes-connect/data/actors-data.json',
+      // OPENAI_API_KEY est maintenant sécurisée côté serveur (Vercel Environment Variables)
+      EVENTS_FILE_PATH: 'cevennes-connect/data/events-data.json'
   };

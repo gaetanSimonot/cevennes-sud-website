@@ -166,7 +166,7 @@
     </div>
 
     <script>
-        const OPENAI_API_KEY = CONFIG.OPENAI_API_KEY;
+        // Plus besoin de la clé OpenAI ici, elle est sécurisée côté serveur !
         let uploadedImages = [];
         let generatedEvent = null;
 
@@ -320,13 +320,12 @@ Si une information n'est pas disponible, utilise une chaîne vide "".`;
                     });
                 }
 
-                // Appeler l'API OpenAI
+                // Appeler notre API sécurisée (pas directement OpenAI)
                 log('⏳ Analyse en cours avec GPT-4 Vision...', 'info');
-                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                const response = await fetch('/api/openai', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${OPENAI_API_KEY}`
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         model: 'gpt-4o',
