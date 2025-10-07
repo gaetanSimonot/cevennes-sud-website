@@ -16,8 +16,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&libraries=marker&callback=Function.prototype" defer></script>
 
     <style>
         * {
@@ -577,9 +577,6 @@
         </div>
     </footer>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     <script>
         // Sample data for local actors
         const actorsData = [
@@ -735,11 +732,20 @@
 
         // Initialize map
         function initMap() {
-            map = L.map('map').setView([43.9339, 3.7086], 14);
+            if (typeof google === 'undefined' || !google.maps) {
+                console.log('Google Maps en attente de chargement...');
+                setTimeout(initMap, 100);
+                return;
+            }
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
+            const mapElement = document.getElementById('map');
+            map = new google.maps.Map(mapElement, {
+                center: { lat: 43.9339, lng: 3.7086 },
+                zoom: 14,
+                mapTypeControl: true,
+                streetViewControl: true,
+                fullscreenControl: true
+            });
 
             // Add markers
             updateMapMarkers();
@@ -747,15 +753,23 @@
 
         // Update map markers
         function updateMapMarkers() {
+            if (!map) return;
+
             // Clear existing markers
-            markers.forEach(marker => map.removeLayer(marker));
+            markers.forEach(marker => marker.setMap(null));
             markers = [];
+
+            const infoWindow = new google.maps.InfoWindow();
 
             // Add new markers
             filteredActors.forEach(actor => {
-                const marker = L.marker([actor.lat, actor.lng]);
+                const marker = new google.maps.Marker({
+                    position: { lat: actor.lat, lng: actor.lng },
+                    map: map,
+                    title: actor.name
+                });
 
-                marker.bindPopup(`
+                const contentString = `
                     <div class="p-4 min-w-64">
                         <div class="flex items-center mb-3">
                             <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center mr-3">
@@ -778,10 +792,14 @@
                             </div>
                         </div>
                     </div>
-                `);
+                `;
+
+                marker.addListener('click', () => {
+                    infoWindow.setContent(contentString);
+                    infoWindow.open(map, marker);
+                });
 
                 markers.push(marker);
-                marker.addTo(map);
             });
         }
 
@@ -957,11 +975,17 @@
 
         // Map functions
         function centerMap() {
-            if (filteredActors.length > 0) {
-                const group = new L.featureGroup(markers);
-                map.fitBounds(group.getBounds().pad(0.1));
+            if (!map) return;
+
+            if (filteredActors.length > 0 && markers.length > 0) {
+                const bounds = new google.maps.LatLngBounds();
+                markers.forEach(marker => {
+                    bounds.extend(marker.getPosition());
+                });
+                map.fitBounds(bounds);
             } else {
-                map.setView([43.9339, 3.7086], 14);
+                map.setCenter({ lat: 43.9339, lng: 3.7086 });
+                map.setZoom(14);
             }
         }
 
@@ -974,7 +998,9 @@
                 mapContainer.classList.remove('map-container');
                 mapContainer.classList.add('fixed', 'inset-0', 'z-50', 'h-screen');
             }
-            setTimeout(() => map.invalidateSize(), 100);
+            setTimeout(() => {
+                if (map) google.maps.event.trigger(map, 'resize');
+            }, 100);
         }
 
         // Scroll animations
