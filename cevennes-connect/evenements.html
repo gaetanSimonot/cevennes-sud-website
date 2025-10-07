@@ -16,8 +16,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&libraries=marker&callback=Function.prototype" defer></script>
 
     <style>
         * {
@@ -594,9 +594,6 @@
         </div>
     </footer>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     <script>
         // Sample events data
         const eventsData = [
@@ -727,24 +724,41 @@
 
         // Initialize map
         function initMap() {
-            map = L.map('map').setView([43.9339, 3.7086], 13);
+            if (typeof google === 'undefined' || !google.maps) {
+                console.log('Google Maps en attente de chargement...');
+                setTimeout(initMap, 100);
+                return;
+            }
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
+            const mapElement = document.getElementById('map');
+            map = new google.maps.Map(mapElement, {
+                center: { lat: 43.9339, lng: 3.7086 },
+                zoom: 13,
+                mapTypeControl: true,
+                streetViewControl: true,
+                fullscreenControl: true
+            });
 
             updateMapMarkers();
         }
 
         // Update map markers
         function updateMapMarkers() {
-            markers.forEach(marker => map.removeLayer(marker));
+            if (!map) return;
+
+            markers.forEach(marker => marker.setMap(null));
             markers = [];
 
-            filteredEvents.forEach(event => {
-                const marker = L.marker([event.lat, event.lng]);
+            const infoWindow = new google.maps.InfoWindow();
 
-                marker.bindPopup(`
+            filteredEvents.forEach(event => {
+                const marker = new google.maps.Marker({
+                    position: { lat: event.lat, lng: event.lng },
+                    map: map,
+                    title: event.title
+                });
+
+                const contentString = `
                     <div class="p-4 min-w-64">
                         <div class="flex items-center mb-3">
                             <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center mr-3">
@@ -775,10 +789,14 @@
                             Organisé par ${event.organizer}
                         </div>
                     </div>
-                `);
+                `;
+
+                marker.addListener('click', () => {
+                    infoWindow.setContent(contentString);
+                    infoWindow.open(map, marker);
+                });
 
                 markers.push(marker);
-                marker.addTo(map);
             });
         }
 
