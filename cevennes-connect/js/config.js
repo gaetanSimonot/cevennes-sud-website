@@ -4,6 +4,7 @@ const CONFIG = {
       GITHUB_TOKEN: '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',
       GITHUB_REPO: 'gaetanSimonot/cevennes-sud-website',
       FILE_PATH: 'cevennes-connect/data/actors-data.json',
-      // OPENAI_API_KEY est maintenant sécurisée côté serveur (Vercel Environment Variables)
+      // OPENAI_API_KEY : utilisée uniquement en local, en production elle est dans Vercel Environment Variables
+      // OPENAI_API_KEY: 'VOTRE_CLE_ICI',
       EVENTS_FILE_PATH: 'cevennes-connect/data/events-data.json'
   };
