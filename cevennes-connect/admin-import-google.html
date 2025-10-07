@@ -82,7 +82,7 @@
             <div class="bg-purple-50 p-6 rounded-xl text-center">
                 <i class="fas fa-layer-group text-4xl text-purple-600 mb-3"></i>
                 <div class="text-3xl font-bold text-gray-900" id="categories">6</div>
-                <div class="text-sm text-gray-600">Catégories</div>
+                <div class="text-sm text-gray-600">Catégories (complètes)</div>
             </div>
         </div>
 
@@ -115,13 +115,12 @@
         const RADIUS = 5000;
 
         const CATEGORIES_MAP = {
-            commerce: ['store'],
-            restaurant: ['restaurant']
-            // TEST: seulement 2 catégories pour aller vite
-            // artisan: ['plumber', 'electrician', 'locksmith', 'roofing_contractor'],
-            // therapeute: ['spa', 'beauty_salon', 'hair_care', 'physiotherapist'],
-            // service: ['car_repair', 'bank', 'gas_station', 'laundry'],
-            // association: ['community_center', 'local_government_office']
+            commerce: ['store', 'shopping_mall', 'clothing_store', 'electronics_store', 'furniture_store', 'home_goods_store', 'jewelry_store', 'shoe_store', 'florist', 'book_store'],
+            restaurant: ['restaurant', 'cafe', 'bar', 'meal_takeaway', 'meal_delivery', 'bakery', 'food'],
+            artisan: ['plumber', 'electrician', 'locksmith', 'roofing_contractor', 'painter', 'carpenter', 'general_contractor', 'moving_company'],
+            therapeute: ['spa', 'beauty_salon', 'hair_care', 'physiotherapist', 'doctor', 'dentist', 'pharmacy'],
+            service: ['car_repair', 'car_wash', 'bank', 'atm', 'gas_station', 'laundry', 'real_estate_agency', 'insurance_agency', 'lawyer', 'accounting'],
+            association: ['community_center', 'local_government_office', 'library', 'school']
         };
 
         let totalFound = 0;
