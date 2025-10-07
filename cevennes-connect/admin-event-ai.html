@@ -248,7 +248,7 @@
         }
 
         async function analyzeEvent() {
-            const textInput = document.getElementById('textInput').value;
+            let textInput = document.getElementById('textInput').value;
             const analyzeBtn = document.getElementById('analyzeBtn');
 
             if (uploadedImages.length === 0 && !textInput.trim()) {
@@ -260,6 +260,34 @@
             analyzeBtn.disabled = true;
             analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Analyse en cours...';
             log('\n🚀 Démarrage de l\'analyse avec OpenAI GPT-4 Vision...', 'info');
+
+            // Détecter si le texte contient une URL
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            const urls = textInput.match(urlRegex);
+
+            if (urls && urls.length > 0) {
+                log('🔗 URL détectée, récupération du contenu...', 'info');
+                try {
+                    // Utiliser un service CORS proxy pour récupérer le contenu
+                    const url = urls[0];
+                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+                    const response = await fetch(proxyUrl);
+                    const data = await response.json();
+
+                    if (data.contents) {
+                        // Extraire le texte du HTML
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(data.contents, 'text/html');
+                        const pageText = doc.body.innerText || doc.body.textContent;
+
+                        // Limiter à 3000 caractères pour ne pas dépasser les limites
+                        textInput = pageText.substring(0, 3000);
+                        log(`✓ Contenu récupéré (${pageText.length} caractères)`, 'success');
+                    }
+                } catch (error) {
+                    log('⚠ Impossible de récupérer le contenu de l\'URL, utilisation du texte fourni', 'info');
+                }
+            }
 
             try {
                 // Préparer le prompt
