@@ -267,7 +267,10 @@
 
 Analyse les informations fournies (images, texte, liens) et détecte TOUS les événements distincts présents.
 
-**IMPORTANT** : Si tu détectes plusieurs événements différents, retourne un TABLEAU d'objets JSON. Si un seul événement, retourne un tableau avec un seul objet.
+**RÈGLES IMPORTANTES** :
+- Si tu détectes plusieurs événements différents, retourne un TABLEAU d'objets JSON. Si un seul événement, retourne un tableau avec un seul objet.
+- **NE CRÉE PAS DE DOUBLONS** : Si deux événements ont la même date ET la même adresse/lieu, c'est le MÊME événement. N'en crée qu'un seul.
+- Fusionne les informations si tu détectes un doublon.
 
 Pour chaque événement, extrais les données suivantes :
 
