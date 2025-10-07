@@ -280,7 +280,7 @@ Pour chaque événement, extrais les données suivantes :
 4. **date** : Date au format YYYY-MM-DD
 5. **time** : Heure au format HH:MM (24h)
 6. **location** : Lieu précis de l'événement (nom du lieu)
-7. **address** : Adresse COMPLÈTE et PRÉCISE avec numéro, rue, code postal et ville (ex: "590 Route du Pont de la Croix, 30120 Le Vigan"). TRÈS IMPORTANT pour la géolocalisation sur la carte.
+7. **address** : Adresse la plus COMPLÈTE possible. **PRIORITÉ ABSOLUE : LA VILLE doit TOUJOURS être présente** (ex: "Le Vigan", "Ganges", "Saint-Hippolyte-du-Fort"). Si tu as l'adresse complète avec numéro et rue, c'est parfait (ex: "590 Route du Pont de la Croix, 30120 Le Vigan"). Sinon, mets AU MINIMUM la ville avec le code postal si disponible (ex: "30120 Le Vigan" ou juste "Le Vigan"). **Sans la ville, l'événement ne pourra pas être localisé sur la carte !**
 8. **price** : Prix (ex: "Gratuit", "10€", "5-15€")
 9. **organizer** : Organisateur de l'événement
 10. **contact** : Email ou téléphone de contact
@@ -410,19 +410,25 @@ Si une information n'est pas disponible, utilise une chaîne vide "". **N'inclus
                     // Géocoder l'adresse si elle existe
                     if (eventData.address && eventData.address.trim() !== '') {
                         try {
-                            const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(eventData.address)}&key=${CONFIG.GOOGLE_MAPS_API_KEY}`;
+                            // Ajouter "France, Cévennes" pour aider la recherche
+                            const searchAddress = `${eventData.address}, Cévennes, France`;
+                            const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(searchAddress)}&key=${CONFIG.GOOGLE_MAPS_API_KEY}`;
                             const geoResponse = await fetch(geocodeUrl);
                             const geoData = await geoResponse.json();
 
                             if (geoData.results && geoData.results.length > 0) {
                                 eventData.lat = geoData.results[0].geometry.location.lat;
                                 eventData.lng = geoData.results[0].geometry.location.lng;
-                                log(`✓ ${eventData.title} : ${eventData.lat.toFixed(4)}, ${eventData.lng.toFixed(4)}`, 'success');
+                                const foundLocation = geoData.results[0].formatted_address;
+                                log(`✓ ${eventData.title}`, 'success');
+                                log(`  → ${foundLocation}`, 'info');
+                                log(`  → Coordonnées : ${eventData.lat.toFixed(4)}, ${eventData.lng.toFixed(4)}`, 'success');
                             } else {
                                 // Coordonnées par défaut (Ganges)
                                 eventData.lat = 43.9339;
                                 eventData.lng = 3.7086;
-                                log(`⚠ ${eventData.title} : adresse non trouvée, coordonnées par défaut`, 'info');
+                                log(`⚠ ${eventData.title} : adresse "${eventData.address}" non trouvée`, 'info');
+                                log(`  → Utilisation coordonnées Ganges par défaut`, 'info');
                             }
                         } catch (error) {
                             // Coordonnées par défaut en cas d'erreur
@@ -434,7 +440,7 @@ Si une information n'est pas disponible, utilise une chaîne vide "". **N'inclus
                         // Pas d'adresse : coordonnées par défaut (Ganges)
                         eventData.lat = 43.9339;
                         eventData.lng = 3.7086;
-                        log(`⚠ ${eventData.title} : pas d'adresse`, 'info');
+                        log(`⚠ ${eventData.title} : aucune adresse fournie`, 'info');
                     }
                 });
 
