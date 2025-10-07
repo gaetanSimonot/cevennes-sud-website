@@ -20,7 +20,8 @@
       "lng": 3.7064085,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2dfBxLbii0ywXircIHd2vXihl5OPMe3fTtrtdGmxERmRzZlh6BW_LpbKZCSj8PjQN-NKGC1mTHjkq9ekb9CDxTRwANMekD0Ar_ZugOHcocTFxgY-4Ko96YuFHdxH77AJlX6IX1hfdyNOelmVmb2QUUbVCXyDjWa4xbPC-DKY2lEBswcIRVydhhFZcyItTjA_8YURabS-6dDRNnF0mcbN4_YGHiP3VejJsxRSF5viJ522ny_OsHhIKTN3HtWP4IyvR-2CowdgVykQinjU0AplHwFoEibXfposjD_xS1WPWN_1w&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=57542",
       "rating": 4.4,
-      "reviews_count": 7
+      "reviews_count": 7,
+      "premium_level": "standard"
     },
     {
       "name": "PIALOT MOTOCULTURE - GANGES",
@@ -42,7 +43,8 @@
       "lng": 3.717792,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2dF8qpNvsUEZQlO-idatltem68GcYOwiK6bhBTm1FmyN1zs6llMhi0H4QEQEhGl6u3GSR7C1inuCZaOgri1D8Vy87lkAeEZWrIWXUKsNOKAOEE8avO9feBvmJ9B_g-IqcdIsP-CAxaVP94JQtOeOd8SDaBuGFXEGODY1oBMt-eo2Ddg3JZmDJFBUcSbXHtcRKiCXJohf-W4FYu8yA6xJ1KO15d-1Gr0okIZy21SvH-q1fLNmV8ghB1k67KH7ARKf1in5gNa5TLE4NpzQavrLT6wUpme__4tgepKV4cam8ve_Q&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=81692",
       "rating": 4.5,
-      "reviews_count": 102
+      "reviews_count": 102,
+      "premium_level": "standard"
     },
     {
       "name": "Eurl Noblebois",
@@ -64,7 +66,8 @@
       "lng": 3.7189874,
       "image": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
       "rating": 4.3,
-      "reviews_count": 6
+      "reviews_count": 6,
+      "premium_level": "standard"
     },
     {
       "name": "TEKSTYLE - Sérigraphie, Broderie et Impression de textiles personnalisés",
@@ -85,7 +88,8 @@
       "lng": 3.7200763,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2dpRvxL0FHEjo5N9BZKlVLyOLPhmR_f3d0qKzRpMnwUuuHYqqkMn83gHuQ_h-oMHoS83A0M01EVfxZlNPPY2sfzXGC__kzKLqxLSZZTZsXylH8j-Ze4DzHTpnGCYyvWB1vSEjEFwcQDO25yfZ9wx2UUdkYmt3Od3ym5ZAKbrhXg4AeUkuqvxxm0oUxrZOVhddbfkqWQ57phLmNlMqPIhId-T5nGwiTfXYExmVOvv0GEe-scPvWumieEQPMiPwD7yDa959Ihd3MX9U5uV_oJ6zhZQmt5ch-ib_VdlmLvsgyrQA&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=91938",
       "rating": 4.4,
-      "reviews_count": 17
+      "reviews_count": 17,
+      "premium_level": "standard"
     },
     {
       "name": "Solandis Sarl",
@@ -105,7 +109,8 @@
       "lng": 3.716316,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2cI6nCKd4z5aIQ6jppaZoK0ySIWWHpncHuNOVvLiLm_0BJLjm5ITsLEl1wl7Zv-L3PGBjUh5Mv52Fl5j1yOR1-o5_VsesmtMY_3dHOJtgNxI6pVb1m1fu_KKOZdgiZQMmyvTyb6hlXOkqm8Vndrcn7xy6j89GsNJjCtdZ-GEJNCZsNr1lmjovJJk_JyXeWd3uPnzXUHG0OLeNJpslwO-t_iOKD_4UJUecA1hT6KcuT57N5Xusegjh_UuWPl7t34JCqhaE5U5aljeL7ozzgrLD391q5QuIYn9zsKIONV5lD9Dw&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=58349",
       "rating": 5,
-      "reviews_count": 6
+      "reviews_count": 6,
+      "premium_level": "standard"
     },
     {
       "name": "VOTRE VUE Ganges, Opticien",
@@ -126,7 +131,8 @@
       "lng": 3.708357599999999,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2dkEVHFGNOpIJlWSz4lbyhrFkXgAiZ5dLpgWgR04TUODze7vRlM9zsFD1iDuN1hxLdjqJpbH33H3uNjlGZ4RdSoJ2tNHidmzAv5eoo0llBxDt7U7TfgS4X9vzRnfHXEfVNyO9BDUCeg29kt5lRZEx2OIS7cMKzmYgT5utuPon2tX3rUs632hBhRS_nBMT3wcXjAcFRUxdQj6K4BT503UzEcDe2XDQ8N61DVekn3a_UETwoxQ71-42U5v4Qmre_UE5645uO3wyIPt1lviGAY3J0fmnlfP1ane4TQU4_kylTsZg&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=69365",
       "rating": 5,
-      "reviews_count": 15
+      "reviews_count": 15,
+      "premium_level": "standard"
     },
     {
       "name": "Pompes funèbres Roc Eclerc Ganges",
@@ -148,7 +154,8 @@
       "lng": 3.718897,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2fTj9_YblqsC9vGehTd9X3w5yoGwCizjrsQFh4UgqOrkWKDeACsr1B7kLpOwrRRJXclX4CRJ_O902bUP8VajMrxA5jicKJS8z99KjoDhWy188rph_9HFPrbKKAcG6cEnLMES3jsQsny5oTPr7bGUPaQo4tc0AfR7IiG5SuoL3Avp4SML-wfR9EsjXHQ10auofa8ZYB5-vfofueFlM0Y4Z_3K6jUArKQv6gJiRlVZ68UvWG1EcsDhd4ku45BgVn_NMZtNJ9IIe_rbgMRxHyldY1X_MOA7MgZ6sVMAPapRovhJA&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=13671",
       "rating": 4.8,
-      "reviews_count": 26
+      "reviews_count": 26,
+      "premium_level": "standard"
     },
     {
       "name": "Au Pied Mignon",
@@ -169,7 +176,8 @@
       "lng": 3.7087788,
       "image": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
       "rating": 4.6,
-      "reviews_count": 17
+      "reviews_count": 17,
+      "premium_level": "standard"
     },
     {
       "name": "Opticien Ganges - Atol mon Opticien",
@@ -190,7 +198,8 @@
       "lng": 3.705788,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2cOJaxQCHOZsJGHHeHQuBU3ehhkU5yj3rtNZvyrKo-J7WxOcQHnCrcZg9Ju6HFnJLJcGlUb3OHdbjrdZjgttcWz0WqIrAbFFrQl-5E-3qjLGZrjiPQ_Pi9fNeDusil3dFJroaj-X3om69Zn3-_gfRtyEvshqLw7EMSYvxispUKbJmoFOCQjxZWT4Xl7c5e54oUmtSDtbEN5fJudkkbYq0jW3n2YHy77hJyYGRT2LNr0pS4F9dl8xktEI8sWH50m30y5up2-AVRcfey-cXWs8vrlnoqbTjUfh_C8rZ2t32_oPw&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=24538",
       "rating": 4.9,
-      "reviews_count": 176
+      "reviews_count": 176,
+      "premium_level": "standard"
     },
     {
       "name": "La Gravette de Corconne",
@@ -212,7 +221,8 @@
       "lng": 3.7132437,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2ehxsUPOCAxGKGiPgq886drjS6WIFy3OzOapGYcMzQeobcoyj05uVy2V52ZqchOwXrflr4-79CEyQnFBQ0N5jfdegHMG0dkRkKIY2D1E6epWNVsW17O_A4eyyL93y0sx-TBRM1vPCdLTeQSq2A_yHNk2qi5JO44uBrpmm1j6MnXiHJhrV1qC4i1p-_lDXPSSZdjv6lEkj45HPvdSGMxPRBNmIjNOthXJ7FPTZzD6Q__gEO-hRSofKORFDxMhc8hIfErnMtE33RUlkI7C-pwKhmw53OP4KVZVoDrY1wf2YbtV0OvDWxUEXxx9NUoLzbAK7JupY4SYszsHoRx7edQVyAQbkiclp6hzUCZ9cUnHwp1Lz238MncmC5RLP3zwcciERPOuxD3XCq1qm36lLb-9asOS7-kL-vNIpbqRTdEkTzbVlk&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=113335",
       "rating": 4.9,
-      "reviews_count": 12
+      "reviews_count": 12,
+      "premium_level": "standard"
     },
     {
       "name": "euro miled",
@@ -234,7 +244,8 @@
       "lng": 3.706329199999999,
       "image": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
       "rating": 4,
-      "reviews_count": 3
+      "reviews_count": 3,
+      "premium_level": "standard"
     },
     {
       "name": "Aurieres",
@@ -255,7 +266,8 @@
       "lng": 3.7095573,
       "image": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
       "rating": 4.8,
-      "reviews_count": 19
+      "reviews_count": 19,
+      "premium_level": "standard"
     },
     {
       "name": "Écouter Voir Optique Mutualiste",
@@ -276,7 +288,8 @@
       "lng": 3.707874,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2dw4gkR8moFMNu_OVXdigrlZ4RJsw5ojwt63I_CWZcJ84vqNKPUA_ZWgBswkCGiQvqUuIJQNiu0cwBckkpjbv9kbYOj1YBW69PactWMrB1EkLDPudaHy5vGyeukm9TpDdSvO2W8ic3NzokYzv6CV451nvC7ApbyhmdTta-gydNGp9WGvaLZHVy7FMTQx-QEPcP4uClt_V-NWgrNqEzRwyx-TkvWrydit5iaC9uupkoiRH9WDVdkRI8DXYAKofAfOGiIr_Pf_WHgPCOXNhZ1CN3eH3rIAPV8z078C4F6ArQERg&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=582",
       "rating": 4.8,
-      "reviews_count": 33
+      "reviews_count": 33,
+      "premium_level": "standard"
     },
     {
       "name": "Martin Luc",
@@ -298,7 +311,8 @@
       "lng": 3.7041431,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2fCLGgxq8m6AiG1dcn2ryLR24-HybGati3zRpQDqPTzU4lxev84Kxt9SHrOQJ4zCpzqSdhsKB2TvnW-euQu-7X0I2hW-FRpUpz446sBc5OWfkSl4dbHT9e7hKsAv3Gg_euGo4O-2N9k8mCq-WxHMHKh9oQXCAZF-c7Gucdg5SCcma_IT1UlIgkhn1kOowZ_uC4-bTp_2zhMV00wm_t-GIB8AlE6ZVJnsZM2fmqmd304Ro0F1EYfjcYm2Yx8JjMn4agsUpEwq8XsfXxlx03323e-9RD-Clqe7PY8O05WrKRbW5lEQHiP3cR6GI7FFyjM2fMSn-tRnks4jvKxb2-aWiZPs21wHgljtXZZisfMBTehK_Tj06ZrNc9K-Ibgts89AREz-smLRkPDo0fVd3A-37p54uLXuWdRjsF4bdPF55E&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=103821",
       "rating": 4.9,
-      "reviews_count": 14
+      "reviews_count": 14,
+      "premium_level": "standard"
     },
     {
       "name": "Brûlerie des Cévennes",
@@ -319,7 +333,8 @@
       "lng": 3.7074742,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2fIbkWMzQPeUUl4Pn2HXRWhhNpXoqCPKTKC1KvxKViurLgeaJjjpdjN0ZbMCAMa6T1vXFr9M7fOOKGCEvIzDvmSCPm2wPJvTcE8ycvkwMeKWN5eAW3VqiWHnpVYeCh49C5OlvcS9hITU-jn7A_6BSzbbeXRwsiVCDvHtEFyJ8mPzRtnG2YVUcC0AcfgACT8-Ox4tbw4e7CNNSSvKzOYaLZXcB5DYDGLpILSOKbEpjZRhuiAk5qLkqqnr3ovYN1nmd5OE3JMSK4VhSgHHyRLcvLaJ_DffyNDs6mq2nNgb3ERR99jztS5wNOL6QLurXg1SmaFwKlpy-Vi3x-4OJBZme5UtUO8eoDI7gI4RcRzze9eCXVr_hP2SGFfFkHnato2xd1f9qbFdQbrpqa6AYjyAA0iZfAPlaz3cyOElg3ShnsRruRV&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=125120",
       "rating": 4.8,
-      "reviews_count": 49
+      "reviews_count": 49,
+      "premium_level": "standard"
     },
     {
       "name": "Mag Presse",
@@ -341,7 +356,8 @@
       "lng": 3.7095672,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2fHi2D0ae6402AYG48_z_yn2ucrJDa21fQYxV3kirsQZi6jcg4KpCSI4R2TsyXXBbBxsRjuxRyQU3ZUvwd5UvX8tKJDCxrWD-NXhX1LkvTgOVNvwICUWQSKmdt0vWaeynGwNwO3NIO9u1mXabV6gyuYD0kAAvA7RG21TaRCGce531F4zje5G9mvSnO3bGvsmU6D_8obBvWxRslVOcImS3Ssq4vDewm-B8PPw0ZFSwxWkCDE9fps24nV1HxGtzKtQs9xVx3Yv21Hxmto6W-hy7ApyrOtfrq8qbflqKDrK1eQ-XmI2tQXc3xCzZe3Wyk5C-l31dax51GKiD_NEZp5Ff8B9O0RKDaFgH-l9KDS97xpQNpnY9Ng75rWbb8r5AEZp01iMjEh0vsuakO2I-qDX2aXOffJSc-qS_OcpDh-B2c6iQ&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=119382",
       "rating": 4.3,
-      "reviews_count": 46
+      "reviews_count": 46,
+      "premium_level": "standard"
     },
     {
       "name": "Culture Sport",
@@ -362,7 +378,8 @@
       "lng": 3.7084585,
       "image": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
       "rating": 4.8,
-      "reviews_count": 28
+      "reviews_count": 28,
+      "premium_level": "standard"
     },
     {
       "name": "CVN store Ganges",
@@ -382,7 +399,8 @@
       "lng": 3.7081925,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2ehGX0HTw3OwFnQNB6_zxQzlFiosVGU-3FWZ_xd1euCHIPJsWpFUqIps_Th5CT0flNBqMDB0hEUE4OdA7NzlB3n0Yge9aW5_6PaoQFFuxo5Dil7hUo3Rtj1st6MczpkFKOc8U_c8mrXqnLHJU-h_S4pEWXahqudS9nKT04cV0DxG4v6KGdXiRhyhj3qgUkBY4KEv_48_4Je0bY6OcW2DfywrmHl9BMEnw35nTW1lC_m54OorX5DWir9phENQA9p4z0HJOtlgIHWIU0y_mLTYE-cpLJwlnr5WZ8J6cWUJwT4cTwe_xhF5wgh71NVMinr3K26Fupj78CwRHORXZ4IBhEr4d8-7YMjEAeg6CfhEx44Ut4CTQQXf3icvvYYPdTkAyF4R4h9xm-EgHvCcqwpynkHbkT_h0ZN07crha5sAQs&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=419",
       "rating": 4.2,
-      "reviews_count": 46
+      "reviews_count": 46,
+      "premium_level": "standard"
     },
     {
       "name": "Dora Bis",
@@ -404,7 +422,8 @@
       "lng": 3.7075703,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2de3WZgHuvhSETpHOq9UUpjqJp4u2U4NtG_L_H3jdkMXM7kEppB8_xVHhmTFdv6mzNuN2KuPiSW3IXTofNBGrgg5mR7JL95MzHex_0r8kGiYsGvbOEv3590tsl452WHeOinGs149Vt_j36H1HDunX8d1evfDaHBxtm2APF9CGgP1D22UczqG6N7sOYjj4KmK57Dwi0OnrMXOpZMTs5celf6xOxvi5TxTFVDvs1WSPHJTvKljvFHWGAMzEoM0dS5R3r_apythKPWLXx9iFHz0tl2VZBhTGppDZlMYdm154CqdjAmmslU8ZNSsl6L_5osnWToy88XJI2YQ3AkfIVn9qxPDzKRKhsuXMq6Qzs4-HZAeHBlzZaaw9n22GRsgddNOC0wDq-_x4za_1Bn3TIWCh5hr1oBU5ZXQGsUD7nGOYQ&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=54506",
       "rating": 4.6,
-      "reviews_count": 28
+      "reviews_count": 28,
+      "premium_level": "standard"
     },
     {
       "name": "E-LIQUIDE FR STORE GANGES CIGARETTE ELECTRONIQUE et CBD",
@@ -424,7 +443,8 @@
       "lng": 3.7084154,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2clYArdefJKew_2bk8eXk7hMwK0mzmurkJObPmt1tZ97ZHLVY3PbjRWp-7Asf9nYP_BSF5hfzazFMsh9LC_Cva0XcYbdWJ8s6MEuZGR7dgQABbeR_szJStCKNyuLTfzXz4E9dpSNWCcA3yzCFtzXPJ4rFMTlj7OIwQoVs8ETiumeo1TNPo_BnExI65ZyhucGBewHrp8Xtqrh7cG598BiumYOFydHg13FzSMNXAqQcO8mBOAwmP-Jnokc4LvTFd3ydOjSyQhSpL5x5NRYv-dG18DYqTwcX4oDHwAgFvIfCEVEg&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=70248",
       "rating": 4.2,
-      "reviews_count": 45
+      "reviews_count": 45,
+      "premium_level": "standard"
     }
   ],
   "restaurant": [
@@ -447,7 +467,8 @@
       "lng": 3.7151163,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2cXlQc5Iekkf5q5HbohEFev5YOaIMpf27ik5e6M3LbSTif2ky1TVsR0BViBeO_-kloJAI7cXPFNRVsIVlG2oU71kZ5_mt0L72fquv2OBITSMjwqHW4kpis9KS_-ZHhlBFk590edEecxEIE2ic4mX6PyBZySwHRuKseNfsm_VFSwaJELoTEeEOlVjoeknRejgshwP_b_sqmjPSqFw-mZpw3N3GLweuHt2pqABv8_n24fNHUejXbfBZsreCC2XIXhFukGRXvhKw_ZPazAvNYbnIxRVMnU13_0zLyeSXMyxzlN7A&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=18443",
       "rating": 4.6,
-      "reviews_count": 310
+      "reviews_count": 310,
+      "premium_level": "premium"
     },
     {
       "name": "L’éclipse 2",
@@ -468,7 +489,8 @@
       "lng": 3.709144,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2f3A-DQa_WDrar2zH1iY5UIMDEwFCYFVGrmxqsp1s_TL3Kn7ZIwrUlO6KfFOS6GngSFuLlSUnWmT5GBKz9SfWdOs4X-J_baWIKWExzjuWafMVAB44SQSII9-GmNcP5c0wJ2TM3ae8ZTA7JnxfnzMi6OcUCJKGWG13TYUfAizbXhqe6T2yHlbXiDgI6xZ9pof-X51JGDXO8Q1qTJ1WDPDfzZkYZwGZCe44SA1ixClyAU1NOUpGo8Go_G6ERh0iHRU8ujN5d5Bf_f-JLH5OZ4Sy7aC381w6ncWyWg3RnP6vVp1_5JDjfn_3I0DBoGlDAVFOOOnSRo_jqbbKrR4Ox91dKPXYvjZyaUNnzvlfkigfzfHBFXCqqsbJrAKCl2W1DMR7-k16WuBrphZCNmkwL4YBAq28AUHhyxyl5LfHytI6OmY_C_&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=48311",
       "rating": 3.3,
-      "reviews_count": 136
+      "reviews_count": 136,
+      "premium_level": "standard"
     },
     {
       "name": "Restaurant le XII",
@@ -489,7 +511,8 @@
       "lng": 3.7078954,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2ceJ934JPRw9oTxK22T6_erzV3GMMHPwah8fin2PWOcBNZygn7vFoTlvED05Ksz-64lEPaZTCsfWfpRMaKRuWxSJ_btwq0g-fEb82rVDhK1swATvilxEZHBzLWQgl_pRQkNBkE-YPJ231HUBqLHn4YAglQf9zshfdqnAqkcLEHVbTfVRIBil4Vhb9WqBgO0xHOjIKuelqqgZ-9MUlhKEcL1PSEjBPCFu536UOix836l-_K5dDXWDOmESXMei-XAERNvOHEc9hVzsfBb4A6q6crrv3L7nSS5VwaWNg-IsaV3jyYQC_RU5hWPLMkHlXSGy0u5SJSJCy771tOkpeJ_eUfC2S9hDVfxcvCEdb38oRMN0MxaexbEraRN4WQ3dXPyt7ekhZOduqfUvWie4qIB39TRChjSiy5CTFkVhXDgGPisdg&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=67270",
       "rating": 4.6,
-      "reviews_count": 544
+      "reviews_count": 544,
+      "premium_level": "mega-premium"
     },
     {
       "name": "Ô Saona Tea",
@@ -510,7 +533,8 @@
       "lng": 3.7093574,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2dk3CkDdbSTNUg9LuIR_7KosNRWJPqCugHF0nIVe_ofMHeitddfQgCKYUCiQoFFPFo2mVz61cgFG6LceCcGI_W5EFrVWCy9vJ4j4DwIQKI_XP_qUYbUO11DqCRUGgfugL8-widS7hxFSevMnutRn4udJ9Yf1xkSVZxVsl15Z1lbDc7WFh9CtUxC1H_uoU3SFaQ9gGhyigjhZto6-YhZHyvOK2r7fr3gyJ7exf1PNHrUPBwuh-sWZCd4j69labbfgaqtPIxfA0ypbbGw2NN0y4TPsFV9XVfGPcKJE6_Tkasgug&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=52134",
       "rating": 4.9,
-      "reviews_count": 102
+      "reviews_count": 102,
+      "premium_level": "standard"
     },
     {
       "name": "LES SAINS BONHEURS / restaurant / cave à vins / épicerie / fromagerie",
@@ -532,7 +556,8 @@
       "lng": 3.7367483,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2ceIZFWKhjJjCvWv5uu4dsBGbl8-7NUvF9Cq9DP2nbVP5AvqaRu1qtObE22lNIUxaEZqz2Z3zUqtj3LnLnsakcNYgzgh9whYFbyVOukAJhGV2X8_ZIS3l4MZc5m6JTxXaTF6_JjOs0rP3l7uuQMl_4Ipt2kG-AvkferC4jrTckpH5ilohgYmdruTgKeQHeAwMB1jB6OlhjQhXMPK0TyMbVBO7GiAVITHkaCVYnfviZ3jbisaDbKNcUom1J6lCTTLP3CElmeGU5Pb27NPbwy8_8uXlSptvDjw-vJCUcoeSbs-g&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=37649",
       "rating": 4.6,
-      "reviews_count": 584
+      "reviews_count": 584,
+      "premium_level": "standard"
     },
     {
       "name": "Chez Laurent et Cathy Pizzeria",
@@ -553,7 +578,8 @@
       "lng": 3.715717,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2eNpBpj3ls9wIIzMOqgTxhIaeQGMjXo-1QF9Dj5KIGCqql51XNmCZ0hvNo1wnEK1ncVwdQzkrd7AkdElgrNJzS5GewHXni0D3N1hyriesZLA-JuJab-H9z6KYCmN292wIPeTWmtpD9QTERmCT5qXo6mpfhwpt1Ve7JbDki-qN2974xpp3UYPa4nEcQY5Yz_yHyUGjEiZ-j6bZ9Bw_l7CoB28V4slm2K6kUQwGu0T6_9vWSyXELrKHimks_CZKYSUY2A_gbi4AZtpOLahiW9RPs5ddxtXTyckje3xBpwoQxcKKnS_gP_3KlYoCpcfLem7J7NE9djj5IhPVuWVcIRvkJlu5pXYqwEhDNs858-vm94SXgv3UuDWeKTkGEEX0o16gOBNuaikJViFeONwQbRjk_MqLiGIZe4xBO7s2XktDwY2QRO&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=6381",
       "rating": 4.5,
-      "reviews_count": 240
+      "reviews_count": 240,
+      "premium_level": "standard"
     },
     {
       "name": "Camping Isis en Cévennes",
@@ -575,7 +601,8 @@
       "lng": 3.6827029,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2eYbrxxoinG3JrrfggubGsbdN0WHC0EWif76ztDPOmuxB8UgVJBGyVt75MHc1AAKqnDaZ9WEtV6R4r1edmM_K5CvNReLdOtaWo5D1fXX6TFWpIxgTxomSKqLYHyxoHnX9B2TIWpG9-HLtTBktcEGyDMCNZUJF-yKT-BE3Rz6Lf6Vt9YS9ayJV30IPQFLcdW5xeOn4A76OSL1rl-aFxwcD7_iJ0HPNMEo8fxkQ3wqOpw7kG8cfIi1ErM72hdb471EXN_pDCLH1IJFDx3HBAGE4YmYZBklwfqg_uq47QX6zptAA&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=90040",
       "rating": 4,
-      "reviews_count": 468
+      "reviews_count": 468,
+      "premium_level": "standard"
     },
     {
       "name": "Restaurant",
@@ -597,7 +624,8 @@
       "lng": 3.7243676,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2fX8T4146mM1aTd7OBSFbrgqByFSmJ_E33uMeHeSVAf6AInFKIBGJhMmPrvV0lu1C-1fpFm-by1HuxEG-l87eFKBQZBKflz_OdrGyzG1dXZajJXBZgsm0bbChCdljtXm9hXaK0kwMP-J3rIsOy7XD6bDwpj4rcqus4vCDS7Sybr99idXi1pdMCMoaFoH934gb6QClaKcmtVWXEXIHnMVysOOXa8DMjW_mOp0URkQPikNZNE8HRvg_KHFtwjzavnzSDwiD5dLzx0xI9TSMFLEgQks0QGZ63uWtghR3It-MIPB2R9UlTfiCiHQQUE5IiPM46IIj9voh8_i9ToFta-ErBnZ4_ki_akuOQ9zQ_VFd9nliLTfJNP3FUDnPxADLP43CXvflhAusJKASTbexQ-SJEQ-TcCY2kpWjCav5f--bA&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=35643",
       "rating": 2.8,
-      "reviews_count": 623
+      "reviews_count": 623,
+      "premium_level": "standard"
     },
     {
       "name": "Le Cinq Pizza shop",
@@ -619,7 +647,8 @@
       "lng": 3.7083679,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2eTLH1HG-Ay8fwLDqX-9QEn4_izY7xkRxhYc4uE5kFF_Ul3ovXvCKTZMQndVIgMqG1o29PMPWSnEUQ-ucLadTx0dghn1EcB53i5a2VKSk0KRrthLQzKgGirP3Rc73gPYBnwnrkET8HP-nA4ObwijEgf2gSHqBIG1nSGDMvewhnjHAUeGqFVHpUmbKwxTyOcgOdX3EySnFRkO1TAl6HvT-RZUHEuztlGdscgP4kaSObAhn9gBey328HeXuoeb03dEM52703TiSiJyikmUKwevmSlqgkONhHI81-ozor3QMTZ3A&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=104502",
       "rating": 4.1,
-      "reviews_count": 117
+      "reviews_count": 117,
+      "premium_level": "standard"
     },
     {
       "name": "Le Snack de Ganges - Burgers et Sandwiches",
@@ -641,7 +670,8 @@
       "lng": 3.7085295,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2f6XidVx65Z1fFm5rxT98i8Ku80UBiUFfOArJ_lPDrNimDxMTRVa488RLTuR5fJ4E6Mu9CmzDZvLjJaBQS9rxmSO9LMJYhj6C3i8dQTeq1Dt0CNZB0flvSA1i5q6N76IkdDxHd69mWHRSIQppkzvxtcfRrqTZPrYLDm9BAY8Ihs-ZiohXu4CdaYgsnL6Fks8Iz265MRZKsO6IxU6xTM2X9KpCkf4RelZWFQa_67-Iu_MYQjeYZaD_11d6U9d_BaFpSFABpPIeDg7IVIKgmz2iDBFROE2I20BP0QOv2hBADoqQ&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=12080",
       "rating": 4,
-      "reviews_count": 174
+      "reviews_count": 174,
+      "premium_level": "standard"
     },
     {
       "name": "99 Street Food",
@@ -662,7 +692,8 @@
       "lng": 3.7090971,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2c_RmXm0fxlzD-PyFjmrz5hTT5J6a_Dp30ElW_fcOBRmunBcFRFxzAmfD9mtkECGqJiP00hLLtXelMd0i2t7eCcydgH4bn87PxRDFZxEybfR7GRPM4cEE0Hl5Qad6ZhTcC77jtyr31WMMaZT-TfL7E-GT-9Ty-aBOWMKFlOZ2oGaDc6mmFu6fEO_ISQWrKh7wfpoY-tnGcXN4SzuDHvMUOsjKef1aD-ouDd315kak1CeIJz2OwNDPOHV8evL2Jq1_Wx2gyQrtNDDCtU9cnkyv6EML_38Zb63Nait0B7EhY3fA&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=47712",
       "rating": 4.7,
-      "reviews_count": 118
+      "reviews_count": 118,
+      "premium_level": "standard"
     },
     {
       "name": "L'Authentique",
@@ -683,7 +714,8 @@
       "lng": 3.7092782,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2ehpkhhYkcNsRVFEBA1x4pGhqjTQlElL0krgjLZGW-FXgpH2YTUNrV7tczyXhMDu24Cwtz4hVyXUVaqxY9VgIYi6iU5D5a7UPcR10pMj6YqgFyCk80gQRB6txdM14mk8TVW__NTfmf1ajShf6gk7pwM7tOQ0CEjsPCbOxG98CTT7PCzjQts9Cp54zbc_wG0D0fqOjTa22fRB0oVWD-I8hZFYi5K2ppt9vhW8gJlDzNs426bC0fB7dc8zFxEdfobHi1iEFTZhVPql_CEghiqruG4Y53tXLuNWWBwtI2ZeK1tfpBB3789y_HtRIjKsEGb2HVge7e3LW9cQ8rGekythmc3pWADOQm7qggu493DhUOmonFZTLNkCZjwIZ3jCSXYPl_aSbxUvKJ90PMI94fLLt24oiyxZSWvGz0FpvEAb0XWxXF_&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=112338",
       "rating": 4.2,
-      "reviews_count": 332
+      "reviews_count": 332,
+      "premium_level": "standard"
     },
     {
       "name": "DELISS KING",
@@ -704,7 +736,8 @@
       "lng": 3.707814,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2fMucbjizcwqvqboKK88MiGqBe3lefqV-aO9vTX1PH_kt-gYJSaVljc7C2euSbwS1ZbP1jNPYq7SNG4V9SI3LZ1aPO0SlnMixdugp0oJi_5p7vKkbjg04r1Dgq9RLeFAvBE6IOog_DYRg-nvZZUMEpOF9XOJLiaoEQSRD4bKldf1HNV4siLVPNAyWtDC7BbEmaauwTcm077Z8f6uhzFXC0X05lQYMTsMu4kHa4mkh_9bu6JgFintjXYIWQiTYlQMIaO_Stqtu47srD34MOMZ3qoE1t41OVqMwQHaSNGEZu1oQ&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=77809",
       "rating": 4.8,
-      "reviews_count": 147
+      "reviews_count": 147,
+      "premium_level": "standard"
     },
     {
       "name": "Restaurant Brasserie DOLCE VITA",
@@ -726,7 +759,8 @@
       "lng": 3.7081895,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2egfrAzYEiULe4p1-TIHsO2SadKkw4f8PsmQLReAPjgfRJSfG80RX2N-MJmJvJJ-qDeY0uh1Yg42f9kJ_zHbzaSYu95kCSTE01tRzN1GeF5z5XgZV6Tl4NWjZATCJj9MkXTrFYOMWUJQyEnDC9EUtuMRkiH3NUyCklY-Elve110wHD8qTY8KqhglNXwkf8i3h-lDX0RozQ1fy-xoa3AiqseKHKfT6SPI27jFVvurI5STGJMt2ycFr_Fc9VqIH-ewEoYjIMTAONNrjMFFDAqP4Gl06bklWsdZw6b4bllqbVkjyZ3TTYTLqRmGKYgYY7mM8OsnTAf0E0aytMH95ugybqDqMuHFQuGNKDnbp8_m0-8i_KcXUpRH3QpwpvMeddovATKhfUpFMFt93R1KgJZ-3ydiS0LMr_DzfRuRYJOZx8Eqg&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=51686",
       "rating": 4.2,
-      "reviews_count": 214
+      "reviews_count": 214,
+      "premium_level": "standard"
     },
     {
       "name": "Molokai | sushis | poke bowl",
@@ -747,7 +781,8 @@
       "lng": 3.7077763,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2csk7H9qnNdI49qto951e-wHVoc8FVNGHCKentRtAJqtIqYdkNRdV0WnZceaJuQMdmKVNVicIf_wi6Me2b92eOlgrdI9c-gkXuVy1OuWrkPy-Ad9jJqTvUEYICvBe3ODpr7X8FxHNmvWso9lEI_rzgFXWmef3Iys7ySJ70YXy_7uIvX4nlQi-nzmxlTX6x89w2d_TigDKZ4aAgiwzqe2QMYy_UBvwcBvSG0V9CeR159hi6XiVqEJJJbQX9uRNjHx7o6Fwhm4abGE8WhLmab5xn461Rh-jN9gkthVz0iy_Ig5w&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=97639",
       "rating": 4.6,
-      "reviews_count": 82
+      "reviews_count": 82,
+      "premium_level": "standard"
     },
     {
       "name": "⛩️ Restaurant LE VIET - NAM ⛩️",
@@ -768,7 +803,8 @@
       "lng": 3.7081503,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2enrzVNmIFdv8IsdjkYPPRrKn3VBj3RCdn7AjKAQUeJerdjDRIfsuIoiuxi8NljvZCH3xzC_vRLiPOxDjIvblG4Yxcbvldr0Hu2b723vQF_5rjIDtut-rPyrxf7WV9MWsiihRvOiNm-RC6JppPuiaSdVzW1TEv7vuW9c_AAblFyXevnB3jyZIM1yk5VbXSBOxp47ozM_yIfRwkUrpf9s_8FBNcexwNPDDeJgWF8Ke_GEy54sqihRsrXvzdfIOCvkwqQORMO8Yr9qfpdCl9lfhUINRwlJl2N70eZuJBxUxRDXg&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=58235",
       "rating": 4.4,
-      "reviews_count": 370
+      "reviews_count": 370,
+      "premium_level": "standard"
     },
     {
       "name": "Restaurant Bar Brasserie de la Poste",
@@ -789,7 +825,8 @@
       "lng": 3.7084075,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2f46vDSPQPyk2PQk6_n7H8wobKfASCuuWs5I89-5VLYc9UhogG_KhvZHo9TrmzmANpHz6CLfP5QSIibFczWQAX7aRtMeXibB1e4h41rf4gqD7X8D5cGASZ1aLqvDaAvchhkBkGCe4adRzBMLAlKZMgMxaR1w2D9fdTTWBunAO42L-7pGrdnGAjf31lHCegOjPXXT5KlvbFkaYKu4OYp6Aq1ZEL-LBU1Mx1Amsq0p4HoSF-1ahER10tj68bhnh1TNd7VEXTIv7TRMFKXrtdkoeXdPaq81SZznTuHCwtORNlBSQ&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=54470",
       "rating": 4.3,
-      "reviews_count": 127
+      "reviews_count": 127,
+      "premium_level": "standard"
     },
     {
       "name": "Milonga cave à vins",
@@ -811,7 +848,8 @@
       "lng": 3.7079547,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2dhHXn-2v_S65kfTVmxAot8s33-XSvqUtl8ZIb0taOLg2mFp1xinW8w8ON8RWzpaKSXccPYprJgf4fIZF-savbvqfePQuw04u6F1F65xFXa58Z8sB0-z91H88vt4u_lDFOyrccBLvuBJfpf55mavIRAcpzFR8tVRPnepcz21L0cWev3x2064k5EXfx75UczMuZ0k3axbmpm8RO9AZthk2bPwLYEqri_n1wmhr_j-aDP5ihkjnP6WBb2cP0T1BI2YTQqzmYAqkYJIz1ouxoOjUdrIyuEYMAjneTQR7zibNooYQ&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=78393",
       "rating": 4.8,
-      "reviews_count": 21
+      "reviews_count": 21,
+      "premium_level": "standard"
     },
     {
       "name": "Restaurant crêperie la rencontre",
@@ -832,7 +870,8 @@
       "lng": 3.7103764,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2fA1KLbS9Cl8yGuxMFvm4_vVh64L_VzoWLyLBXS8jKOcATe8V-j5N3zP47FjpPXMm9UVXgjRXn2HilqPWzMjsNnv4fR0fiqgtked0W7E9L946kt82e9PcRPk02VRvrJEc8UDdZpjOmVUg4xOTBXHx0r7o7C-jnt6IeU_h6fIsRN5GlUeOke8g15-MLpzOyN1bmk7XIyqbzOMvm6_1_TkAMiqi8crS4ZqGlmjxUk6JV0Iti-3NpbNptdzyGnwkg1Gs3TFC51ZKnmvTGMewxgGI4YIdovcFWxxkS5saOaqzofZg&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=96118",
       "rating": 4.6,
-      "reviews_count": 225
+      "reviews_count": 225,
+      "premium_level": "standard"
     },
     {
       "name": "Restaurant Le Cévenol Burger et Cuisine",
@@ -853,7 +892,8 @@
       "lng": 3.7102927,
       "image": "https://maps.googleapis.com/maps/api/place/js/PhotoService.GetPhoto?1sAciIO2fNaCAeE1qX1RQoVVaKu0fdhfRANSuDrcExmzl-Fcy2zn0LeoPDX6bAUk2DQNds2gMFYxvNc4dCsTrR7KD_-JQQQ-Lm1M6jDfD4MqjtTWlQ4-JK_LUn0iTGQrJYbKUvlEKSCogj-bdma0q1dY645qxMIZVAioLpgW_P30KEeDeAbRdo4jV2OFN_Cu8reJbu0mQqjc8lgB17Sgk1mXLyXUjJN7AJSXUvDd6jiqFKTTkFVI5P02d6vNONIKMaXwEtVjB81sZ4tKbzl7uO0ecnfZA9xd48HHZqH0Yfa7fmKaswHA&3u800&5m1&2e1&callback=none&r_url=https%3A%2F%2Fcevennes-sud-website.vercel.app%2Fadmin-import-google.html&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw&token=126480",
       "rating": 4.7,
-      "reviews_count": 1031
+      "reviews_count": 1031,
+      "premium_level": "standard"
     }
   ],
   "artisan": [],
