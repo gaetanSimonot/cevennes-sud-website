@@ -30,6 +30,7 @@ export default function EditActorPage() {
     { key: 'standard', label: 'Standard' },
     { key: 'premium', label: 'Premium' },
     { key: 'premium_plus', label: 'Premium Plus' },
+    { key: 'mega-premium', label: 'Mega Premium' },
   ]
 
   useEffect(() => {
