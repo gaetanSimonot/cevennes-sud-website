@@ -282,5 +282,23 @@
     "premium_level": "mega-premium",
     "lat": 43.9309723,
     "lng": 3.7081305
+  },
+  {
+    "title": "Spectacle de Cirque et Pyrotechnie",
+    "category": "culture",
+    "description": "Spectacle de cirque avec des astronautes et pyrotechnie.",
+    "date": "2023-10-13",
+    "time": "20:30",
+    "location": "Place de la Mairie",
+    "address": "30120 Le Vigan",
+    "price": "Non renseigné",
+    "organizer": "",
+    "contact": "",
+    "website": "",
+    "image": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+    "id": 1759889663697,
+    "premium_level": "standard",
+    "lat": 43.9876458,
+    "lng": 3.6010904
   }
 ]
