@@ -17,7 +17,9 @@
       "Bash(git rev-parse:*)",
       "Bash(curl -s \"https://raw.githubusercontent.com/gaetanSimonot/cevennes-sud-website/main/admin-add-event.html\")",
       "Bash(curl -s \"https://cevennes-sud-website.vercel.app/index.html\")",
-      "Bash(curl -s \"https://cevennes-sud-website.vercel.app/acteurs-locaux.html\")"
+      "Bash(curl -s \"https://cevennes-sud-website.vercel.app/acteurs-locaux.html\")",
+      "Bash(npx create-next-app:*)",
+      "Bash(npm install)"
     ],
     "deny": [],
     "ask": []
