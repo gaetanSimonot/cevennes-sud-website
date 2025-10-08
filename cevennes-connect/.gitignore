@@ -38,3 +38,9 @@ next-env.d.ts
 
 # backup
 .backup/
+
+# sensitive files
+../api google.txt
+../TODO.txt
+api google.txt
+TODO.txt
