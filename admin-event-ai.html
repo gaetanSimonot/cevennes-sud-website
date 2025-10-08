@@ -307,6 +307,8 @@ Tu vas recevoir des données parfois sales (copier-coller, caractères bizarres,
    - Nettoie les espaces multiples, sauts de ligne inutiles
    - Extrait SEULEMENT les infos utiles, ignore le bruit
    - Si le texte est incompréhensible, fais de ton mieux avec ce qui est lisible
+   - FORMAT SPÉCIAL : Si tu vois "Ville (Code postal)" à la fin → c'est l'adresse complète
+   - Exemple : "Valflaunès (34270)" → address: "34270 Valflaunès"
 
 2. **CARACTÈRES DANGEREUX POUR JSON** :
    - Échappe TOUJOURS les guillemets doubles dans les textes
@@ -356,20 +358,30 @@ ${textInput ? `\n**Données brutes fournies :**\n${textInput}` : ''}
 Format attendu :
 [
   {
-    "title": "...",
-    "category": "culture",
-    "description": "...",
-    "date": "2025-01-15",
-    "time": "14:00",
-    "location": "Salle des fêtes",
-    "address": "30120 Le Vigan",
+    "title": "Marché de Valflaunès",
+    "category": "marche",
+    "description": "Marché artisanal local tous les dimanches matin",
+    "date": "2025-10-12",
+    "time": "09:00",
+    "location": "Place Gabriel Calmels",
+    "address": "34270 Valflaunès",
     "price": "Gratuit",
-    "organizer": "...",
-    "contact": "...",
+    "organizer": "",
+    "contact": "",
     "website": "",
     "image": ""
   }
-]`;
+]
+
+**EXEMPLE de parsing :**
+Texte: "MARCHÉ DE VALFLAUNÈSMarché artisanal 12 Oct. [...] tous les dimanches matin sur la place Gabriel Calmels. [...] Valflaunès (34270)"
+→ title: "Marché de Valflaunès"
+→ category: "marche"
+→ date: "2025-10-12" (Oct = 10)
+→ time: "09:00" (matins = 09:00 par défaut)
+→ location: "Place Gabriel Calmels"
+→ address: "34270 Valflaunès" (extrait de la fin)
+→ price: "Gratuit" (marchés = gratuit en général)`;
 
                 // Préparer les messages pour l'API
                 const messages = [
@@ -454,6 +466,15 @@ Format attendu :
                 // S'assurer que c'est un tableau
                 if (!Array.isArray(eventsArray)) {
                     eventsArray = [eventsArray];
+                }
+
+                // Vérifier qu'il y a au moins un événement
+                if (eventsArray.length === 0) {
+                    log('⚠️ Aucun événement valide détecté dans les données fournies.', 'warning');
+                    log('💡 Conseil : Vérifiez que votre texte contient au minimum un titre, une date et un lieu.', 'info');
+                    analyzeBtn.disabled = false;
+                    analyzeBtn.innerHTML = originalBtnText;
+                    return;
                 }
 
                 log(`✅ ${eventsArray.length} événement(s) détecté(s) !`, 'success');
