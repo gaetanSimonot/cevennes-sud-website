@@ -253,70 +253,50 @@ Retourne UNIQUEMENT la description, rien d'autre.`
       return
     }
 
-    if (!confirm(`Êtes-vous sûr de vouloir ajouter ${selectedPlaces.length} acteur(s) sur GitHub ?`)) {
+    if (!confirm(`Êtes-vous sûr de vouloir ajouter ${selectedPlaces.length} acteur(s) à Supabase ?`)) {
       return
     }
 
     setIsProcessing(true)
-    addLog('\n📤 Chargement des acteurs existants...', 'info')
+    addLog('\n📤 Création des acteurs dans Supabase...', 'info')
 
     try {
-      // Load existing actors
-      const response = await fetch('/data/actors-data.json')
-      if (!response.ok) {
-        throw new Error('Impossible de charger actors-data.json')
-      }
+      let added = 0
 
-      const existingData = await response.json()
-
-      // Add selected actors to the correct category
-      const categoryKey = activeCategory
-      if (!existingData[categoryKey]) {
-        existingData[categoryKey] = []
-      }
-
-      selectedPlaces.forEach((actor: any) => {
-        // Remove processing fields
+      // Create actors in Supabase via API
+      for (const actor of selectedPlaces) {
+        // Remove processing fields and set category
         const { selected, isDuplicate, ...cleanActor } = actor
-        existingData[categoryKey].push(cleanActor)
-      })
+        const actorData = {
+          ...cleanActor,
+          category: activeCategory
+        }
 
-      addLog(`✓ ${selectedPlaces.length} acteur(s) ajouté(s) à la catégorie ${activeCategory}`, 'success')
-
-      // Commit to GitHub
-      addLog('📤 Envoi vers GitHub...', 'info')
-
-      const commitResponse = await fetch('/api/github-commit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          filePath: 'cevennes-connect/public/data/actors-data.json',
-          content: JSON.stringify(existingData, null, 2),
-          commitMessage: `🔄 Import Google Places - ${selectedPlaces.length} ${activeCategory}
-
-${selectedPlaces.map((a, i) => `${i + 1}. ${a.name} - ${a.address}`).join('\n')}
-
-🤖 Generated via Import Google Places`
+        const response = await fetch('/api/actors', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(actorData)
         })
-      })
 
-      if (!commitResponse.ok) {
-        const errorData = await commitResponse.json()
-        throw new Error(errorData.error || 'Erreur lors du commit')
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Erreur lors de la création')
+        }
+
+        added++
+        addLog(`  ✓ Créé: ${actor.name}`, 'success')
       }
 
-      const result = await commitResponse.json()
-      addLog('✅ Commit réussi sur GitHub !', 'success')
-      addLog(`   Commit SHA: ${result.commit.sha.substring(0, 7)}`, 'info')
+      addLog(`✅ ${added} acteur(s) ajouté(s) avec succès !`, 'success')
 
-      alert(`✅ ${selectedPlaces.length} acteur(s) ajouté(s) avec succès !\n\n🎉 Les données sont en ligne !`)
+      alert(`✅ ${added} acteur(s) ajouté(s) à Supabase !\n\n🎉 Les données sont instantanément disponibles en ligne !`)
 
       // Reset
       setPlaces([])
 
     } catch (error: any) {
       addLog(`❌ Erreur: ${error.message}`, 'error')
-      alert(`❌ Erreur lors du commit:\n\n${error.message}`)
+      alert(`❌ Erreur lors de l'ajout:\n\n${error.message}`)
     } finally {
       setIsProcessing(false)
     }

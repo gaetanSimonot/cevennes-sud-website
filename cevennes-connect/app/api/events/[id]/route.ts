@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { eventsDB } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
@@ -8,11 +9,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Fetch from GitHub raw file (always up to date)
-    const response = await fetch('https://raw.githubusercontent.com/gaetanSimonot/cevennes-sud-website/main/cevennes-connect/public/data/events-data.json')
-    const events = await response.json()
-
-    const event = events.find((e: any) => e.id === parseInt(params.id))
+    const event = await eventsDB.getOne(parseInt(params.id))
 
     if (!event) {
       return NextResponse.json(
@@ -40,45 +37,8 @@ export async function PUT(
   try {
     const updates = await request.json()
 
-    // Fetch current data from GitHub
-    const response = await fetch('https://raw.githubusercontent.com/gaetanSimonot/cevennes-sud-website/main/cevennes-connect/public/data/events-data.json')
-    const events = await response.json()
-
-    const eventIndex = events.findIndex((e: any) => e.id === parseInt(params.id))
-
-    if (eventIndex === -1) {
-      return NextResponse.json(
-        { error: 'Event not found' },
-        { status: 404 }
-      )
-    }
-
-    const oldEvent = events[eventIndex]
-
-    // Update event
-    events[eventIndex] = { ...events[eventIndex], ...updates }
-    const updatedEvent = events[eventIndex]
-
-    // Commit to GitHub
-    const commitResponse = await fetch(`${request.nextUrl.origin}/api/github-commit`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        filePath: 'cevennes-connect/public/data/events-data.json',
-        content: JSON.stringify(events, null, 2),
-        commitMessage: `✏️ Modification événement: ${updatedEvent.title}
-
-Modifications:
-${Object.keys(updates).map(key => `- ${key}: "${oldEvent[key]}" → "${updates[key]}"`).join('\n')}
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)`
-      })
-    })
-
-    if (!commitResponse.ok) {
-      const error = await commitResponse.json()
-      throw new Error(error.error || 'GitHub commit failed')
-    }
+    // Update in Supabase
+    const updatedEvent = await eventsDB.update(parseInt(params.id), updates)
 
     return NextResponse.json({ success: true, event: updatedEvent })
 
@@ -97,44 +57,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    // Fetch current data from GitHub
-    const response = await fetch('https://raw.githubusercontent.com/gaetanSimonot/cevennes-sud-website/main/cevennes-connect/public/data/events-data.json')
-    let events = await response.json()
-
-    const eventIndex = events.findIndex((e: any) => e.id === parseInt(params.id))
-
-    if (eventIndex === -1) {
-      return NextResponse.json(
-        { error: 'Event not found' },
-        { status: 404 }
-      )
-    }
-
-    const deletedEvent = events[eventIndex]
-
-    // Remove event
-    events.splice(eventIndex, 1)
-
-    // Commit to GitHub
-    const commitResponse = await fetch(`${request.nextUrl.origin}/api/github-commit`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        filePath: 'cevennes-connect/public/data/events-data.json',
-        content: JSON.stringify(events, null, 2),
-        commitMessage: `🗑️ Suppression événement: ${deletedEvent.title}
-
-📅 Date: ${deletedEvent.date}
-📍 Lieu: ${deletedEvent.location || deletedEvent.address}
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)`
-      })
-    })
-
-    if (!commitResponse.ok) {
-      const error = await commitResponse.json()
-      throw new Error(error.error || 'GitHub commit failed')
-    }
+    await eventsDB.delete(parseInt(params.id))
 
     return NextResponse.json({ success: true })
 

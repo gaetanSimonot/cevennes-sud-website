@@ -360,30 +360,31 @@ export default function ArtefactIAPage() {
 
     const count = extractedEvents.length
 
-    if (!confirm(`Êtes-vous sûr de vouloir committer ${count} événement(s) sur GitHub ?`)) {
+    if (!confirm(`Êtes-vous sûr d'ajouter ${count} événement(s) à Supabase ?`)) {
       return
     }
 
-    addLog('📤 Chargement des événements existants...', 'info')
+    addLog('📤 Chargement des événements existants depuis Supabase...', 'info')
 
     try {
-      // Load existing events
+      // Load existing events from Supabase API
       let existingEvents: ExtractedEvent[] = []
       try {
-        const response = await fetch('/data/events-data.json')
+        const response = await fetch('/api/events?limit=10000')
         if (response.ok) {
-          existingEvents = await response.json()
+          const data = await response.json()
+          existingEvents = data.events || []
           addLog(`✓ ${existingEvents.length} événements existants chargés`, 'success')
         }
       } catch (error) {
-        addLog('⚠ Aucun événement existant, création du fichier', 'warning')
+        addLog('⚠ Erreur de chargement, les événements seront tout de même créés', 'warning')
       }
 
       // Deduplication
       addLog('🔍 Vérification des doublons...', 'info')
       let duplicates = 0
       let added = 0
-      const mergedEvents = [...existingEvents]
+      const eventsToAdd: ExtractedEvent[] = []
 
       for (const newEvent of extractedEvents) {
         const isDuplicate = existingEvents.some(existing =>
@@ -397,44 +398,39 @@ export default function ArtefactIAPage() {
           duplicates++
           addLog(`  ⊘ Doublon ignoré: ${newEvent.title} (${newEvent.date})`, 'warning')
         } else {
-          mergedEvents.push(newEvent)
-          added++
-          addLog(`  + Ajouté: ${newEvent.title} (${newEvent.date})`, 'success')
+          eventsToAdd.push(newEvent)
+          addLog(`  + À ajouter: ${newEvent.title} (${newEvent.date})`, 'success')
         }
       }
 
       addLog(`\n📊 Résumé:`, 'info')
       addLog(`  • ${duplicates} doublons évités`, 'warning')
-      addLog(`  • ${added} nouveaux événements ajoutés`, 'success')
-      addLog(`  • ${mergedEvents.length} événements au total`, 'info')
+      addLog(`  • ${eventsToAdd.length} nouveaux événements à créer`, 'success')
 
-      // Commit to GitHub
-      addLog('📤 Envoi vers GitHub...', 'info')
+      // Create events in Supabase via API
+      if (eventsToAdd.length > 0) {
+        addLog('📤 Envoi vers Supabase...', 'info')
 
-      const response = await fetch('/api/github-commit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          filePath: 'cevennes-connect/public/data/events-data.json',
-          content: JSON.stringify(mergedEvents, null, 2),
-          commitMessage: `🎉 Artefact IA - Ajout de ${count} événement(s)
+        for (const event of eventsToAdd) {
+          const response = await fetch('/api/events', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(event)
+          })
 
-${extractedEvents.map((e, i) => `${i + 1}. ${e.title} - ${e.date} à ${e.location}`).join('\n')}
+          if (!response.ok) {
+            const errorData = await response.json()
+            throw new Error(errorData.error || 'Erreur lors de la création')
+          }
 
-🤖 Generated via Artefact IA`
-        })
-      })
+          added++
+          addLog(`  ✓ Créé: ${event.title}`, 'success')
+        }
 
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Erreur inconnue')
+        addLog('✅ Tous les événements ont été créés dans Supabase !', 'success')
       }
 
-      const result = await response.json()
-      addLog('✅ Commit réussi sur GitHub !', 'success')
-      addLog(`   Commit SHA: ${result.commit.sha.substring(0, 7)}`, 'info')
-
-      alert(`✅ Événement(s) committé(s) sur GitHub !\n\n📊 ${count} événement(s) traité(s)\n${duplicates} doublons évités\n${added} nouveaux ajoutés\n📂 Total: ${mergedEvents.length} événements\n\n🎉 Les données sont en ligne !`)
+      alert(`✅ Événements ajoutés à Supabase !\n\n📊 ${count} événement(s) traité(s)\n${duplicates} doublons évités\n${added} nouveaux créés\n\n🎉 Les données sont instantanément disponibles en ligne !`)
 
       // Reset
       setExtractedEvents(null)
@@ -444,7 +440,7 @@ ${extractedEvents.map((e, i) => `${i + 1}. ${e.title} - ${e.date} à ${e.locatio
 
     } catch (error: any) {
       addLog(`❌ Erreur: ${error.message}`, 'error')
-      alert(`❌ Erreur lors du commit:\n\n${error.message}`)
+      alert(`❌ Erreur lors de l'ajout:\n\n${error.message}`)
     }
   }
 
