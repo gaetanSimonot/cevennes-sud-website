@@ -127,7 +127,7 @@ export default function ManageActorsPage() {
   }
 
   const selectAll = () => {
-    setSelectedIds(actors.map(a => a.id!))
+    setSelectedIds(actors.map(a => a.id).filter((id): id is string => id !== undefined))
   }
 
   const deselectAll = () => {

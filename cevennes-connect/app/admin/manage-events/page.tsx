@@ -129,7 +129,7 @@ export default function ManageEventsPage() {
   }
 
   const selectAll = () => {
-    setSelectedIds(events.map(e => e.id))
+    setSelectedIds(events.map(e => e.id).filter((id): id is number => id !== undefined))
   }
 
   const deselectAll = () => {
