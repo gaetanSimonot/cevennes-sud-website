@@ -1,22 +1,45 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
+
+// Lazy initialization to avoid build-time errors
+let _supabase: SupabaseClient | null = null
+let _supabaseAdmin: SupabaseClient | null = null
+
+// Get Supabase URL with fallback for build time
+const getSupabaseUrl = () => process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
+const getSupabaseAnonKey = () => process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key'
+const getSupabaseServiceKey = () => process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-service-key'
 
 // Client-side Supabase (with anon key - safe for browser)
-export const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+export const getSupabase = () => {
+  if (!_supabase) {
+    _supabase = createClient(
+      getSupabaseUrl(),
+      getSupabaseAnonKey()
+    )
+  }
+  return _supabase
+}
 
 // Server-side Supabase (with service role key - bypasses RLS)
-export const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
+export const getSupabaseAdmin = () => {
+  if (!_supabaseAdmin) {
+    _supabaseAdmin = createClient(
+      getSupabaseUrl(),
+      getSupabaseServiceKey(),
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    )
   }
-)
+  return _supabaseAdmin
+}
+
+// Direct exports for convenience (created at runtime, not build time)
+export const supabase = typeof window !== 'undefined' ? getSupabase() : null as any
+export const supabaseAdmin = getSupabaseAdmin()
 
 // Types
 export interface Event {
@@ -71,6 +94,7 @@ export const eventsDB = {
     page?: number
     limit?: number
   }) {
+    const supabaseAdmin = getSupabaseAdmin()
     let query = supabaseAdmin.from('events').select('*', { count: 'exact' })
 
     // Category filter
@@ -115,7 +139,7 @@ export const eventsDB = {
 
   // Get one event
   async getOne(id: number) {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('events')
       .select('*')
       .eq('id', id)
@@ -127,7 +151,7 @@ export const eventsDB = {
 
   // Create event
   async create(event: Omit<Event, 'id' | 'created_at' | 'updated_at'>) {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('events')
       .insert([event])
       .select()
@@ -139,7 +163,7 @@ export const eventsDB = {
 
   // Update event
   async update(id: number, updates: Partial<Event>) {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('events')
       .update(updates)
       .eq('id', id)
@@ -152,7 +176,7 @@ export const eventsDB = {
 
   // Delete event
   async delete(id: number) {
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabaseAdmin()
       .from('events')
       .delete()
       .eq('id', id)
@@ -163,7 +187,7 @@ export const eventsDB = {
 
   // Bulk delete
   async bulkDelete(ids: number[]) {
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabaseAdmin()
       .from('events')
       .delete()
       .in('id', ids)
@@ -182,6 +206,7 @@ export const actorsDB = {
     page?: number
     limit?: number
   }) {
+    const supabaseAdmin = getSupabaseAdmin()
     let query = supabaseAdmin.from('actors').select('*', { count: 'exact' })
 
     // Category filter
@@ -216,7 +241,7 @@ export const actorsDB = {
 
   // Get one actor
   async getOne(id: string) {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('actors')
       .select('*')
       .eq('id', id)
@@ -228,7 +253,7 @@ export const actorsDB = {
 
   // Create actor
   async create(actor: Omit<Actor, 'id' | 'created_at' | 'updated_at'>) {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('actors')
       .insert([actor])
       .select()
@@ -240,7 +265,7 @@ export const actorsDB = {
 
   // Update actor
   async update(id: string, updates: Partial<Actor>) {
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
       .from('actors')
       .update(updates)
       .eq('id', id)
@@ -253,7 +278,7 @@ export const actorsDB = {
 
   // Delete actor
   async delete(id: string) {
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabaseAdmin()
       .from('actors')
       .delete()
       .eq('id', id)
@@ -264,7 +289,7 @@ export const actorsDB = {
 
   // Bulk delete
   async bulkDelete(ids: string[]) {
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabaseAdmin()
       .from('actors')
       .delete()
       .in('id', ids)
