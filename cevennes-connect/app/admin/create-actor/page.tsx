@@ -118,25 +118,17 @@ export default function CreateActorPage() {
     setIsSubmitting(true)
 
     try {
-      // 1. Load existing actors
-      const response = await fetch('/data/actors-data.json')
+      // 1. Load existing actors from Supabase
+      const response = await fetch('/api/actors?limit=10000')
       if (!response.ok) {
-        throw new Error('Impossible de charger actors-data.json')
+        throw new Error('Impossible de charger les acteurs')
       }
 
-      const existingData: ActorsData = await response.json()
+      const data = await response.json()
+      const existingActors: Actor[] = data.actors || []
 
       // 2. Check duplicates
-      const allActors = [
-        ...(existingData.commerce || []),
-        ...(existingData.restaurant || []),
-        ...(existingData.artisan || []),
-        ...(existingData.therapeute || []),
-        ...(existingData.service || []),
-        ...(existingData.association || [])
-      ]
-
-      const isDuplicate = allActors.some(existing =>
+      const isDuplicate = existingActors.some(existing =>
         existing.name.toLowerCase() === formData.name?.toLowerCase() ||
         (existing.address && formData.address &&
          existing.address.toLowerCase().includes(formData.address.toLowerCase().substring(0, 20)))
@@ -150,6 +142,15 @@ export default function CreateActorPage() {
       }
 
       // 3. Create new actor
+      const categoryImages: Record<string, string> = {
+        'commerce': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        'restaurant': 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        'artisan': 'https://images.unsplash.com/photo-1452860606245-08befc0ff44b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        'therapeute': 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        'service': 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+        'association': 'https://images.unsplash.com/photo-1559027615-cd4628902d4a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+      }
+
       const newActor: Actor = {
         name: formData.name!,
         category: formData.category as ActorCategory,
@@ -160,42 +161,29 @@ export default function CreateActorPage() {
         phone: formData.phone || '',
         email: formData.email || '',
         website: formData.website || '',
-        hours: formData.hours || '',
-        image: formData.image || '',
+        horaires: formData.hours || '',
+        specialites: [],
+        image: formData.image || categoryImages[formData.category!] || categoryImages['commerce'],
+        rating: null,
+        reviews_count: 0,
         premium_level: 'standard'
       }
 
-      // 4. Add to category
-      const categoryKey = formData.category as ActorCategory
-      if (!existingData[categoryKey]) {
-        existingData[categoryKey] = []
-      }
-      existingData[categoryKey].push(newActor)
-
-      // 5. Commit to GitHub
-      const commitResponse = await fetch('/api/github-commit', {
+      // 4. Create in Supabase via API
+      const createResponse = await fetch('/api/actors', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          filePath: 'cevennes-connect/public/data/actors-data.json',
-          content: JSON.stringify(existingData, null, 2),
-          commitMessage: `✨ Ajout acteur: ${newActor.name}
-
-📂 Catégorie: ${newActor.category}
-📍 ${newActor.address}
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>`
-        })
+        body: JSON.stringify(newActor)
       })
 
-      if (!commitResponse.ok) {
-        const errorData = await commitResponse.json()
-        throw new Error(errorData.error || 'Erreur lors du commit')
+      if (!createResponse.ok) {
+        const errorData = await createResponse.json()
+        throw new Error(errorData.error || 'Erreur lors de la création')
       }
 
-      alert(`✅ Acteur "${newActor.name}" ajouté et committé sur GitHub !`)
+      const result = await createResponse.json()
+
+      alert(`✅ Acteur "${newActor.name}" créé dans Supabase !\n\n🎉 Disponible instantanément en ligne !`)
 
       // Reset form
       setFormData({

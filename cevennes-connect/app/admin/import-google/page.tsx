@@ -185,17 +185,10 @@ Retourne UNIQUEMENT la description, rien d'autre.`
       addLog('🔍 Vérification des doublons...', 'info')
 
       try {
-        const existingResponse = await fetch('/data/actors-data.json')
+        const existingResponse = await fetch('/api/actors?limit=10000')
         if (existingResponse.ok) {
-          const existingData = await existingResponse.json()
-          const allExisting: Actor[] = [
-            ...(existingData.commerce || []),
-            ...(existingData.restaurant || []),
-            ...(existingData.artisan || []),
-            ...(existingData.therapeute || []),
-            ...(existingData.service || []),
-            ...(existingData.association || [])
-          ]
+          const data = await existingResponse.json()
+          const allExisting: Actor[] = data.actors || []
 
           processedActors.forEach(actor => {
             const isDuplicate = allExisting.some(existing =>

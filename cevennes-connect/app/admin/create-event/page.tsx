@@ -121,13 +121,14 @@ export default function CreateEventPage() {
     setIsSubmitting(true)
 
     try {
-      // 1. Load existing events
-      const response = await fetch('/data/events-data.json')
+      // 1. Load existing events from Supabase
+      const response = await fetch('/api/events?limit=10000')
       if (!response.ok) {
-        throw new Error('Impossible de charger events-data.json')
+        throw new Error('Impossible de charger les événements')
       }
 
-      const existingEvents: Event[] = await response.json()
+      const data = await response.json()
+      const existingEvents: Event[] = data.events || []
 
       // 2. Check duplicates
       const isDuplicate = existingEvents.some(existing =>
@@ -155,7 +156,6 @@ export default function CreateEventPage() {
       }
 
       const newEvent: Event = {
-        id: Date.now(),
         title: formData.title!,
         category: formData.category as EventCategory,
         description: formData.description!,
@@ -173,33 +173,21 @@ export default function CreateEventPage() {
         image: formData.image || categoryImages[formData.category!] || categoryImages['culture']
       }
 
-      // 4. Add to existing events
-      existingEvents.push(newEvent)
-
-      // 5. Commit to GitHub
-      const commitResponse = await fetch('/api/github-commit', {
+      // 4. Create in Supabase via API
+      const createResponse = await fetch('/api/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          filePath: 'cevennes-connect/public/data/events-data.json',
-          content: JSON.stringify(existingEvents, null, 2),
-          commitMessage: `✨ Ajout événement: ${newEvent.title}
-
-📅 ${newEvent.date} à ${newEvent.time}
-📍 ${newEvent.location}
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>`
-        })
+        body: JSON.stringify(newEvent)
       })
 
-      if (!commitResponse.ok) {
-        const errorData = await commitResponse.json()
-        throw new Error(errorData.error || 'Erreur lors du commit')
+      if (!createResponse.ok) {
+        const errorData = await createResponse.json()
+        throw new Error(errorData.error || 'Erreur lors de la création')
       }
 
-      alert(`✅ Événement "${newEvent.title}" ajouté et committé sur GitHub !`)
+      const result = await createResponse.json()
+
+      alert(`✅ Événement "${newEvent.title}" créé dans Supabase !\n\n🎉 Disponible instantanément en ligne !`)
 
       // Reset form
       setFormData({
