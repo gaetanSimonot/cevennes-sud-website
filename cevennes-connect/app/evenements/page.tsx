@@ -18,8 +18,34 @@ export default function EvenementsPage() {
   const [viewMode, setViewMode] = useState<'cards' | 'map'>('cards')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
-  const [timeFilter, setTimeFilter] = useState<'all' | 'upcoming' | 'past'>('all')
+  const [timeFilter, setTimeFilter] = useState<'all' | 'upcoming' | 'past' | 'weekend' | 'week' | 'month'>('all')
   const [hoveredEventId, setHoveredEventId] = useState<number | null>(null)
+
+  // Helper functions for date filters
+  const getWeekendDates = () => {
+    const now = new Date()
+    const dayOfWeek = now.getDay()
+    const daysUntilSaturday = dayOfWeek === 0 ? 6 : 6 - dayOfWeek
+    const saturday = new Date(now)
+    saturday.setDate(now.getDate() + daysUntilSaturday)
+    const sunday = new Date(saturday)
+    sunday.setDate(saturday.getDate() + 1)
+    return { start: saturday, end: sunday }
+  }
+
+  const getWeekDates = () => {
+    const now = new Date()
+    const end = new Date(now)
+    end.setDate(now.getDate() + 7)
+    return { start: now, end }
+  }
+
+  const getMonthDates = () => {
+    const now = new Date()
+    const end = new Date(now)
+    end.setDate(now.getDate() + 30)
+    return { start: now, end }
+  }
 
   useEffect(() => {
     // Load events from JSON
@@ -46,17 +72,35 @@ export default function EvenementsPage() {
       result = filterBySearch(result, searchTerm)
     }
 
-    // Filter by time (upcoming/past)
+    // Filter by time
     const now = new Date()
-    now.setHours(0, 0, 0, 0) // Reset to start of day
+    now.setHours(0, 0, 0, 0)
 
     if (timeFilter === 'upcoming') {
       result = result.filter(event => new Date(event.date) >= now)
     } else if (timeFilter === 'past') {
       result = result.filter(event => new Date(event.date) < now)
+    } else if (timeFilter === 'weekend') {
+      const { start, end } = getWeekendDates()
+      result = result.filter(event => {
+        const eventDate = new Date(event.date)
+        return eventDate >= start && eventDate <= end
+      })
+    } else if (timeFilter === 'week') {
+      const { start, end } = getWeekDates()
+      result = result.filter(event => {
+        const eventDate = new Date(event.date)
+        return eventDate >= start && eventDate <= end
+      })
+    } else if (timeFilter === 'month') {
+      const { start, end } = getMonthDates()
+      result = result.filter(event => {
+        const eventDate = new Date(event.date)
+        return eventDate >= start && eventDate <= end
+      })
     }
 
-    // Filter by date range
+    // Filter by custom date range
     if (startDate) {
       result = result.filter(event => new Date(event.date) >= new Date(startDate))
     }
@@ -103,112 +147,159 @@ export default function EvenementsPage() {
         <section className="py-16 bg-gray-50">
           <div className="container-custom">
             {/* Search and Filters */}
-            <div className="mb-12">
-              {/* Top bar: Search + Date filters + View toggle */}
-              <div className="flex flex-col lg:flex-row gap-4 mb-6">
-                {/* Search Bar */}
+            <div className="mb-12 space-y-6">
+              {/* Primary: Search + View Toggle */}
+              <div className="flex flex-col md:flex-row gap-4">
+                {/* Search Bar - Most important */}
                 <div className="flex-1">
                   <Input
                     type="text"
-                    placeholder="Rechercher un événement..."
+                    placeholder="🔍 Que cherchez-vous ?"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="text-lg"
+                    className="text-lg h-14 font-medium"
                   />
                 </div>
 
-                {/* Date range inputs */}
-                <div className="flex gap-2">
-                  <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => {
-                      setStartDate(e.target.value)
-                      setTimeFilter('all')
-                    }}
-                    placeholder="Date début"
-                    className="px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
-                  />
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => {
-                      setEndDate(e.target.value)
-                      setTimeFilter('all')
-                    }}
-                    placeholder="Date fin"
-                    className="px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
-                  />
-                </div>
-
-                {/* View Toggle */}
-                <div className="flex gap-2">
-                  <Button
-                    variant={viewMode === 'cards' ? 'primary' : 'secondary'}
+                {/* View Toggle - High priority */}
+                <div className="flex gap-3">
+                  <button
                     onClick={() => setViewMode('cards')}
+                    className={`
+                      flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all text-base
+                      ${viewMode === 'cards'
+                        ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg scale-105'
+                        : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-pink-300'}
+                    `}
                   >
-                    📋 Liste
-                  </Button>
-                  <Button
-                    variant={viewMode === 'map' ? 'primary' : 'secondary'}
+                    📋 <span className="hidden sm:inline">Liste</span>
+                  </button>
+                  <button
                     onClick={() => setViewMode('map')}
+                    className={`
+                      flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all text-base
+                      ${viewMode === 'map'
+                        ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg scale-105'
+                        : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-pink-300'}
+                    `}
                   >
-                    🗺️ Carte
-                  </Button>
+                    🗺️ <span className="hidden sm:inline">Carte</span>
+                  </button>
                 </div>
               </div>
 
-              {/* Quick filters + Category filters */}
-              <div className="flex flex-wrap gap-3">
-                {/* Time quick filters */}
-                <Button
-                  variant={timeFilter === 'all' ? 'primary' : 'secondary'}
-                  size="sm"
-                  onClick={() => {
-                    setTimeFilter('all')
-                    setStartDate('')
-                    setEndDate('')
-                  }}
-                >
-                  Tous
-                </Button>
-                <Button
-                  variant={timeFilter === 'upcoming' ? 'primary' : 'secondary'}
-                  size="sm"
-                  onClick={() => {
-                    setTimeFilter('upcoming')
-                    setStartDate('')
-                    setEndDate('')
-                  }}
-                >
-                  📅 À venir
-                </Button>
-                <Button
-                  variant={timeFilter === 'past' ? 'primary' : 'secondary'}
-                  size="sm"
-                  onClick={() => {
-                    setTimeFilter('past')
-                    setStartDate('')
-                    setEndDate('')
-                  }}
-                >
-                  📆 Passés
-                </Button>
-
-                {/* Separator */}
-                <div className="w-px bg-gray-300 mx-2"></div>
-
-                {/* Category Filters */}
-                {categories.map(cat => (
-                  <Button
-                    key={cat.key}
-                    variant={activeCategory === cat.key ? 'primary' : 'secondary'}
-                    size="sm"
-                    onClick={() => setActiveCategory(cat.key)}
+              {/* Secondary: Time shortcuts - Medium priority */}
+              <div className="bg-white rounded-2xl p-4 shadow-sm">
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-sm font-bold text-gray-700">📅 QUAND ?</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => {
+                      setTimeFilter('weekend')
+                      setStartDate('')
+                      setEndDate('')
+                    }}
+                    className={`
+                      px-4 py-2 rounded-lg font-semibold text-sm transition-all
+                      ${timeFilter === 'weekend'
+                        ? 'bg-pink-600 text-white shadow-md'
+                        : 'bg-pink-50 text-pink-700 hover:bg-pink-100'}
+                    `}
                   >
-                    {cat.icon} {cat.label}
-                  </Button>
-                ))}
+                    🎉 Ce week-end
+                  </button>
+                  <button
+                    onClick={() => {
+                      setTimeFilter('week')
+                      setStartDate('')
+                      setEndDate('')
+                    }}
+                    className={`
+                      px-4 py-2 rounded-lg font-semibold text-sm transition-all
+                      ${timeFilter === 'week'
+                        ? 'bg-pink-600 text-white shadow-md'
+                        : 'bg-pink-50 text-pink-700 hover:bg-pink-100'}
+                    `}
+                  >
+                    📆 Cette semaine
+                  </button>
+                  <button
+                    onClick={() => {
+                      setTimeFilter('month')
+                      setStartDate('')
+                      setEndDate('')
+                    }}
+                    className={`
+                      px-4 py-2 rounded-lg font-semibold text-sm transition-all
+                      ${timeFilter === 'month'
+                        ? 'bg-pink-600 text-white shadow-md'
+                        : 'bg-pink-50 text-pink-700 hover:bg-pink-100'}
+                    `}
+                  >
+                    🗓️ Ce mois-ci
+                  </button>
+                  <button
+                    onClick={() => {
+                      setTimeFilter('all')
+                      setStartDate('')
+                      setEndDate('')
+                    }}
+                    className={`
+                      px-4 py-2 rounded-lg font-semibold text-sm transition-all
+                      ${timeFilter === 'all'
+                        ? 'bg-gray-700 text-white shadow-md'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}
+                    `}
+                  >
+                    Tous
+                  </button>
+
+                  {/* Custom date range */}
+                  <div className="flex gap-2 ml-auto">
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => {
+                        setStartDate(e.target.value)
+                        setTimeFilter('all')
+                      }}
+                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-pink-500"
+                    />
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => {
+                        setEndDate(e.target.value)
+                        setTimeFilter('all')
+                      }}
+                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-pink-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Tertiary: Categories - Lower priority */}
+              <div>
+                <div className="flex items-center gap-3 mb-3">
+                  <span className="text-sm font-bold text-gray-600">CATÉGORIES</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map(cat => (
+                    <button
+                      key={cat.key}
+                      onClick={() => setActiveCategory(cat.key)}
+                      className={`
+                        px-4 py-2 rounded-lg text-sm font-medium transition-all
+                        ${activeCategory === cat.key
+                          ? 'bg-purple-600 text-white shadow-md'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}
+                      `}
+                    >
+                      {cat.icon} {cat.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
