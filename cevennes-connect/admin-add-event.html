@@ -185,6 +185,9 @@
                 <pre id="jsonOutput" class="text-sm"></pre>
             </div>
             <div class="mt-4 flex gap-4">
+                <button onclick="saveToGitHub()" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-xl transition-all">
+                    <i class="fab fa-github mr-2"></i>Commit GitHub
+                </button>
                 <button onclick="copyJSON()" class="flex-1 bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-all">
                     <i class="fas fa-copy mr-2"></i>Copier JSON
                 </button>
@@ -269,6 +272,7 @@
                 website: document.getElementById('website').value || '',
                 lat: parseFloat(document.getElementById('lat').value),
                 lng: parseFloat(document.getElementById('lng').value),
+                premium_level: 'standard',
                 image: document.getElementById('image').value || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
             };
 
@@ -310,7 +314,80 @@
             linkElement.setAttribute('download', exportFileDefaultName);
             linkElement.click();
 
-            alert(`✅ Fichier téléchargé: ${exportFileDefaultName}\n\n📝 PROCHAINE ÉTAPE:\n1. Va dans data/events-data.json\n2. Ajoute cet événement dans le tableau []\n3. Commit sur GitHub`);
+            alert(`✅ Fichier téléchargé: ${exportFileDefaultName}`);
+        }
+
+        async function saveToGitHub() {
+            if (!generatedData) {
+                alert('❌ Aucun événement à sauvegarder. Créez d\'abord un événement.');
+                return;
+            }
+
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sauvegarde...';
+
+            try {
+                // 1. Récupérer les événements existants
+                const getResponse = await fetch('/data/events-data.json');
+                if (!getResponse.ok) {
+                    throw new Error('Impossible de récupérer le fichier events-data.json');
+                }
+                const currentEvents = await getResponse.json();
+
+                // 2. Vérifier les doublons
+                const isDuplicate = currentEvents.some(existing =>
+                    existing.date === generatedData.date &&
+                    (existing.location.toLowerCase() === generatedData.location.toLowerCase() ||
+                     existing.address.toLowerCase() === generatedData.address.toLowerCase() ||
+                     existing.title.toLowerCase() === generatedData.title.toLowerCase())
+                );
+
+                if (isDuplicate) {
+                    if (!confirm('⚠️ Un événement similaire existe déjà (même date et lieu/titre/adresse).\n\nVoulez-vous quand même l\'ajouter ?')) {
+                        button.disabled = false;
+                        button.innerHTML = originalText;
+                        return;
+                    }
+                }
+
+                // 3. Ajouter le nouvel événement
+                currentEvents.push(generatedData);
+
+                // 4. Commit sur GitHub
+                const commitResponse = await fetch('/api/github-commit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filePath: 'cevennes-connect/data/events-data.json',
+                        content: JSON.stringify(currentEvents, null, 2),
+                        commitMessage: `✨ Ajout événement: ${generatedData.title}
+
+📅 ${generatedData.date} à ${generatedData.time}
+📍 ${generatedData.location}
+
+🤖 Generated via admin-add-event.html`
+                    })
+                });
+
+                if (!commitResponse.ok) {
+                    const error = await commitResponse.json();
+                    throw new Error(error.error || 'Erreur lors du commit sur GitHub');
+                }
+
+                alert(`✅ Événement "${generatedData.title}" ajouté et committé sur GitHub !`);
+
+                // Reset form
+                resetForm();
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert(`❌ Erreur lors de la sauvegarde :\n\n${error.message}`);
+            } finally {
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
         }
 
         // Initialiser la carte au chargement
