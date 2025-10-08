@@ -279,8 +279,8 @@ export default function ManageEventsPage() {
                         <td className="px-6 py-4">
                           <input
                             type="checkbox"
-                            checked={selectedIds.includes(event.id)}
-                            onChange={() => toggleSelection(event.id)}
+                            checked={event.id !== undefined && selectedIds.includes(event.id)}
+                            onChange={() => event.id !== undefined && toggleSelection(event.id)}
                             className="w-5 h-5 text-blue-600 rounded"
                           />
                         </td>
@@ -323,7 +323,7 @@ export default function ManageEventsPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleDelete(event.id, event.title)}
+                              onClick={() => event.id !== undefined && handleDelete(event.id, event.title)}
                               className="text-red-600 hover:text-red-700"
                             >
                               🗑️

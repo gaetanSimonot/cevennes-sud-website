@@ -259,8 +259,8 @@ export default function ManageActorsPage() {
                         <td className="px-6 py-4">
                           <input
                             type="checkbox"
-                            checked={selectedIds.includes(actor.id!)}
-                            onChange={() => toggleSelection(actor.id!)}
+                            checked={actor.id !== undefined && selectedIds.includes(actor.id)}
+                            onChange={() => actor.id !== undefined && toggleSelection(actor.id)}
                             className="w-5 h-5 text-blue-600 rounded"
                           />
                         </td>
@@ -301,7 +301,7 @@ export default function ManageActorsPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleDelete(actor.id!, actor.name)}
+                              onClick={() => actor.id !== undefined && handleDelete(actor.id, actor.name)}
                               className="text-red-600 hover:text-red-700"
                             >
                               🗑️
