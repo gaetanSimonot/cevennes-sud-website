@@ -104,7 +104,8 @@ export default function EvenementsPage() {
           <div className="container-custom">
             {/* Search and Filters */}
             <div className="mb-12">
-              <div className="flex flex-col lg:flex-row gap-6 mb-6">
+              {/* Top bar: Search + Date filters + View toggle */}
+              <div className="flex flex-col lg:flex-row gap-4 mb-6">
                 {/* Search Bar */}
                 <div className="flex-1">
                   <Input
@@ -113,6 +114,30 @@ export default function EvenementsPage() {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="text-lg"
+                  />
+                </div>
+
+                {/* Date range inputs */}
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => {
+                      setStartDate(e.target.value)
+                      setTimeFilter('all')
+                    }}
+                    placeholder="Date début"
+                    className="px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
+                  />
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => {
+                      setEndDate(e.target.value)
+                      setTimeFilter('all')
+                    }}
+                    placeholder="Date fin"
+                    className="px-3 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
                   />
                 </div>
 
@@ -133,100 +158,47 @@ export default function EvenementsPage() {
                 </div>
               </div>
 
-              {/* Date Filters */}
-              <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm">
-                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  📅 Filtrer par date
-                </h3>
-
-                {/* Quick filters */}
-                <div className="flex flex-wrap gap-3 mb-4">
-                  <Button
-                    variant={timeFilter === 'all' ? 'primary' : 'secondary'}
-                    size="sm"
-                    onClick={() => {
-                      setTimeFilter('all')
-                      setStartDate('')
-                      setEndDate('')
-                    }}
-                  >
-                    Tous
-                  </Button>
-                  <Button
-                    variant={timeFilter === 'upcoming' ? 'primary' : 'secondary'}
-                    size="sm"
-                    onClick={() => {
-                      setTimeFilter('upcoming')
-                      setStartDate('')
-                      setEndDate('')
-                    }}
-                  >
-                    À venir
-                  </Button>
-                  <Button
-                    variant={timeFilter === 'past' ? 'primary' : 'secondary'}
-                    size="sm"
-                    onClick={() => {
-                      setTimeFilter('past')
-                      setStartDate('')
-                      setEndDate('')
-                    }}
-                  >
-                    Passés
-                  </Button>
-                </div>
-
-                {/* Custom date range */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Date de début
-                    </label>
-                    <input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => {
-                        setStartDate(e.target.value)
-                        setTimeFilter('all')
-                      }}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Date de fin
-                    </label>
-                    <input
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => {
-                        setEndDate(e.target.value)
-                        setTimeFilter('all')
-                      }}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                    />
-                  </div>
-                </div>
-
-                {(startDate || endDate) && (
-                  <div className="mt-4">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setStartDate('')
-                        setEndDate('')
-                        setTimeFilter('all')
-                      }}
-                    >
-                      ✕ Effacer les dates
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              {/* Category Filters */}
+              {/* Quick filters + Category filters */}
               <div className="flex flex-wrap gap-3">
+                {/* Time quick filters */}
+                <Button
+                  variant={timeFilter === 'all' ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => {
+                    setTimeFilter('all')
+                    setStartDate('')
+                    setEndDate('')
+                  }}
+                >
+                  Tous
+                </Button>
+                <Button
+                  variant={timeFilter === 'upcoming' ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => {
+                    setTimeFilter('upcoming')
+                    setStartDate('')
+                    setEndDate('')
+                  }}
+                >
+                  📅 À venir
+                </Button>
+                <Button
+                  variant={timeFilter === 'past' ? 'primary' : 'secondary'}
+                  size="sm"
+                  onClick={() => {
+                    setTimeFilter('past')
+                    setStartDate('')
+                    setEndDate('')
+                  }}
+                >
+                  📆 Passés
+                </Button>
+
+                {/* Separator */}
+                <div className="w-px bg-gray-300 mx-2"></div>
+
+                {/* Category Filters */}
                 {categories.map(cat => (
                   <Button
                     key={cat.key}
