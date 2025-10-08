@@ -301,6 +301,74 @@
             }
         }
 
+        async function deduplicateActors(newActors) {
+            try {
+                // Charger les acteurs existants
+                log('📥 Chargement des acteurs existants...', 'info');
+                let existingActors = {
+                    commerce: [],
+                    restaurant: [],
+                    artisan: [],
+                    therapeute: [],
+                    service: [],
+                    association: []
+                };
+
+                try {
+                    const response = await fetch('/data/actors-data.json');
+                    if (response.ok) {
+                        existingActors = await response.json();
+                        const total = Object.values(existingActors).reduce((sum, arr) => sum + arr.length, 0);
+                        log(`✓ ${total} acteurs existants chargés`, 'success');
+                    }
+                } catch (error) {
+                    log('⚠ Aucun acteur existant, création du fichier', 'warning');
+                }
+
+                // Déduplication par catégorie
+                let duplicates = 0;
+                let added = 0;
+                const mergedActors = { ...existingActors };
+
+                for (const category in newActors) {
+                    for (const newActor of newActors[category]) {
+                        // Vérifier si l'acteur existe déjà (même nom OU même adresse)
+                        const exists = mergedActors[category].some(existing =>
+                            (existing.name.toLowerCase() === newActor.name.toLowerCase()) ||
+                            (existing.address && newActor.address &&
+                             existing.address.toLowerCase() === newActor.address.toLowerCase())
+                        );
+
+                        if (exists) {
+                            duplicates++;
+                            log(`  ⊘ Doublon ignoré: ${newActor.name}`, 'warning');
+                        } else {
+                            mergedActors[category].push(newActor);
+                            added++;
+                            log(`  + Ajouté: ${newActor.name}`, 'success');
+                        }
+                    }
+                }
+
+                log(`\n📊 Résumé déduplication:`, 'info');
+                log(`  • ${duplicates} doublons évités`, 'warning');
+                log(`  • ${added} nouveaux acteurs ajoutés`, 'success');
+
+                return {
+                    data: mergedActors,
+                    duplicates,
+                    added
+                };
+            } catch (error) {
+                log(`❌ Erreur déduplication: ${error.message}`, 'error');
+                return {
+                    data: newActors,
+                    duplicates: 0,
+                    added: Object.values(newActors).reduce((sum, arr) => sum + arr.length, 0)
+                };
+            }
+        }
+
         async function commitToGitHubAPI(allActors) {
             try {
                 const dataStr = JSON.stringify(allActors, null, 2);
@@ -424,14 +492,17 @@ ${Object.entries(allActors).map(([cat, items]) => `- ${cat}: ${items.length} act
                 const commitToGitHub = document.getElementById('commitToGitHub').checked;
 
                 if (commitToGitHub) {
+                    log('\n🔍 Vérification des doublons...', 'info');
+                    const deduplicated = await deduplicateActors(allActors);
+
                     log('\n📤 Commit sur GitHub en cours...', 'info');
-                    const success = await commitToGitHubAPI(allActors);
+                    const success = await commitToGitHubAPI(deduplicated.data);
 
                     if (success) {
                         totalSaved = totalFound;
                         updateStats();
                         setTimeout(() => {
-                            alert(`✅ Import terminé et committé sur GitHub !\n\n${totalFound} commerces trouvés et sauvegardés\n\n🎉 Les données sont en ligne !`);
+                            alert(`✅ Import terminé et committé sur GitHub !\n\n${totalFound} commerces trouvés\n${deduplicated.duplicates} doublons évités\n${deduplicated.added} nouveaux acteurs ajoutés\n\n🎉 Les données sont en ligne !`);
                         }, 1000);
                     } else {
                         log('⚠️  Échec du commit, téléchargement local...', 'warning');

@@ -560,9 +560,36 @@ Si une information n'est pas disponible, utilise une chaîne vide "". **N'inclus
                     log('⚠ Aucun événement existant, création du fichier', 'warning');
                 }
 
-                // Étape 2 : Fusionner les événements (ajouter les nouveaux à la fin)
-                const mergedEvents = [...existingEvents, ...events];
-                log(`✓ Fusion: ${existingEvents.length} existants + ${events.length} nouveaux = ${mergedEvents.length} total`, 'success');
+                // Étape 2 : Déduplication et fusion des événements
+                log('🔍 Vérification des doublons...', 'info');
+                let duplicates = 0;
+                let added = 0;
+                const mergedEvents = [...existingEvents];
+
+                for (const newEvent of events) {
+                    // Vérifier si un événement similaire existe déjà
+                    // Doublon = même date + même lieu/adresse
+                    const isDuplicate = existingEvents.some(existing =>
+                        existing.date === newEvent.date &&
+                        (existing.location.toLowerCase() === newEvent.location.toLowerCase() ||
+                         existing.address.toLowerCase() === newEvent.address.toLowerCase() ||
+                         existing.title.toLowerCase() === newEvent.title.toLowerCase())
+                    );
+
+                    if (isDuplicate) {
+                        duplicates++;
+                        log(`  ⊘ Doublon ignoré: ${newEvent.title} (${newEvent.date})`, 'warning');
+                    } else {
+                        mergedEvents.push(newEvent);
+                        added++;
+                        log(`  + Ajouté: ${newEvent.title} (${newEvent.date})`, 'success');
+                    }
+                }
+
+                log(`\n📊 Résumé:`, 'info');
+                log(`  • ${duplicates} doublons évités`, 'warning');
+                log(`  • ${added} nouveaux événements ajoutés`, 'success');
+                log(`  • ${mergedEvents.length} événements au total`, 'info');
 
                 // Étape 3 : Commit via l'API
                 log('📤 Envoi vers GitHub...', 'info');
@@ -592,7 +619,7 @@ ${events.map((e, i) => `${i + 1}. ${e.title} - ${e.date} à ${e.location}`).join
                 log('✅ Commit réussi sur GitHub !', 'success');
                 log(`   Commit SHA: ${result.commit.sha.substring(0, 7)}`, 'info');
 
-                alert(`✅ Événement(s) committé(s) sur GitHub !\n\n📊 ${count} événement(s) ajouté(s)\n📂 Total dans le fichier: ${mergedEvents.length}\n\n🎉 Les données sont en ligne !`);
+                alert(`✅ Événement(s) committé(s) sur GitHub !\n\n📊 ${count} événement(s) traité(s)\n${duplicates} doublons évités\n${added} nouveaux ajoutés\n📂 Total: ${mergedEvents.length} événements\n\n🎉 Les données sont en ligne !`);
 
             } catch (error) {
                 log(`❌ Erreur: ${error.message}`, 'error');

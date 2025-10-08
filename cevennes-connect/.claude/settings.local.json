@@ -9,7 +9,9 @@
       "Bash(python3:*)",
       "WebFetch(domain:snazzymaps.com)",
       "Bash(git ls-tree:*)",
-      "Bash(curl -s https://cevennes-sud-website.vercel.app/evenements.html)"
+      "Bash(curl -s https://cevennes-sud-website.vercel.app/evenements.html)",
+      "Bash(curl -s \"https://maps.googleapis.com/maps/api/geocode/json?address=Ganges%2C%20Cevennes%2C%20France&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw\")",
+      "Bash(curl -s \"https://cevennes-sud-website.vercel.app/api/geocode?address=Ganges,France\")"
     ],
     "deny": [],
     "ask": []

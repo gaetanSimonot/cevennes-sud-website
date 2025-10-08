@@ -296,14 +296,69 @@
                 </div>
             </div>
 
-            <!-- Admin Tools Section -->
+            <!-- Management Section -->
             <h2 class="font-display font-bold text-2xl text-white mb-6 fade-in" style="animation-delay: 0.5s;">
-                <i class="fas fa-tools mr-3"></i>Outils d'administration
+                <i class="fas fa-cog mr-3"></i>Gestion du contenu
+            </h2>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                <!-- Gestion Acteurs -->
+                <a href="admin-manage-actors.html" class="dashboard-card rounded-3xl p-8 block hover:no-underline fade-in" style="animation-delay: 0.6s;">
+                    <div class="flex items-center mb-4">
+                        <div class="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center mr-4">
+                            <i class="fas fa-users-cog text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-display font-bold text-2xl text-gray-900">Gestion Acteurs</h3>
+                            <p class="text-sm text-gray-600">Éditer, supprimer, gérer les niveaux premium</p>
+                        </div>
+                    </div>
+                    <div class="text-gray-600">
+                        <p class="text-sm">
+                            <i class="fas fa-check mr-2 text-green-600"></i>Édition complète
+                        </p>
+                        <p class="text-sm">
+                            <i class="fas fa-check mr-2 text-green-600"></i>Upgrade Standard/Premium/Mega
+                        </p>
+                        <p class="text-sm">
+                            <i class="fas fa-check mr-2 text-green-600"></i>Suppression d'acteurs
+                        </p>
+                    </div>
+                </a>
+
+                <!-- Gestion Événements -->
+                <a href="admin-manage-events.html" class="dashboard-card rounded-3xl p-8 block hover:no-underline fade-in" style="animation-delay: 0.7s;">
+                    <div class="flex items-center mb-4">
+                        <div class="w-14 h-14 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center mr-4">
+                            <i class="fas fa-calendar-edit text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-display font-bold text-2xl text-gray-900">Gestion Événements</h3>
+                            <p class="text-sm text-gray-600">Éditer, dupliquer, supprimer vos événements</p>
+                        </div>
+                    </div>
+                    <div class="text-gray-600">
+                        <p class="text-sm">
+                            <i class="fas fa-check mr-2 text-green-600"></i>Édition complète
+                        </p>
+                        <p class="text-sm">
+                            <i class="fas fa-check mr-2 text-green-600"></i>Duplication rapide
+                        </p>
+                        <p class="text-sm">
+                            <i class="fas fa-check mr-2 text-green-600"></i>Tri et filtres avancés
+                        </p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Import Tools Section -->
+            <h2 class="font-display font-bold text-2xl text-white mb-6 fade-in" style="animation-delay: 0.8s;">
+                <i class="fas fa-robot mr-3"></i>Outils d'import automatique
             </h2>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <!-- Acteurs Locaux Tools -->
-                <div class="dashboard-card rounded-3xl p-8 fade-in" style="animation-delay: 0.6s;">
+                <div class="dashboard-card rounded-3xl p-8 fade-in" style="animation-delay: 0.9s;">
                     <div class="flex items-center mb-6">
                         <div class="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl flex items-center justify-center mr-4">
                             <i class="fas fa-store text-white text-xl"></i>
@@ -323,7 +378,7 @@
                                     </div>
                                     <div>
                                         <h4 class="font-bold text-lg text-gray-900">Import Google Places</h4>
-                                        <p class="text-sm text-gray-600">Importation automatique via Google Places API</p>
+                                        <p class="text-sm text-gray-600">Import automatique + déduplication</p>
                                     </div>
                                 </div>
                                 <i class="fas fa-arrow-right text-gray-400 text-xl"></i>
@@ -333,7 +388,7 @@
                 </div>
 
                 <!-- Événements Tools -->
-                <div class="dashboard-card rounded-3xl p-8 fade-in" style="animation-delay: 0.7s;">
+                <div class="dashboard-card rounded-3xl p-8 fade-in" style="animation-delay: 1s;">
                     <div class="flex items-center mb-6">
                         <div class="w-14 h-14 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center mr-4">
                             <i class="fas fa-calendar-star text-white text-xl"></i>
@@ -353,7 +408,7 @@
                                     </div>
                                     <div>
                                         <h4 class="font-bold text-lg text-gray-900">Artefact IA</h4>
-                                        <p class="text-sm text-gray-600">Extraction automatique depuis images/affiches/URLs</p>
+                                        <p class="text-sm text-gray-600">Extraction depuis images/URLs + déduplication</p>
                                     </div>
                                 </div>
                                 <i class="fas fa-arrow-right text-gray-400 text-xl"></i>
