@@ -438,6 +438,9 @@ Si une information n'est pas disponible, utilise une chaîne vide "". **N'inclus
                     // NE PAS inclure les images base64 - utiliser des URLs
                     eventData.image = 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
 
+                    // Définir le niveau premium par défaut
+                    eventData.premium_level = 'standard';
+
                     // Géocoder l'adresse si elle existe
                     if (eventData.address && eventData.address.trim() !== '') {
                         try {
