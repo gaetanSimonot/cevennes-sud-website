@@ -16,6 +16,9 @@ export default function EvenementsPage() {
   const [activeCategory, setActiveCategory] = useState<EventCategory | 'all'>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [viewMode, setViewMode] = useState<'cards' | 'map'>('cards')
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
+  const [timeFilter, setTimeFilter] = useState<'all' | 'upcoming' | 'past'>('all')
 
   useEffect(() => {
     // Load events from JSON
@@ -42,8 +45,26 @@ export default function EvenementsPage() {
       result = filterBySearch(result, searchTerm)
     }
 
+    // Filter by time (upcoming/past)
+    const now = new Date()
+    now.setHours(0, 0, 0, 0) // Reset to start of day
+
+    if (timeFilter === 'upcoming') {
+      result = result.filter(event => new Date(event.date) >= now)
+    } else if (timeFilter === 'past') {
+      result = result.filter(event => new Date(event.date) < now)
+    }
+
+    // Filter by date range
+    if (startDate) {
+      result = result.filter(event => new Date(event.date) >= new Date(startDate))
+    }
+    if (endDate) {
+      result = result.filter(event => new Date(event.date) <= new Date(endDate))
+    }
+
     setFilteredEvents(result)
-  }, [activeCategory, searchTerm, events])
+  }, [activeCategory, searchTerm, events, timeFilter, startDate, endDate])
 
   const categories: { key: EventCategory | 'all'; label: string; icon: string }[] = [
     { key: 'all', label: 'Tous', icon: '🎉' },
@@ -109,6 +130,98 @@ export default function EvenementsPage() {
                     🗺️ Carte
                   </Button>
                 </div>
+              </div>
+
+              {/* Date Filters */}
+              <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm">
+                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  📅 Filtrer par date
+                </h3>
+
+                {/* Quick filters */}
+                <div className="flex flex-wrap gap-3 mb-4">
+                  <Button
+                    variant={timeFilter === 'all' ? 'primary' : 'secondary'}
+                    size="sm"
+                    onClick={() => {
+                      setTimeFilter('all')
+                      setStartDate('')
+                      setEndDate('')
+                    }}
+                  >
+                    Tous
+                  </Button>
+                  <Button
+                    variant={timeFilter === 'upcoming' ? 'primary' : 'secondary'}
+                    size="sm"
+                    onClick={() => {
+                      setTimeFilter('upcoming')
+                      setStartDate('')
+                      setEndDate('')
+                    }}
+                  >
+                    À venir
+                  </Button>
+                  <Button
+                    variant={timeFilter === 'past' ? 'primary' : 'secondary'}
+                    size="sm"
+                    onClick={() => {
+                      setTimeFilter('past')
+                      setStartDate('')
+                      setEndDate('')
+                    }}
+                  >
+                    Passés
+                  </Button>
+                </div>
+
+                {/* Custom date range */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Date de début
+                    </label>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => {
+                        setStartDate(e.target.value)
+                        setTimeFilter('all')
+                      }}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Date de fin
+                    </label>
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => {
+                        setEndDate(e.target.value)
+                        setTimeFilter('all')
+                      }}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+                    />
+                  </div>
+                </div>
+
+                {(startDate || endDate) && (
+                  <div className="mt-4">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setStartDate('')
+                        setEndDate('')
+                        setTimeFilter('all')
+                      }}
+                    >
+                      ✕ Effacer les dates
+                    </Button>
+                  </div>
+                )}
               </div>
 
               {/* Category Filters */}
