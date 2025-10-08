@@ -3114,7 +3114,7 @@
     {
       "name": "V.elec",
       "category": "artisan",
-      "description": "electrician, establishment, point_of_interest",
+      "description": "ELECTRICIEN HYPER CLASSE",
       "address": "3 Pl. du Marechal Juin, 34190 Laroque, France",
       "phone": "06 13 33 30 00",
       "email": "",
@@ -5584,6 +5584,24 @@
       "lng": 3.7086,
       "premium_level": "mega-premium",
       "image": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "rating": 0,
+      "reviews_count": 0
+    },
+    {
+      "id": 1759890111721,
+      "name": "Lucile Le Bihan",
+      "category": "therapeute",
+      "description": "Psychothérapie et equithérapie",
+      "address": "21 Rue Biron, Ganges, France",
+      "phone": "07*******",
+      "email": "",
+      "website": "https://lescheminsdesoi.fr/",
+      "horaires": "Horaires non renseignés",
+      "specialites": [],
+      "lat": 43.934257,
+      "lng": 3.70656,
+      "premium_level": "mega-premium",
+      "image": "https://lescheminsdesoi.fr/wp-content/uploads/2022/04/mon-parcours-psychologue-ganges-herault-34-216x300.jpg",
       "rating": 0,
       "reviews_count": 0
     }
