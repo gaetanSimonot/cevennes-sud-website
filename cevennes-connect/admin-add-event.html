@@ -167,35 +167,14 @@
 
             <!-- Boutons -->
             <div class="flex gap-4 pt-6">
-                <button type="submit" class="flex-1 bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition-all">
-                    <i class="fas fa-download mr-2"></i>Télécharger JSON
+                <button type="button" onclick="saveEventToGitHub()" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition-all">
+                    <i class="fab fa-github mr-2"></i>Commit GitHub
                 </button>
                 <button type="button" onclick="resetForm()" class="px-8 py-4 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-all">
                     <i class="fas fa-redo mr-2"></i>Réinitialiser
                 </button>
             </div>
         </form>
-
-        <!-- Résultat JSON -->
-        <div id="result" class="mt-8 hidden">
-            <h3 class="text-2xl font-bold text-gray-900 mb-4">
-                <i class="fas fa-code mr-2 text-purple-600"></i>JSON Généré
-            </h3>
-            <div class="bg-gray-900 text-green-400 p-6 rounded-xl overflow-x-auto">
-                <pre id="jsonOutput" class="text-sm"></pre>
-            </div>
-            <div class="mt-4 flex gap-4">
-                <button onclick="saveToGitHub()" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-xl transition-all">
-                    <i class="fab fa-github mr-2"></i>Commit GitHub
-                </button>
-                <button onclick="copyJSON()" class="flex-1 bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-all">
-                    <i class="fas fa-copy mr-2"></i>Copier JSON
-                </button>
-                <button onclick="downloadJSON()" class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all">
-                    <i class="fas fa-download mr-2"></i>Télécharger
-                </button>
-            </div>
-        </div>
 
         <div class="mt-6 text-center">
             <a href="evenements.html" class="inline-block bg-gray-200 text-gray-700 px-8 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-all">
@@ -253,11 +232,9 @@
             document.getElementById('coordinates').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
         }
 
-        // Soumettre le formulaire
-        document.getElementById('eventForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const formData = {
+        // Créer l'événement depuis le formulaire
+        function createEventFromForm() {
+            return {
                 id: Date.now(),
                 title: document.getElementById('title').value,
                 category: document.getElementById('category').value,
@@ -275,51 +252,22 @@
                 premium_level: 'standard',
                 image: document.getElementById('image').value || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
             };
-
-            generatedData = formData;
-
-            // Afficher le JSON
-            document.getElementById('jsonOutput').textContent = JSON.stringify(formData, null, 2);
-            document.getElementById('result').classList.remove('hidden');
-            document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
-
-            // Télécharger automatiquement
-            downloadJSON();
-        });
+        }
 
         function resetForm() {
             document.getElementById('eventForm').reset();
-            document.getElementById('result').classList.add('hidden');
             updateLocation(43.9339, 3.7086);
             marker.setPosition({ lat: 43.9339, lng: 3.7086 });
             map.setCenter({ lat: 43.9339, lng: 3.7086 });
         }
 
-        function copyJSON() {
-            const jsonText = document.getElementById('jsonOutput').textContent;
-            navigator.clipboard.writeText(jsonText).then(() => {
-                alert('✅ JSON copié dans le presse-papier !');
-            });
-        }
+        async function saveEventToGitHub() {
+            // Créer l'événement depuis le formulaire
+            const eventData = createEventFromForm();
 
-        function downloadJSON() {
-            if (!generatedData) return;
-
-            const dataStr = JSON.stringify(generatedData, null, 2);
-            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-            const exportFileDefaultName = `event-${generatedData.id}.json`;
-
-            const linkElement = document.createElement('a');
-            linkElement.setAttribute('href', dataUri);
-            linkElement.setAttribute('download', exportFileDefaultName);
-            linkElement.click();
-
-            alert(`✅ Fichier téléchargé: ${exportFileDefaultName}`);
-        }
-
-        async function saveToGitHub() {
-            if (!generatedData) {
-                alert('❌ Aucun événement à sauvegarder. Créez d\'abord un événement.');
+            // Validation basique
+            if (!eventData.title || !eventData.date || !eventData.location) {
+                alert('❌ Veuillez remplir au moins le titre, la date et le lieu.');
                 return;
             }
 
@@ -338,10 +286,10 @@
 
                 // 2. Vérifier les doublons
                 const isDuplicate = currentEvents.some(existing =>
-                    existing.date === generatedData.date &&
-                    (existing.location.toLowerCase() === generatedData.location.toLowerCase() ||
-                     existing.address.toLowerCase() === generatedData.address.toLowerCase() ||
-                     existing.title.toLowerCase() === generatedData.title.toLowerCase())
+                    existing.date === eventData.date &&
+                    (existing.location.toLowerCase() === eventData.location.toLowerCase() ||
+                     existing.address.toLowerCase() === eventData.address.toLowerCase() ||
+                     existing.title.toLowerCase() === eventData.title.toLowerCase())
                 );
 
                 if (isDuplicate) {
@@ -353,7 +301,7 @@
                 }
 
                 // 3. Ajouter le nouvel événement
-                currentEvents.push(generatedData);
+                currentEvents.push(eventData);
 
                 // 4. Commit sur GitHub
                 const commitResponse = await fetch('/api/github-commit', {
@@ -362,10 +310,10 @@
                     body: JSON.stringify({
                         filePath: 'cevennes-connect/data/events-data.json',
                         content: JSON.stringify(currentEvents, null, 2),
-                        commitMessage: `✨ Ajout événement: ${generatedData.title}
+                        commitMessage: `✨ Ajout événement: ${eventData.title}
 
-📅 ${generatedData.date} à ${generatedData.time}
-📍 ${generatedData.location}
+📅 ${eventData.date} à ${eventData.time}
+📍 ${eventData.location}
 
 🤖 Generated via admin-add-event.html`
                     })
@@ -376,7 +324,7 @@
                     throw new Error(error.error || 'Erreur lors du commit sur GitHub');
                 }
 
-                alert(`✅ Événement "${generatedData.title}" ajouté et committé sur GitHub !`);
+                alert(`✅ Événement "${eventData.title}" ajouté et committé sur GitHub !`);
 
                 // Reset form
                 resetForm();
