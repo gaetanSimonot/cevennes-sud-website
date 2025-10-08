@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function POST(req: NextRequest) {
   try {
     const GITHUB_TOKEN = process.env.GITHUB_TOKEN
-    const GITHUB_REPO = process.env.GITHUB_REPO || 'gaetanSimonot/cevennes-connect'
+    const GITHUB_REPO = process.env.GITHUB_REPO || 'gaetanSimonot/cevennes-sud-website'
 
     if (!GITHUB_TOKEN) {
       console.error('❌ GITHUB_TOKEN not configured')
