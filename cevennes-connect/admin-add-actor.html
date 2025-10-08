@@ -303,6 +303,7 @@
                 specialites: document.getElementById('specialites').value.split(',').map(s => s.trim()).filter(s => s),
                 lat: parseFloat(document.getElementById('lat').value),
                 lng: parseFloat(document.getElementById('lng').value),
+                premium_level: 'standard',
                 image: document.getElementById('image').value || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
                 rating: 0,
                 reviews_count: 0
