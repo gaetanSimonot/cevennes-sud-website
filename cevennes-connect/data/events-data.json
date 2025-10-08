@@ -31,7 +31,8 @@
     "image": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     "id": 1759882290669,
     "lat": 43.93025309999999,
-    "lng": 3.7047637
+    "lng": 3.7047637,
+    "premium_level": "mega-premium"
   },
   {
     "title": "Séance Cinéma Surprise",
@@ -82,7 +83,8 @@
     "image": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     "id": 1759882290672,
     "lat": 43.903289,
-    "lng": 3.727992
+    "lng": 3.727992,
+    "premium_level": "premium"
   },
   {
     "title": "Fête de l'automne",
@@ -116,6 +118,7 @@
     "image": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
     "id": 1759882290674,
     "lat": 43.8928288,
-    "lng": 3.7354855
+    "lng": 3.7354855,
+    "premium_level": "mega-premium"
   }
 ]
