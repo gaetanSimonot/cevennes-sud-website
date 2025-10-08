@@ -113,6 +113,28 @@ export default function AdminPage() {
             </p>
           </Link>
 
+          {/* Créer Événement */}
+          <Link href="/admin/create-event" className="card hover:scale-105 transition-transform">
+            <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-600 rounded-2xl flex items-center justify-center mb-4">
+              <span className="text-3xl">➕🎉</span>
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Créer Événement</h3>
+            <p className="text-gray-600">
+              Ajouter un événement manuellement
+            </p>
+          </Link>
+
+          {/* Créer Acteur */}
+          <Link href="/admin/create-actor" className="card hover:scale-105 transition-transform">
+            <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-2xl flex items-center justify-center mb-4">
+              <span className="text-3xl">➕🏪</span>
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Créer Acteur</h3>
+            <p className="text-gray-600">
+              Ajouter un acteur local manuellement
+            </p>
+          </Link>
+
           {/* Gestion Acteurs */}
           <Link href="/admin/manage-actors" className="card hover:scale-105 transition-transform">
             <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mb-4">
