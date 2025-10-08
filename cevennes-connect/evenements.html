@@ -292,7 +292,7 @@
             <div class="flex justify-between items-center py-4">
                 <!-- Logo -->
                 <div class="flex items-center space-x-3 mr-8">
-                    <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <div class="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
                         <i class="fas fa-mountain text-white text-xl"></i>
                     </div>
                     <div>
@@ -303,34 +303,63 @@
 
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex space-x-8">
-                    <a href="index.html" class="text-gray-700 hover:text-purple-600 transition-colors text-lg relative group">
+                    <a href="index.html" class="text-gray-700 hover:text-pink-600 transition-colors text-lg relative group">
                         Accueil
-                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-600 transition-all duration-300 group-hover:w-full"></span>
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-600 transition-all duration-300 group-hover:w-full"></span>
                     </a>
-                    <a href="acteurs-locaux.html" class="text-gray-700 hover:text-purple-600 transition-colors text-lg relative group">
+                    <a href="acteurs-locaux.html" class="text-gray-700 hover:text-pink-600 transition-colors text-lg relative group">
                         Acteurs Locaux
-                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-600 transition-all duration-300 group-hover:w-full"></span>
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-600 transition-all duration-300 group-hover:w-full"></span>
                     </a>
-                    <a href="evenements.html" class="text-purple-600 font-semibold text-lg relative group">
+                    <a href="evenements.html" class="text-pink-600 font-semibold text-lg relative group">
                         Événements
-                        <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-purple-600"></span>
+                        <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-pink-600"></span>
                     </a>
-                    <a href="echangeons.html" class="text-gray-700 hover:text-purple-600 transition-colors text-lg relative group">
+                    <a href="echangeons.html" class="text-gray-700 hover:text-pink-600 transition-colors text-lg relative group">
                         Petites Annonces
-                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-600 transition-all duration-300 group-hover:w-full"></span>
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-600 transition-all duration-300 group-hover:w-full"></span>
                     </a>
-                    <a href="parlons-en.html" class="text-gray-700 hover:text-purple-600 transition-colors text-lg relative group">
+                    <a href="parlons-en.html" class="text-gray-700 hover:text-pink-600 transition-colors text-lg relative group">
                         Parlons-en
-                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-600 transition-all duration-300 group-hover:w-full"></span>
+                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-600 transition-all duration-300 group-hover:w-full"></span>
                     </a>
-                    <a href="troc-tout.html" class="text-gray-700 hover:text-purple-600 transition-colors text-lg relative group">
-                        Troc Tout
-                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-600 transition-all duration-300 group-hover:w-full"></span>
-                    </a>
-                    <a href="panneau-village.html" class="text-gray-700 hover:text-purple-600 transition-colors text-lg relative group">
-                        Panneau du Village
-                        <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-600 transition-all duration-300 group-hover:w-full"></span>
-                    </a>
+
+                    <!-- Utile Dropdown -->
+                    <div class="relative group">
+                        <a href="#" class="text-gray-700 hover:text-pink-600 transition-colors text-lg relative group flex items-center">
+                            Utile
+                            <i class="fas fa-chevron-down ml-1 text-sm transition-transform group-hover:rotate-180"></i>
+                            <span class="absolute -bottom-1 left-0 w-0 h-0.5 bg-pink-600 transition-all duration-300 group-hover:w-full"></span>
+                        </a>
+                        <div class="absolute top-full left-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-0 translate-y-2">
+                            <div class="p-2">
+                                <a href="covoiturage.html" class="flex items-center p-3 rounded-xl hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-car text-green-500 w-5"></i>
+                                    <span class="ml-3 text-gray-700 font-medium">Covoiturage</span>
+                                </a>
+                                <a href="troc-tout.html" class="flex items-center p-3 rounded-xl hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-exchange-alt text-emerald-500 w-5"></i>
+                                    <span class="ml-3 text-gray-700 font-medium">Troc & Services</span>
+                                </a>
+                                <a href="carte.html" class="flex items-center p-3 rounded-xl hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-map-marked-alt text-blue-500 w-5"></i>
+                                    <span class="ml-3 text-gray-700 font-medium">Carte Interactive</span>
+                                </a>
+                                <a href="boite-idees.html" class="flex items-center p-3 rounded-xl hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-lightbulb text-yellow-500 w-5"></i>
+                                    <span class="ml-3 text-gray-700 font-medium">Boîte à Idées</span>
+                                </a>
+                                <a href="itineraires-rando.html" class="flex items-center p-3 rounded-xl hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-hiking text-orange-500 w-5"></i>
+                                    <span class="ml-3 text-gray-700 font-medium">Randonnées</span>
+                                </a>
+                                <a href="panneau-village.html" class="flex items-center p-3 rounded-xl hover:bg-gray-50 transition-colors">
+                                    <i class="fas fa-bullhorn text-red-500 w-5"></i>
+                                    <span class="ml-3 text-gray-700 font-medium">Panneau Village</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Mobile Menu Button -->
@@ -340,19 +369,33 @@
             </div>
 
             <!-- Mobile Menu -->
-            <div id="mobile-menu" class="md:hidden hidden bg-white/95 backdrop-blur-xl rounded-2xl mt-4 p-6 shadow-xl border border-white/20">
-                <div class="space-y-4">
-                    <a href="index.html" class="block text-gray-700 hover:text-purple-600 transition-colors text-lg">Accueil</a>
-                    <a href="acteurs-locaux.html" class="block text-gray-700 hover:text-purple-600 transition-colors text-lg">Acteurs Locaux</a>
-                    <a href="evenements.html" class="block text-purple-600 font-semibold text-lg">Événements</a>
-                    <a href="echangeons.html" class="block text-gray-700 hover:text-purple-600 transition-colors text-lg">Petites Annonces</a>
-                    <a href="parlons-en.html" class="block text-gray-700 hover:text-purple-600 transition-colors text-lg">Parlons-en</a>
-                    <a href="troc-tout.html" class="block text-gray-700 hover:text-purple-600 transition-colors text-lg">Troc Tout</a>
-                    <a href="panneau-village.html" class="block text-gray-700 hover:text-purple-600 transition-colors text-lg">Panneau du Village</a>
+            <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-100">
+                <div class="px-4 py-2 space-y-1">
+                    <a href="index.html" class="block py-2 text-gray-700">Accueil</a>
+                    <a href="acteurs-locaux.html" class="block py-2 text-gray-700">Acteurs Locaux</a>
+                    <a href="evenements.html" class="block py-2 text-pink-600 font-semibold">Événements</a>
+                    <a href="echangeons.html" class="block py-2 text-gray-700">Petites Annonces</a>
+                    <a href="parlons-en.html" class="block py-2 text-gray-700">Parlons-en</a>
+                    <div class="border-t border-gray-200 mt-2 pt-2">
+                        <p class="text-sm font-semibold text-gray-500 px-2 mb-2">Utile</p>
+                        <a href="covoiturage.html" class="block py-2 text-gray-700 pl-4">Covoiturage</a>
+                        <a href="troc-tout.html" class="block py-2 text-gray-700 pl-4">Troc & Services</a>
+                        <a href="carte.html" class="block py-2 text-gray-700 pl-4">Carte Interactive</a>
+                        <a href="boite-idees.html" class="block py-2 text-gray-700 pl-4">Boîte à Idées</a>
+                        <a href="itineraires-rando.html" class="block py-2 text-gray-700 pl-4">Randonnées</a>
+                        <a href="panneau-village.html" class="block py-2 text-gray-700 pl-4">Panneau Village</a>
+                    </div>
                 </div>
             </div>
         </div>
     </nav>
+
+    <script>
+        // Toggle mobile menu
+        document.getElementById('mobile-menu-btn')?.addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
+    </script>
 
     <!-- Hero Section -->
     <section class="hero-background pt-20 pb-12 text-white relative overflow-hidden">
@@ -466,14 +509,14 @@
                     <div class="calendar-container rounded-3xl p-8">
                         <div class="flex items-center justify-between mb-6">
                             <h2 class="font-display font-bold text-2xl text-gray-900">
-                                <i class="fas fa-calendar-alt mr-3 text-purple-600"></i>
+                                <i class="fas fa-calendar-alt mr-3 text-pink-600"></i>
                                 Calendrier
                             </h2>
                             <div class="flex space-x-2">
-                                <button id="prevMonth" class="bg-purple-100 text-purple-600 px-3 py-2 rounded-lg hover:bg-purple-200 transition-colors">
+                                <button id="prevMonth" class="bg-purple-100 text-pink-600 px-3 py-2 rounded-lg hover:bg-purple-200 transition-colors">
                                     <i class="fas fa-chevron-left"></i>
                                 </button>
-                                <button id="nextMonth" class="bg-purple-100 text-purple-600 px-3 py-2 rounded-lg hover:bg-purple-200 transition-colors">
+                                <button id="nextMonth" class="bg-purple-100 text-pink-600 px-3 py-2 rounded-lg hover:bg-purple-200 transition-colors">
                                     <i class="fas fa-chevron-right"></i>
                                 </button>
                             </div>
@@ -487,11 +530,11 @@
                     <div class="premium-card rounded-3xl p-8">
                         <div class="flex items-center justify-between mb-6">
                             <h2 class="font-display font-bold text-2xl text-gray-900">
-                                <i class="fas fa-map-marked-alt mr-3 text-purple-600"></i>
+                                <i class="fas fa-map-marked-alt mr-3 text-pink-600"></i>
                                 Carte des Événements
                             </h2>
                             <div class="flex space-x-3">
-                                <button onclick="centerMap()" class="bg-purple-100 text-purple-600 px-4 py-2 rounded-xl font-medium hover:bg-purple-200 transition-colors">
+                                <button onclick="centerMap()" class="bg-purple-100 text-pink-600 px-4 py-2 rounded-xl font-medium hover:bg-purple-200 transition-colors">
                                     <i class="fas fa-crosshairs mr-2"></i>Centrer
                                 </button>
                             </div>
@@ -533,7 +576,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-12">
                 <div class="lg:col-span-2">
                     <div class="flex items-center space-x-4 mb-8">
-                        <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl">
+                        <div class="w-16 h-16 bg-gradient-to-br from-pink-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-xl">
                             <i class="fas fa-mountain text-white text-2xl"></i>
                         </div>
                         <div>
@@ -862,11 +905,11 @@
                                     </div>
                                 </div>
                                 <div class="flex items-center justify-between mb-6">
-                                    <div class="text-lg font-bold text-purple-600">${event.price}</div>
+                                    <div class="text-lg font-bold text-pink-600">${event.price}</div>
                                 </div>
                                 <div class="flex space-x-3">
                                     ${event.contact ? `
-                                        <a href="tel:${event.contact}" class="flex-1 bg-purple-100 text-purple-600 px-4 py-2 rounded-xl font-medium text-center hover:bg-purple-200 transition-colors">
+                                        <a href="tel:${event.contact}" class="flex-1 bg-purple-100 text-pink-600 px-4 py-2 rounded-xl font-medium text-center hover:bg-purple-200 transition-colors">
                                             <i class="fas fa-phone mr-2"></i>Contacter
                                         </a>
                                     ` : ''}
@@ -920,7 +963,7 @@
                                 </div>
                                 <div class="flex items-center">
                                     <i class="fas fa-ticket-alt w-5 mr-3 text-purple-500"></i>
-                                    <span class="text-2xl font-bold text-purple-600">${event.price}</span>
+                                    <span class="text-2xl font-bold text-pink-600">${event.price}</span>
                                 </div>
                             </div>
                             <div class="flex space-x-4">
@@ -989,7 +1032,7 @@
                     <div class="calendar-day text-center py-2 px-1 text-sm cursor-pointer rounded
                         ${!isCurrentMonth ? 'text-gray-300' : 'text-gray-700'}
                         ${hasEvents ? 'has-events' : ''}
-                        ${isToday ? 'font-bold text-purple-600' : ''}"
+                        ${isToday ? 'font-bold text-pink-600' : ''}"
                         data-date="${dateStr}">
                         ${currentDateObj.getDate()}
                     </div>
