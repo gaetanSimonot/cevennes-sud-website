@@ -234,10 +234,22 @@
 
         // Créer l'événement depuis le formulaire
         function createEventFromForm() {
+            const category = document.getElementById('category').value;
+
+            // Choisir une image selon la catégorie (Unsplash - gratuit)
+            const categoryImages = {
+                'festival': 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Festival coloré
+                'marche': 'https://images.unsplash.com/photo-1488459716781-31db52582fe9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Marché local
+                'culture': 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Concert/Musique
+                'sport': 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80', // Sport/Course
+                'atelier': 'https://images.unsplash.com/photo-1556761175-4b46a572b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' // Atelier/Formation
+            };
+            const defaultImage = categoryImages[category] || categoryImages['culture'];
+
             return {
                 id: Date.now(),
                 title: document.getElementById('title').value,
-                category: document.getElementById('category').value,
+                category: category,
                 description: document.getElementById('description').value,
                 date: document.getElementById('date').value,
                 time: document.getElementById('time').value,
@@ -250,7 +262,7 @@
                 lat: parseFloat(document.getElementById('lat').value),
                 lng: parseFloat(document.getElementById('lng').value),
                 premium_level: 'standard',
-                image: document.getElementById('image').value || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+                image: document.getElementById('image').value || defaultImage
             };
         }
 
