@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import fs from 'fs'
 import path from 'path'
 
+export const dynamic = 'force-dynamic'
+
 const DATA_PATH = path.join(process.cwd(), 'public', 'data', 'events-data.json')
 
 // GET single event

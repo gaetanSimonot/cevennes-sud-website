@@ -3,6 +3,7 @@ export type ActorCategory = 'commerce' | 'restaurant' | 'artisan' | 'therapeute'
 export type PremiumLevel = 'standard' | 'premium' | 'mega-premium'
 
 export interface Actor {
+  id?: string
   name: string
   category: ActorCategory
   description: string
@@ -10,11 +11,20 @@ export interface Actor {
   phone: string
   email: string
   website: string
-  horaires: string
-  specialites: string[]
+  horaires?: string
+  hours?: string // Alias for horaires
+  opening_hours?: string // Alternative field
+  specialites?: string[]
+  tags?: string[]
   lat: number
   lng: number
+  latitude?: number
+  longitude?: number
   image: string
+  logo_url?: string
+  photos?: string[]
+  facebook?: string
+  instagram?: string
   rating?: number
   reviews_count?: number
   premium_level?: PremiumLevel
