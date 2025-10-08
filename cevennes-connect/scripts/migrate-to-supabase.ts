@@ -7,6 +7,27 @@
 import { createClient } from '@supabase/supabase-js'
 import fs from 'fs'
 import path from 'path'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+
+// Load .env.local manually for ts-node
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+const envPath = path.join(__dirname, '..', '.env.local')
+
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf-8')
+  envContent.split('\n').forEach(line => {
+    const match = line.match(/^([^=:#]+)=(.*)$/)
+    if (match) {
+      const key = match[1].trim()
+      const value = match[2].trim()
+      if (!process.env[key]) {
+        process.env[key] = value
+      }
+    }
+  })
+}
 
 // Supabase client with service role
 const supabase = createClient(
@@ -92,22 +113,22 @@ async function migrateActors() {
     for (const [category, actors] of Object.entries(actorsJSON)) {
       if (Array.isArray(actors)) {
         actors.forEach((actor: any, index: number) => {
+          // Only include fields that exist in Supabase schema
           allActors.push({
-            ...actor,
-            category: category,
-            // Generate stable ID if not present
             id: actor.id || `${category}-${index}`,
+            name: actor.name,
+            category: category,
             description: actor.description || '',
             address: actor.address || '',
             phone: actor.phone || '',
             email: actor.email || '',
             website: actor.website || '',
-            horaires: actor.horaires || actor.hours || actor.opening_hours,
+            horaires: actor.horaires || actor.hours || actor.opening_hours || null,
             specialites: actor.specialites || [],
             lat: actor.lat || actor.latitude || 43.9339,
             lng: actor.lng || actor.longitude || 3.7086,
             image: actor.image || actor.logo_url || '',
-            rating: actor.rating,
+            rating: actor.rating || null,
             reviews_count: actor.reviews_count || 0,
             premium_level: actor.premium_level || 'standard'
           })
@@ -184,8 +205,17 @@ async function main() {
 
     console.log('✅ Environment variables found\n')
 
-    // Migrate events
-    const eventsInserted = await migrateEvents()
+    // Migrate events (skip if already exist)
+    let eventsInserted = 0
+    try {
+      eventsInserted = await migrateEvents()
+    } catch (error: any) {
+      if (error.code === '23505') {
+        console.log('⚠️  Events already migrated, skipping...\n')
+      } else {
+        throw error
+      }
+    }
 
     // Migrate actors
     const actorsInserted = await migrateActors()
