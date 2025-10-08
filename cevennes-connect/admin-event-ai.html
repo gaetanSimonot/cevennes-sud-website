@@ -153,6 +153,9 @@
                         <button onclick="downloadJSON()" class="flex-1 bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-all">
                             <i class="fas fa-download mr-2"></i>Télécharger
                         </button>
+                        <button onclick="commitToGitHub()" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-xl transition-all">
+                            <i class="fab fa-github mr-2"></i>Commit GitHub
+                        </button>
                     </div>
                 </div>
             </div>
@@ -527,6 +530,74 @@ Si une information n'est pas disponible, utilise une chaîne vide "". **N'inclus
 
             const count = Array.isArray(generatedEvent) ? generatedEvent.length : 1;
             alert(`✅ Fichier téléchargé: ${exportFileDefaultName}\n\n📊 ${count} événement(s) généré(s)\n\n📝 PROCHAINE ÉTAPE:\n1. Va dans le dossier data/\n2. Ouvre events-data.json\n3. Ajoute ${count > 1 ? 'ces événements' : 'cet événement'} dans le tableau JSON\n4. Commit sur GitHub`);
+        }
+
+        async function commitToGitHub() {
+            if (!generatedEvent) {
+                alert('❌ Aucun événement à committer !');
+                return;
+            }
+
+            const count = Array.isArray(generatedEvent) ? generatedEvent.length : 1;
+            const events = Array.isArray(generatedEvent) ? generatedEvent : [generatedEvent];
+
+            if (!confirm(`Êtes-vous sûr de vouloir committer ${count} événement(s) sur GitHub ?\n\nCela va FUSIONNER les nouveaux événements avec ceux existants dans events-data.json`)) {
+                return;
+            }
+
+            log('📤 Chargement des événements existants...', 'info');
+
+            try {
+                // Étape 1 : Charger les événements existants
+                let existingEvents = [];
+                try {
+                    const response = await fetch('/data/events-data.json');
+                    if (response.ok) {
+                        existingEvents = await response.json();
+                        log(`✓ ${existingEvents.length} événements existants chargés`, 'success');
+                    }
+                } catch (error) {
+                    log('⚠ Aucun événement existant, création du fichier', 'warning');
+                }
+
+                // Étape 2 : Fusionner les événements (ajouter les nouveaux à la fin)
+                const mergedEvents = [...existingEvents, ...events];
+                log(`✓ Fusion: ${existingEvents.length} existants + ${events.length} nouveaux = ${mergedEvents.length} total`, 'success');
+
+                // Étape 3 : Commit via l'API
+                log('📤 Envoi vers GitHub...', 'info');
+
+                const response = await fetch('/api/github-commit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        filePath: 'cevennes-connect/data/events-data.json',
+                        content: JSON.stringify(mergedEvents, null, 2),
+                        commitMessage: `🎉 Artefact IA - Ajout de ${count} événement(s)
+
+${events.map((e, i) => `${i + 1}. ${e.title} - ${e.date} à ${e.location}`).join('\n')}
+
+🤖 Generated via admin-event-ai.html`
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Erreur inconnue');
+                }
+
+                const result = await response.json();
+                log('✅ Commit réussi sur GitHub !', 'success');
+                log(`   Commit SHA: ${result.commit.sha.substring(0, 7)}`, 'info');
+
+                alert(`✅ Événement(s) committé(s) sur GitHub !\n\n📊 ${count} événement(s) ajouté(s)\n📂 Total dans le fichier: ${mergedEvents.length}\n\n🎉 Les données sont en ligne !`);
+
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`, 'error');
+                alert(`❌ Erreur lors du commit:\n\n${error.message}\n\nVeuillez réessayer ou utiliser le téléchargement local.`);
+            }
         }
     </script>
 </body>

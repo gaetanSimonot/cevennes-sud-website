@@ -86,6 +86,21 @@
             </div>
         </div>
 
+        <!-- Option de sauvegarde -->
+        <div class="mb-6 bg-blue-50 border-2 border-blue-200 rounded-xl p-5">
+            <label class="flex items-center cursor-pointer">
+                <input type="checkbox" id="commitToGitHub" class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
+                <div class="ml-4">
+                    <span class="font-semibold text-gray-900 text-lg">
+                        <i class="fab fa-github mr-2 text-gray-800"></i>Commit automatique sur GitHub
+                    </span>
+                    <p class="text-sm text-gray-600 mt-1">
+                        Les données seront automatiquement commitées sur le dépôt GitHub. Sinon, un fichier JSON sera téléchargé.
+                    </p>
+                </div>
+            </label>
+        </div>
+
         <div class="mb-6">
             <button id="startBtn" onclick="startImport()" disabled class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                 <i class="fas fa-spinner fa-spin mr-2"></i>Chargement de Google Maps...
@@ -286,6 +301,49 @@
             }
         }
 
+        async function commitToGitHubAPI(allActors) {
+            try {
+                const dataStr = JSON.stringify(allActors, null, 2);
+
+                log('📤 Envoi vers l\'API GitHub...', 'info');
+
+                const response = await fetch('/api/github-commit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        filePath: 'cevennes-connect/data/actors-data.json',
+                        content: dataStr,
+                        commitMessage: `🤖 Import automatique Google Places - ${totalFound} acteurs locaux
+
+Catégories mises à jour :
+${Object.entries(allActors).map(([cat, items]) => `- ${cat}: ${items.length} acteurs`).join('\n')}
+
+🤖 Generated via admin-import-google.html`
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    log(`❌ Erreur API: ${errorData.error || 'Erreur inconnue'}`, 'error');
+                    if (errorData.details) {
+                        log(`   Détails: ${errorData.details}`, 'error');
+                    }
+                    return false;
+                }
+
+                const result = await response.json();
+                log('✅ Commit réussi sur GitHub !', 'success');
+                log(`   Commit SHA: ${result.commit.sha.substring(0, 7)}`, 'info');
+
+                return true;
+            } catch (error) {
+                log(`❌ Erreur: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
         function downloadJSON(allActors) {
             const dataStr = JSON.stringify(allActors, null, 2);
             const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
@@ -361,17 +419,35 @@
             if (isRunning && totalFound > 0) {
                 log('\n✅ Import terminé !', 'success');
                 log(`📊 Total: ${totalFound} commerces trouvés`, 'success');
-                log('\n💾 Téléchargement du fichier JSON...', 'info');
 
-                // Télécharger directement le JSON
-                downloadJSON(allActors);
+                // Vérifier si commit GitHub est activé
+                const commitToGitHub = document.getElementById('commitToGitHub').checked;
 
-                totalSaved = totalFound;
-                updateStats();
+                if (commitToGitHub) {
+                    log('\n📤 Commit sur GitHub en cours...', 'info');
+                    const success = await commitToGitHubAPI(allActors);
 
-                setTimeout(() => {
-                    alert(`✅ Import terminé !\n\n${totalFound} commerces trouvés\n\n💾 Le fichier "actors-data.json" a été téléchargé.\n\n📝 PROCHAINE ÉTAPE :\n1. Va sur GitHub\n2. Ouvre : cevennes-connect/data/actors-data.json\n3. Remplace tout le contenu par le fichier téléchargé\n4. Commit et c'est fini !`);
-                }, 1000);
+                    if (success) {
+                        totalSaved = totalFound;
+                        updateStats();
+                        setTimeout(() => {
+                            alert(`✅ Import terminé et committé sur GitHub !\n\n${totalFound} commerces trouvés et sauvegardés\n\n🎉 Les données sont en ligne !`);
+                        }, 1000);
+                    } else {
+                        log('⚠️  Échec du commit, téléchargement local...', 'warning');
+                        downloadJSON(allActors);
+                        totalSaved = totalFound;
+                        updateStats();
+                    }
+                } else {
+                    log('\n💾 Téléchargement du fichier JSON...', 'info');
+                    downloadJSON(allActors);
+                    totalSaved = totalFound;
+                    updateStats();
+                    setTimeout(() => {
+                        alert(`✅ Import terminé !\n\n${totalFound} commerces trouvés\n\n💾 Le fichier "actors-data.json" a été téléchargé.\n\n📝 PROCHAINE ÉTAPE :\n1. Va sur GitHub\n2. Ouvre : cevennes-connect/data/actors-data.json\n3. Remplace tout le contenu par le fichier téléchargé\n4. Commit et c'est fini !`);
+                    }, 1000);
+                }
             } else {
                 log('\n⚠️  Aucun commerce trouvé ou import annulé', 'warning');
             }
