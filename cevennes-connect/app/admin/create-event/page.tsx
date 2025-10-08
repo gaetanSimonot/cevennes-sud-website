@@ -181,7 +181,7 @@ export default function CreateEventPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          filePath: 'cevennes-connect/data/events-data.json',
+          filePath: 'cevennes-connect/public/data/events-data.json',
           content: JSON.stringify(existingEvents, null, 2),
           commitMessage: `✨ Ajout événement: ${newEvent.title}
 

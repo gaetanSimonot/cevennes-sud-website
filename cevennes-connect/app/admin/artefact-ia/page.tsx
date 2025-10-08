@@ -386,7 +386,7 @@ Format attendu :
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          filePath: 'cevennes-connect/data/events-data.json',
+          filePath: 'cevennes-connect/public/data/events-data.json',
           content: JSON.stringify(mergedEvents, null, 2),
           commitMessage: `🎉 Artefact IA - Ajout de ${count} événement(s)
 

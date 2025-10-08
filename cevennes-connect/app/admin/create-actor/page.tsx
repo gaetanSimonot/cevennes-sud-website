@@ -177,7 +177,7 @@ export default function CreateActorPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          filePath: 'cevennes-connect/data/actors-data.json',
+          filePath: 'cevennes-connect/public/data/actors-data.json',
           content: JSON.stringify(existingData, null, 2),
           commitMessage: `✨ Ajout acteur: ${newActor.name}
 
