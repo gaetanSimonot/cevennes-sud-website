@@ -46,9 +46,15 @@ export interface Event {
   contact: string
   website: string
   image: string
+  image_url?: string
   lat: number
   lng: number
+  latitude?: number
+  longitude?: number
+  contact_email?: string
+  contact_phone?: string
   premium_level?: PremiumLevel
+  featured?: boolean // For premium/highlighted events
 }
 
 // API Response types

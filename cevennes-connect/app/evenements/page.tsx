@@ -19,6 +19,7 @@ export default function EvenementsPage() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [timeFilter, setTimeFilter] = useState<'all' | 'upcoming' | 'past'>('all')
+  const [hoveredEventId, setHoveredEventId] = useState<number | null>(null)
 
   useEffect(() => {
     // Load events from JSON
@@ -254,8 +255,110 @@ export default function EvenementsPage() {
                 ))}
               </div>
             ) : (
-              <div className="rounded-3xl overflow-hidden shadow-2xl">
-                <GoogleMap events={filteredEvents} className="h-[600px]" />
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Map */}
+                <div className="lg:col-span-2 rounded-3xl overflow-hidden shadow-2xl">
+                  <GoogleMap
+                    events={filteredEvents}
+                    className="h-[600px]"
+                    highlightedEventId={hoveredEventId}
+                  />
+                </div>
+
+                {/* Events List Sidebar */}
+                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                  <div className="sticky top-0 bg-gray-50 pb-3 z-10">
+                    <h3 className="font-semibold text-gray-900 text-lg">
+                      📍 {filteredEvents.length} événement{filteredEvents.length > 1 ? 's' : ''}
+                    </h3>
+                  </div>
+
+                  {/* Sort events: premium first */}
+                  {filteredEvents
+                    .sort((a, b) => {
+                      // Premium events first
+                      const aPremium = a.featured ? 1 : 0
+                      const bPremium = b.featured ? 1 : 0
+                      if (aPremium !== bPremium) return bPremium - aPremium
+
+                      // Then by date (upcoming first)
+                      return new Date(a.date).getTime() - new Date(b.date).getTime()
+                    })
+                    .map((event) => {
+                      const isPast = new Date(event.date) < new Date()
+                      const categoryInfo = categories.find(c => c.key === event.category)
+
+                      return (
+                        <div
+                          key={event.id}
+                          className={`
+                            bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all cursor-pointer
+                            ${hoveredEventId === event.id ? 'ring-2 ring-pink-500 shadow-xl scale-[1.02]' : ''}
+                            ${event.featured ? 'ring-2 ring-yellow-400 bg-gradient-to-br from-yellow-50 to-white' : ''}
+                            ${isPast ? 'opacity-60' : ''}
+                          `}
+                          onMouseEnter={() => setHoveredEventId(event.id)}
+                          onMouseLeave={() => setHoveredEventId(null)}
+                        >
+                          {/* Premium badge */}
+                          {event.featured && (
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="px-2 py-1 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-xs font-bold rounded-full">
+                                ⭐ PREMIUM
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Image */}
+                          {event.image_url && (
+                            <div className="w-full h-32 mb-3 rounded-xl overflow-hidden">
+                              <img
+                                src={event.image_url}
+                                alt={event.title}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x200?text=Image+non+disponible'
+                                }}
+                              />
+                            </div>
+                          )}
+
+                          {/* Title */}
+                          <h4 className="font-bold text-gray-900 mb-2 line-clamp-2">
+                            {event.title}
+                          </h4>
+
+                          {/* Date and category */}
+                          <div className="flex items-center gap-2 mb-2 text-sm">
+                            <span className="flex items-center gap-1 text-gray-600">
+                              📅 {new Date(event.date).toLocaleDateString('fr-FR', {
+                                day: 'numeric',
+                                month: 'short'
+                              })}
+                              {isPast && ' (Passé)'}
+                            </span>
+                            <span className="px-2 py-1 bg-pink-100 text-pink-700 text-xs font-semibold rounded-full">
+                              {categoryInfo?.icon} {categoryInfo?.label}
+                            </span>
+                          </div>
+
+                          {/* Location */}
+                          {event.location && (
+                            <p className="text-sm text-gray-600 truncate">
+                              📍 {event.location}
+                            </p>
+                          )}
+
+                          {/* Price */}
+                          {event.price && (
+                            <p className="text-sm text-gray-500 mt-1">
+                              💰 {event.price}
+                            </p>
+                          )}
+                        </div>
+                      )
+                    })}
+                </div>
               </div>
             )}
 

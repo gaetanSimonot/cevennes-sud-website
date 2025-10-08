@@ -9,6 +9,7 @@ interface GoogleMapProps {
   center?: { lat: number; lng: number }
   zoom?: number
   className?: string
+  highlightedEventId?: number | null
 }
 
 const GOOGLE_MAPS_API_KEY = 'AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw'
@@ -18,7 +19,8 @@ export function GoogleMap({
   events = [],
   center = { lat: 43.9339, lng: 3.7086 }, // Ganges
   zoom = 11,
-  className = ''
+  className = '',
+  highlightedEventId = null
 }: GoogleMapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const googleMapRef = useRef<google.maps.Map | null>(null)
