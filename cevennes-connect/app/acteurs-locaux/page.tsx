@@ -18,20 +18,16 @@ export default function ActeursLocauxPage() {
   const [viewMode, setViewMode] = useState<'cards' | 'map'>('cards')
 
   useEffect(() => {
-    // Load actors from JSON
-    fetch('/data/actors-data.json')
+    // Load actors from Supabase API
+    fetch('/api/actors?limit=10000')
       .then(res => res.json())
-      .then((data: ActorsData) => {
-        const allActors = [
-          ...data.commerce,
-          ...data.restaurant,
-          ...data.artisan,
-          ...data.therapeute,
-          ...data.service,
-          ...data.association,
-        ]
+      .then((data) => {
+        const allActors = data.actors || []
         setActors(allActors)
         setFilteredActors(sortByPremiumLevel(allActors))
+      })
+      .catch(error => {
+        console.error('Erreur lors du chargement des acteurs:', error)
       })
   }, [])
 

@@ -48,14 +48,18 @@ export default function EvenementsPage() {
   }
 
   useEffect(() => {
-    // Load events from JSON
-    fetch('/data/events-data.json')
+    // Load events from Supabase API
+    fetch('/api/events?limit=10000')
       .then(res => res.json())
-      .then((data: Event[]) => {
+      .then((data) => {
+        const eventsData = data.events || []
         // Sort by date (most recent first)
-        const sorted = data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        const sorted = eventsData.sort((a: Event, b: Event) => new Date(b.date).getTime() - new Date(a.date).getTime())
         setEvents(sorted)
         setFilteredEvents(sorted)
+      })
+      .catch(error => {
+        console.error('Erreur lors du chargement des événements:', error)
       })
   }, [])
 

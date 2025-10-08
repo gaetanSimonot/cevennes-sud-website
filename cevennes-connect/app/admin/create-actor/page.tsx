@@ -164,7 +164,7 @@ export default function CreateActorPage() {
         horaires: formData.hours || '',
         specialites: [],
         image: formData.image || categoryImages[formData.category!] || categoryImages['commerce'],
-        rating: null,
+        rating: undefined,
         reviews_count: 0,
         premium_level: 'standard'
       }
