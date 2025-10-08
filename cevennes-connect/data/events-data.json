@@ -120,5 +120,23 @@
     "lat": 43.8928288,
     "lng": 3.7354855,
     "premium_level": "mega-premium"
+  },
+  {
+    "id": 1759886019635,
+    "title": "autospie du soins",
+    "category": "theatre",
+    "description": "de la balle",
+    "date": "2025-10-11",
+    "time": "20:00",
+    "location": "cocon",
+    "address": "34190 Cazilhac, France",
+    "price": "prix libre",
+    "organizer": "",
+    "contact": "",
+    "website": "",
+    "lat": 43.922073,
+    "lng": 3.703035,
+    "premium_level": "standard",
+    "image": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
   }
 ]
