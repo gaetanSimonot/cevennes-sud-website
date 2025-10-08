@@ -4,23 +4,19 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
   try {
+    // Récupérer les variables d'environnement
     const GITHUB_TOKEN = process.env.GITHUB_TOKEN
     const GITHUB_REPO = process.env.GITHUB_REPO || 'gaetanSimonot/cevennes-sud-website'
 
-    console.log('🔐 [GitHub Commit] GITHUB_TOKEN present:', !!GITHUB_TOKEN)
-    console.log('🔧 [GitHub Commit] Using GitHub repo:', GITHUB_REPO)
-
     if (!GITHUB_TOKEN) {
-      console.error('❌ GITHUB_TOKEN not configured')
       return NextResponse.json(
-        { error: 'GitHub token not configured on server. Please set GITHUB_TOKEN in environment variables.' },
+        { error: 'GitHub token not configured on server. Please add GITHUB_TOKEN in Vercel Environment Variables.' },
         { status: 500 }
       )
     }
 
+    // Récupérer les paramètres de la requête
     const body = await req.json()
-    console.log('📦 Body reçu:', { filePath: body.filePath, commitMessage: body.commitMessage, contentLength: body.content?.length })
-
     const { filePath, content, commitMessage } = body
 
     if (!filePath || !content || !commitMessage) {
@@ -30,11 +26,10 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Étape 1: Récupérer le SHA du fichier existant
+    // Étape 1 : Récupérer le SHA du fichier existant
     const getFileUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/${filePath}`
-    console.log(`📂 Fetching file: ${filePath}`)
 
-    let fileSha: string | null = null
+    let fileSha = null
     try {
       const getResponse = await fetch(getFileUrl, {
         headers: {
@@ -47,24 +42,22 @@ export async function POST(req: NextRequest) {
       if (getResponse.ok) {
         const fileData = await getResponse.json()
         fileSha = fileData.sha
-        console.log(`✅ File exists, SHA: ${fileSha}`)
-      } else {
-        console.log(`⚠️ File does not exist (${getResponse.status}), will create new file`)
       }
     } catch (error) {
-      console.log('⚠️ Error fetching file, will create new file:', error)
+      console.log('File does not exist yet, will create new file')
     }
 
-    // Étape 2: Encoder le contenu en base64
+    // Étape 2 : Encoder le contenu en base64
     const contentBase64 = Buffer.from(content).toString('base64')
 
-    // Étape 3: Créer ou mettre à jour le fichier
+    // Étape 3 : Créer ou mettre à jour le fichier
     const commitPayload: any = {
       message: commitMessage,
       content: contentBase64,
       branch: 'main'
     }
 
+    // Si le fichier existe, ajouter le SHA pour le mettre à jour
     if (fileSha) {
       commitPayload.sha = fileSha
     }
@@ -83,14 +76,14 @@ export async function POST(req: NextRequest) {
     const commitData = await commitResponse.json()
 
     if (!commitResponse.ok) {
-      console.error('❌ GitHub API Error:', commitData)
+      console.error('GitHub API Error:', commitData)
       return NextResponse.json(
-        { error: 'GitHub API error', details: commitData.message || 'Unknown error' },
+        { error: 'GitHub API error', details: commitData.message || 'Unknown error', data: commitData },
         { status: commitResponse.status }
       )
     }
 
-    console.log(`✅ Commit successful: ${commitData.commit.sha}`)
+    // Succès !
     return NextResponse.json({
       success: true,
       message: 'File committed successfully',
@@ -98,7 +91,7 @@ export async function POST(req: NextRequest) {
         sha: commitData.commit.sha,
         url: commitData.commit.html_url
       }
-    })
+    }, { status: 200 })
 
   } catch (error: any) {
     console.error('GitHub Commit Error:', error)

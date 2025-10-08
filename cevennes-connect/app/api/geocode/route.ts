@@ -2,18 +2,20 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
+// GET method - query params
 export async function GET(req: NextRequest) {
   try {
+    // Récupérer la clé API depuis les variables d'environnement
     const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY
-    console.log('🗺️ [Geocode GET] GOOGLE_MAPS_API_KEY present:', !!GOOGLE_MAPS_API_KEY)
 
     if (!GOOGLE_MAPS_API_KEY) {
       return NextResponse.json(
-        { error: 'Google Maps API key not configured on server' },
+        { error: 'Google Maps API key not configured on server. Please add GOOGLE_MAPS_API_KEY in Vercel Environment Variables.' },
         { status: 500 }
       )
     }
 
+    // Récupérer l'adresse depuis les query params
     const address = req.nextUrl.searchParams.get('address')
 
     if (!address) {
@@ -23,12 +25,14 @@ export async function GET(req: NextRequest) {
       )
     }
 
+    // Appeler l'API Google Geocoding
     const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_MAPS_API_KEY}`
 
     const geocodeResponse = await fetch(geocodeUrl)
     const data = await geocodeResponse.json()
 
-    return NextResponse.json(data)
+    // Retourner la réponse
+    return NextResponse.json(data, { status: 200 })
 
   } catch (error: any) {
     console.error('Geocoding Error:', error)
@@ -39,22 +43,22 @@ export async function GET(req: NextRequest) {
   }
 }
 
+// POST method - body
 export async function POST(req: NextRequest) {
   try {
+    // Récupérer la clé API depuis les variables d'environnement
     const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY
-    console.log('🗺️ [Geocode POST] GOOGLE_MAPS_API_KEY present:', !!GOOGLE_MAPS_API_KEY)
-
-    const body = await req.json()
-    console.log('📦 Body reçu:', body)
 
     if (!GOOGLE_MAPS_API_KEY) {
       return NextResponse.json(
-        { error: 'Google Maps API key not configured on server' },
+        { error: 'Google Maps API key not configured on server. Please add GOOGLE_MAPS_API_KEY in Vercel Environment Variables.' },
         { status: 500 }
       )
     }
 
-    const { address } = body
+    // Récupérer l'adresse depuis le body
+    const body = await req.json()
+    const address = body.address
 
     if (!address) {
       return NextResponse.json(
@@ -63,12 +67,14 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Appeler l'API Google Geocoding
     const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_MAPS_API_KEY}`
 
     const geocodeResponse = await fetch(geocodeUrl)
     const data = await geocodeResponse.json()
 
-    return NextResponse.json(data)
+    // Retourner la réponse
+    return NextResponse.json(data, { status: 200 })
 
   } catch (error: any) {
     console.error('Geocoding Error:', error)
