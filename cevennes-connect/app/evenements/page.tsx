@@ -364,7 +364,7 @@ export default function EvenementsPage() {
                             ${event.featured ? 'ring-2 ring-yellow-400 bg-gradient-to-br from-yellow-50 to-white' : ''}
                             ${isPast ? 'opacity-60' : ''}
                           `}
-                          onMouseEnter={() => setHoveredEventId(event.id)}
+                          onMouseEnter={() => setHoveredEventId(event.id ?? null)}
                           onMouseLeave={() => setHoveredEventId(null)}
                         >
                           {/* Premium badge */}
