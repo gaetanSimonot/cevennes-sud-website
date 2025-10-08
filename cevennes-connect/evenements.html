@@ -765,69 +765,156 @@
                 return levelA - levelB;
             });
 
-            container.innerHTML = sortedEvents.map(event => `
-                <div class="event-card rounded-3xl overflow-hidden group">
-                    <div class="relative h-48 overflow-hidden">
-                        <img src="${event.image}"
-                             alt="${event.title}"
-                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                        <div class="absolute top-4 right-4">
-                            <span class="bg-white/90 backdrop-blur-sm text-gray-800 px-3 py-1 rounded-full text-sm font-medium">
-                                ${getCategoryLabel(event.category)}
+            container.innerHTML = sortedEvents.map(event => {
+                const premiumLevel = event.premium_level || 'standard';
+
+                // Rendu STANDARD : carte simple
+                if (premiumLevel === 'standard') {
+                    return `
+                        <div class="event-card rounded-2xl overflow-hidden">
+                            <div class="relative h-32 overflow-hidden">
+                                <img src="${event.image}" alt="${event.title}" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                                <div class="absolute bottom-2 left-3 text-white">
+                                    <div class="text-lg font-bold">${new Date(event.date).getDate()}</div>
+                                    <div class="text-xs">${getMonthName(new Date(event.date).getMonth())}</div>
+                                </div>
+                            </div>
+                            <div class="p-4">
+                                <h3 class="font-bold text-lg text-gray-900 mb-1">${event.title}</h3>
+                                <div class="text-sm text-gray-600 mb-2">
+                                    <i class="fas fa-clock w-3 mr-2"></i>${event.time}
+                                </div>
+                                <div class="text-sm text-gray-600">
+                                    <i class="fas fa-map-marker-alt w-3 mr-2"></i>${event.location}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Rendu PREMIUM : carte complète avec détails
+                if (premiumLevel === 'premium') {
+                    return `
+                        <div class="event-card rounded-3xl overflow-hidden border-2 border-blue-200">
+                            <div class="relative h-48 overflow-hidden">
+                                <img src="${event.image}" alt="${event.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                                <div class="absolute top-4 right-4">
+                                    <span class="bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                                        <i class="fas fa-star mr-1"></i>PREMIUM
+                                    </span>
+                                </div>
+                                <div class="absolute bottom-4 left-4 text-white">
+                                    <div class="text-2xl font-bold">${new Date(event.date).getDate()}</div>
+                                    <div class="text-sm">${getMonthName(new Date(event.date).getMonth())}</div>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <div class="flex items-start mb-4">
+                                    <div class="w-12 h-12 bg-gradient-to-br ${getCategoryGradient(event.category)} rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
+                                        <i class="fas ${getCategoryIcon(event.category)} text-white text-lg"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h3 class="font-display font-bold text-xl text-gray-900 mb-2">${event.title}</h3>
+                                        <p class="text-gray-600 leading-relaxed">${event.description}</p>
+                                    </div>
+                                </div>
+                                <div class="space-y-3 mb-6 text-sm text-gray-500">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-clock w-4 mr-3 text-gray-400"></i>
+                                        <span>${event.time}</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-map-marker-alt w-4 mr-3 text-gray-400"></i>
+                                        <span>${event.location}</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <i class="fas fa-user w-4 mr-3 text-gray-400"></i>
+                                        <span>${event.organizer}</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between mb-6">
+                                    <div class="text-lg font-bold text-purple-600">${event.price}</div>
+                                </div>
+                                <div class="flex space-x-3">
+                                    ${event.contact ? `
+                                        <a href="tel:${event.contact}" class="flex-1 bg-purple-100 text-purple-600 px-4 py-2 rounded-xl font-medium text-center hover:bg-purple-200 transition-colors">
+                                            <i class="fas fa-phone mr-2"></i>Contacter
+                                        </a>
+                                    ` : ''}
+                                    <button onclick="showOnMap(${event.id})" class="flex-1 bg-gray-100 text-gray-600 px-4 py-2 rounded-xl font-medium text-center hover:bg-gray-200 transition-colors">
+                                        <i class="fas fa-map-marker-alt mr-2"></i>Localiser
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Rendu MEGA PREMIUM : carte XXL avec badge doré
+                return `
+                    <div class="md:col-span-2 event-card rounded-3xl overflow-hidden border-4 border-yellow-400 shadow-2xl">
+                        <div class="absolute top-4 left-4 z-10">
+                            <span class="bg-gradient-to-r from-yellow-400 to-amber-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
+                                <i class="fas fa-crown mr-2"></i>ÉVÉNEMENT PREMIUM
                             </span>
                         </div>
-                        <div class="absolute bottom-4 left-4 text-white">
-                            <div class="text-2xl font-bold">${new Date(event.date).getDate()}</div>
-                            <div class="text-sm">${getMonthName(new Date(event.date).getMonth())}</div>
+                        <div class="relative h-64 overflow-hidden">
+                            <img src="${event.image}" alt="${event.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                            <div class="absolute bottom-6 left-6 text-white">
+                                <div class="text-4xl font-bold">${new Date(event.date).getDate()}</div>
+                                <div class="text-lg">${getMonthName(new Date(event.date).getMonth())}</div>
+                            </div>
+                        </div>
+                        <div class="p-8">
+                            <div class="flex items-start mb-6">
+                                <div class="w-16 h-16 bg-gradient-to-br ${getCategoryGradient(event.category)} rounded-xl flex items-center justify-center mr-6 flex-shrink-0">
+                                    <i class="fas ${getCategoryIcon(event.category)} text-white text-2xl"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="font-display font-bold text-3xl text-gray-900 mb-3">${event.title}</h3>
+                                    <p class="text-lg text-gray-600 leading-relaxed">${event.description}</p>
+                                </div>
+                            </div>
+                            <div class="grid md:grid-cols-2 gap-4 mb-6">
+                                <div class="flex items-center text-gray-600">
+                                    <i class="fas fa-clock w-5 mr-3 text-purple-500"></i>
+                                    <span class="text-lg">${event.time}</span>
+                                </div>
+                                <div class="flex items-center text-gray-600">
+                                    <i class="fas fa-map-marker-alt w-5 mr-3 text-purple-500"></i>
+                                    <span class="text-lg">${event.location}</span>
+                                </div>
+                                <div class="flex items-center text-gray-600">
+                                    <i class="fas fa-user w-5 mr-3 text-purple-500"></i>
+                                    <span class="text-lg">${event.organizer}</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-ticket-alt w-5 mr-3 text-purple-500"></i>
+                                    <span class="text-2xl font-bold text-purple-600">${event.price}</span>
+                                </div>
+                            </div>
+                            <div class="flex space-x-4">
+                                ${event.contact ? `
+                                    <a href="tel:${event.contact}" class="flex-1 bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-6 py-4 rounded-xl font-bold text-center hover:shadow-xl transition-all text-lg">
+                                        <i class="fas fa-phone mr-2"></i>Contacter
+                                    </a>
+                                ` : ''}
+                                ${event.website ? `
+                                    <a href="${event.website}" target="_blank" class="flex-1 bg-gradient-to-r from-blue-500 to-cyan-600 text-white px-6 py-4 rounded-xl font-bold text-center hover:shadow-xl transition-all text-lg">
+                                        <i class="fas fa-globe mr-2"></i>Site Web
+                                    </a>
+                                ` : ''}
+                                <button onclick="showOnMap(${event.id})" class="flex-1 bg-gray-100 text-gray-700 px-6 py-4 rounded-xl font-bold text-center hover:bg-gray-200 transition-colors text-lg">
+                                    <i class="fas fa-map-marker-alt mr-2"></i>Localiser
+                                </button>
+                            </div>
                         </div>
                     </div>
-
-                    <div class="p-6">
-                        <div class="flex items-start mb-4">
-                            <div class="w-12 h-12 bg-gradient-to-br ${getCategoryGradient(event.category)} rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
-                                <i class="fas ${getCategoryIcon(event.category)} text-white text-lg"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h3 class="font-display font-bold text-xl text-gray-900 mb-2">${event.title}</h3>
-                                <p class="text-gray-600 leading-relaxed">${event.description}</p>
-                            </div>
-                        </div>
-
-                        <div class="space-y-3 mb-6 text-sm text-gray-500">
-                            <div class="flex items-center">
-                                <i class="fas fa-clock w-4 mr-3 text-gray-400"></i>
-                                <span>${event.time}${event.endTime ? ` - ${event.endTime}` : ''}</span>
-                            </div>
-                            <div class="flex items-center">
-                                <i class="fas fa-map-marker-alt w-4 mr-3 text-gray-400"></i>
-                                <span>${event.location}</span>
-                            </div>
-                            <div class="flex items-center">
-                                <i class="fas fa-user w-4 mr-3 text-gray-400"></i>
-                                <span>${event.organizer}</span>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-between mb-6">
-                            <div class="text-lg font-bold text-purple-600">${event.price}</div>
-                        </div>
-
-                        <div class="flex space-x-3">
-                            ${event.phone ? `
-                                <a href="tel:${event.phone}"
-                                   class="flex-1 bg-purple-100 text-purple-600 px-4 py-2 rounded-xl font-medium text-center hover:bg-purple-200 transition-colors">
-                                    <i class="fas fa-phone mr-2"></i>Contacter
-                                </a>
-                            ` : ''}
-                            <button onclick="showOnMap(${event.id})"
-                                   class="flex-1 bg-gray-100 text-gray-600 px-4 py-2 rounded-xl font-medium text-center hover:bg-gray-200 transition-colors">
-                                <i class="fas fa-map-marker-alt mr-2"></i>Localiser
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         // Generate calendar
