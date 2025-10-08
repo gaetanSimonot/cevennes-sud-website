@@ -11,7 +11,13 @@
       "Bash(git ls-tree:*)",
       "Bash(curl -s https://cevennes-sud-website.vercel.app/evenements.html)",
       "Bash(curl -s \"https://maps.googleapis.com/maps/api/geocode/json?address=Ganges%2C%20Cevennes%2C%20France&key=AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw\")",
-      "Bash(curl -s \"https://cevennes-sud-website.vercel.app/api/geocode?address=Ganges,France\")"
+      "Bash(curl -s \"https://cevennes-sud-website.vercel.app/api/geocode?address=Ganges,France\")",
+      "WebFetch(domain:cevennes-sud-website.vercel.app)",
+      "Bash(curl -s \"https://cevennes-sud-website.vercel.app/admin-add-event.html\")",
+      "Bash(git rev-parse:*)",
+      "Bash(curl -s \"https://raw.githubusercontent.com/gaetanSimonot/cevennes-sud-website/main/admin-add-event.html\")",
+      "Bash(curl -s \"https://cevennes-sud-website.vercel.app/index.html\")",
+      "Bash(curl -s \"https://cevennes-sud-website.vercel.app/acteurs-locaux.html\")"
     ],
     "deny": [],
     "ask": []

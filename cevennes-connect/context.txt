@@ -1,0 +1,245 @@
+===========================================
+CONTEXTE SESSION - CEVENNES SUD WEBSITE
+Date: 8 Octobre 2025
+===========================================
+
+## 🎯 TRAVAIL RÉALISÉ CE SOIR
+
+### Problème Initial
+Le menu de navigation avait des tailles et structures différentes sur chaque page du site.
+L'utilisateur voulait un menu identique partout, avec seulement les couleurs qui changent selon la section.
+
+### Solution Implémentée
+✅ Standardisation complète de la navigation sur 4 pages principales:
+   - acteurs-locaux.html (thème purple)
+   - evenements.html (thème pink)
+   - echangeons.html (thème blue)
+   - parlons-en.html (thème orange)
+
+### Modifications Techniques
+1. **Menu Desktop**
+   - Tailles uniformisées: py-4, text-lg pour tous les liens
+   - Logo standardisé: w-12 h-12
+   - Ajout dropdown "Utile" avec 6 sous-menus (remplace liens plats):
+     * Covoiturage
+     * Troc & Services
+     * Carte Interactive
+     * Boîte à Idées
+     * Randonnées
+     * Panneau Village
+
+2. **Menu Mobile**
+   - Structure identique sur toutes les pages
+   - Section "Utile" séparée avec bordure
+   - Bouton toggle uniforme
+
+3. **Thèmes Couleur Préservés**
+   - Index: emerald/teal (inchangé)
+   - Acteurs: purple/indigo
+   - Événements: pink/purple
+   - Échangeons: blue/cyan
+   - Parlons-en: orange/red
+
+### Bugs Corrigés
+- ID incorrect bouton menu mobile (mobile-menu-button → mobile-menu-btn)
+- Doublon event listener menu mobile dans acteurs-locaux.html
+- Erreur JavaScript qui empêchait l'affichage du contenu
+
+### Commits Git
+1. "Standardise la navigation sur toutes les pages"
+2. "Fix: Corrige ID bouton menu mobile dans acteurs-locaux.html"
+3. "Fix: Retire doublon event listener menu mobile"
+
+Dernier commit safe: 8eac657
+
+
+===========================================
+## 🚀 PROJET POUR LA SUITE
+===========================================
+
+### REFONTE STRUCTURELLE (À FAIRE PLUS TARD)
+
+#### Objectif
+Restructurer le code pour avoir les MÊMES fonctionnalités mais avec:
+- Code plus propre et maintenable
+- Moins de duplication
+- Architecture modulaire
+- Modification plus facile
+
+#### État Actuel du Site
+- 27 fichiers HTML avec beaucoup de code dupliqué
+- Navigation/Footer répétés dans chaque page
+- JavaScript inline répété partout
+- Styles Tailwind dupliqués
+- Fonctionne bien mais difficile à maintenir
+
+#### Architecture Proposée
+
+**Structure cible:**
+```
+/components
+  - nav.html          # Navigation réutilisable
+  - footer.html       # Footer commun
+  - card.js           # Composants cartes
+
+/js
+  - common.js         # Code JavaScript partagé
+  - map-utils.js      # Fonctions Google Maps
+  - filters.js        # Système de filtres réutilisable
+
+/css
+  - base.css          # Styles communs
+  - themes.css        # Thèmes couleur par section
+
+/data
+  - actors-data.json  # Données acteurs (existant)
+  - events-data.json  # Données événements (existant)
+
+# Fichiers .html restent à la racine (compatibilité Vercel)
+```
+
+#### Plan de Migration Sécurisé
+
+**Phase 1 - Extraction Templates (SAFE)**
+- Extraire nav/footer en composants HTML réutilisables
+- Créer js/common.js avec fonctions partagées
+- Injection via JavaScript dans les 27 pages
+- Gain: Menu à modifier 1 fois au lieu de 27
+
+**Phase 2 - Consolidation Code (SAFE)**
+- Centraliser logique Google Maps
+- Système de filtres unifié
+- CSS partagé au lieu de Tailwind inline répété
+- Gain: Code divisé par 3-4
+
+**Phase 3 - Optimisation (SAFE)**
+- Minification assets
+- Lazy loading images
+- Cache localStorage
+- Gain: Performance améliorée
+
+#### Contraintes Importantes
+
+✅ OBLIGATOIRE:
+- Garder branch main intact pendant refonte
+- Travailler sur branch refactor/clean-architecture
+- Les .html restent à la racine (URLs identiques)
+- Aucun changement config Vercel nécessaire
+- Site fonctionne exactement pareil pour utilisateur
+- Possibilité rollback facile (git checkout main)
+
+❌ À ÉVITER:
+- Frameworks nécessitant build step (Vue/React/Next)
+- Changement structure URLs (casse les liens)
+- Refonte complète d'un coup (trop risqué)
+
+#### Gains Attendus
+
+📊 **Maintenance:**
+- 1 navigation au lieu de 27
+- 1 footer au lieu de 27
+- Code JavaScript centralisé
+- Modification 10x plus rapide
+
+🎨 **Qualité Code:**
+- Séparation des responsabilités
+- Réutilisabilité maximale
+- Plus facile à débugger
+- Meilleure lisibilité
+
+⚡ **Performance:**
+- Fichiers minifiés
+- Chargement optimisé
+- Cache intelligent
+
+🔧 **Évolutivité:**
+- Ajout features plus facile
+- Tests possibles
+- Documentation claire
+
+#### Options Framework (Si besoin futur)
+
+**Option A - Vue.js/Nuxt:**
+- Composants réutilisables
+- SSR pour SEO
+- 27 HTML → ~10 composants
+
+**Option B - React/Next.js:**
+- Très performant
+- Écosystème riche
+- SSG/SSR natif
+
+**Option C - SvelteKit:**
+- Plus léger
+- Compilation optimisée
+- Courbe apprentissage douce
+
+**Backend (Si besoin futur):**
+- Supabase/Firebase (simple, gratuit)
+- Node.js + Express + PostgreSQL (avancé)
+
+
+===========================================
+## 📋 PROCHAINES ÉTAPES (QUAND PRÊT)
+===========================================
+
+1. Créer branch refactor/clean-architecture
+2. Commencer Phase 1: Extraction nav/footer
+3. Tests locaux
+4. Phase 2: Consolidation JavaScript
+5. Tests locaux
+6. Phase 3: Optimisations
+7. Tests finaux
+8. Merge dans main si tout OK
+
+Temps estimé: 7-9 heures de développement
+Risque: FAIBLE (approche progressive, rollback facile)
+
+
+===========================================
+## 🔗 INFORMATIONS PROJET
+===========================================
+
+**Repository:** gaetanSimonot/cevennes-sud-website
+**Déploiement:** Vercel (cevennes-sud-website.vercel.app)
+**Branche principale:** main
+**Dernier commit stable:** 8eac657
+
+**Technologies actuelles:**
+- HTML/CSS/JavaScript vanilla
+- Tailwind CDN
+- Google Maps API
+- JSON pour données
+- Git/GitHub
+- Vercel (déploiement automatique)
+
+**Pages principales:**
+- index.html (Accueil)
+- acteurs-locaux.html (Annuaire professionnels)
+- evenements.html (Calendrier événements)
+- echangeons.html (Petites annonces)
+- parlons-en.html (Forum discussion)
+
+**Pages admin:**
+- admin.html
+- admin-add-actor.html
+- admin-add-event.html
+- admin-manage-actors.html
+- admin-manage-events.html
+- admin-import-google.html
+- admin-event-ai.html
+
+**Pages utilitaires:**
+- covoiturage.html
+- troc-tout.html
+- carte.html
+- boite-idees.html
+- itineraires-rando.html
+- panneau-village.html
+
+**Total:** 27 fichiers HTML + assets
+
+
+===========================================
+FIN DU CONTEXTE
+===========================================
