@@ -303,16 +303,16 @@ Tu vas recevoir des données parfois sales (copier-coller, caractères bizarres,
 **RÈGLES STRICTES** :
 
 1. **GESTION DES COPIER-COLLER SALES** :
-   - Ignore les caractères spéciaux bizarres (\u, \n, \t, emojis cassés, etc.)
+   - Ignore les caractères spéciaux bizarres (emojis cassés, unicode étrange, etc.)
    - Nettoie les espaces multiples, sauts de ligne inutiles
    - Extrait SEULEMENT les infos utiles, ignore le bruit
    - Si le texte est incompréhensible, fais de ton mieux avec ce qui est lisible
 
 2. **CARACTÈRES DANGEREUX POUR JSON** :
-   - Échappe TOUJOURS les guillemets doubles (") → \"
-   - Remplace les guillemets typographiques (« », ", ") par des guillemets simples (')
-   - Retire les retours chariots (\r, \n) dans les textes
-   - Supprime les backslashes orphelins (\)
+   - Échappe TOUJOURS les guillemets doubles dans les textes
+   - Remplace les guillemets typographiques par des guillemets simples (')
+   - Retire les retours chariots dans les textes (une seule ligne)
+   - Supprime les backslashes orphelins
    - Pas de caractères de contrôle (TAB, NULL, etc.)
 
 3. **UNE IMAGE = UN SEUL ÉVÉNEMENT** : Même si l'affiche mentionne plusieurs dates, c'est UN événement
