@@ -43,7 +43,7 @@ export interface ActorsData {
 export type EventCategory = 'marche' | 'culture' | 'sport' | 'festival' | 'atelier' | 'theatre'
 
 export interface Event {
-  id: number
+  id?: number
   title: string
   category: EventCategory
   description: string
