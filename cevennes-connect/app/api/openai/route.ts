@@ -1,17 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   try {
     const OPENAI_API_KEY = process.env.OPENAI_API_KEY
+    console.log('🤖 [OpenAI] OPENAI_API_KEY present:', !!OPENAI_API_KEY)
 
     if (!OPENAI_API_KEY) {
+      console.error('❌ OPENAI_API_KEY not configured')
       return NextResponse.json(
-        { error: 'OpenAI API key not configured on server' },
+        { error: 'OpenAI API key not configured on server. Please add OPENAI_API_KEY in environment variables.' },
         { status: 500 }
       )
     }
 
-    const { messages, model = 'gpt-4o', max_tokens = 1000, temperature = 0.7 } = await req.json()
+    const body = await req.json()
+    console.log('📦 Body reçu:', {
+      hasMessages: !!body.messages,
+      messagesIsArray: Array.isArray(body.messages),
+      messagesLength: body.messages?.length,
+      model: body.model
+    })
+
+    const { messages, model = 'gpt-4o', max_tokens = 1000, temperature = 0.7 } = body
 
     if (!messages || !Array.isArray(messages)) {
       return NextResponse.json(

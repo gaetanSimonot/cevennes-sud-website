@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: NextRequest) {
   try {
     const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY
+    console.log('🗺️ [Geocode GET] GOOGLE_MAPS_API_KEY present:', !!GOOGLE_MAPS_API_KEY)
 
     if (!GOOGLE_MAPS_API_KEY) {
       return NextResponse.json(
@@ -39,6 +42,10 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY
+    console.log('🗺️ [Geocode POST] GOOGLE_MAPS_API_KEY present:', !!GOOGLE_MAPS_API_KEY)
+
+    const body = await req.json()
+    console.log('📦 Body reçu:', body)
 
     if (!GOOGLE_MAPS_API_KEY) {
       return NextResponse.json(
@@ -47,7 +54,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const { address } = await req.json()
+    const { address } = body
 
     if (!address) {
       return NextResponse.json(

@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   try {
     const GITHUB_TOKEN = process.env.GITHUB_TOKEN
     const GITHUB_REPO = process.env.GITHUB_REPO || 'gaetanSimonot/cevennes-sud-website'
+
+    console.log('🔐 [GitHub Commit] GITHUB_TOKEN present:', !!GITHUB_TOKEN)
+    console.log('🔧 [GitHub Commit] Using GitHub repo:', GITHUB_REPO)
 
     if (!GITHUB_TOKEN) {
       console.error('❌ GITHUB_TOKEN not configured')
@@ -13,9 +18,10 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    console.log(`🔧 Using GitHub repo: ${GITHUB_REPO}`)
+    const body = await req.json()
+    console.log('📦 Body reçu:', { filePath: body.filePath, commitMessage: body.commitMessage, contentLength: body.content?.length })
 
-    const { filePath, content, commitMessage } = await req.json()
+    const { filePath, content, commitMessage } = body
 
     if (!filePath || !content || !commitMessage) {
       return NextResponse.json(
