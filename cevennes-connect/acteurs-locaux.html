@@ -958,7 +958,15 @@
 
             noResults.classList.add('hidden');
 
-            container.innerHTML = filteredActors.map(actor => {
+            // Trier par niveau premium : mega-premium -> premium -> standard
+            const sortedActors = [...filteredActors].sort((a, b) => {
+                const levelOrder = { 'mega-premium': 0, 'premium': 1, 'standard': 2 };
+                const levelA = levelOrder[a.premium_level || 'standard'];
+                const levelB = levelOrder[b.premium_level || 'standard'];
+                return levelA - levelB;
+            });
+
+            container.innerHTML = sortedActors.map(actor => {
                 const premiumLevel = actor.premium_level || 'standard';
 
                 // Rendu STANDARD : nom uniquement, pas de carte complète

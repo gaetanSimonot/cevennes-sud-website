@@ -757,7 +757,15 @@
 
             noResults.classList.add('hidden');
 
-            container.innerHTML = filteredEvents.map(event => `
+            // Trier par niveau premium : mega-premium -> premium -> standard
+            const sortedEvents = [...filteredEvents].sort((a, b) => {
+                const levelOrder = { 'mega-premium': 0, 'premium': 1, 'standard': 2 };
+                const levelA = levelOrder[a.premium_level || 'standard'];
+                const levelB = levelOrder[b.premium_level || 'standard'];
+                return levelA - levelB;
+            });
+
+            container.innerHTML = sortedEvents.map(event => `
                 <div class="event-card rounded-3xl overflow-hidden group">
                     <div class="relative h-48 overflow-hidden">
                         <img src="${event.image}"
