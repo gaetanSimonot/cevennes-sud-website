@@ -5568,6 +5568,24 @@
       "rating": 4.1,
       "reviews_count": 40,
       "premium_level": "standard"
+    },
+    {
+      "id": 1759884435113,
+      "name": "GAETAN MARIE SIMONOT",
+      "category": "therapeute",
+      "description": "miracle",
+      "address": "120 AVENUE DES 2 PONTS",
+      "phone": "0783141756",
+      "email": "gaetan.simonot@gmail.com",
+      "website": "",
+      "horaires": "Horaires non renseignés",
+      "specialites": [],
+      "lat": 43.9339,
+      "lng": 3.7086,
+      "premium_level": "standard",
+      "image": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "rating": 0,
+      "reviews_count": 0
     }
   ],
   "service": [
