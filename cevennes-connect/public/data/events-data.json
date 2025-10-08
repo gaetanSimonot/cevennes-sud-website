@@ -480,23 +480,5 @@
     "premium_level": "standard",
     "lat": 43.9876458,
     "lng": 3.6010904
-  },
-  {
-    "title": "Soirée Spectacles : deux nouvelles créations de la Cie Amarante",
-    "category": "theatre",
-    "description": "Sortie des 2 nouvelles créations : Treize & A Love Suprême, 2 spectacles seules en scène.",
-    "date": "2025-11-01",
-    "time": "14:00",
-    "location": "Salle Lucie Aubrac",
-    "address": "30120 Le Vigan",
-    "price": "Non renseigné",
-    "organizer": "Cie Amarante",
-    "contact": "",
-    "website": "",
-    "image": "https://images.unsplash.com/photo-1503095396549-807759245b35?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-    "id": 1759963126179,
-    "premium_level": "standard",
-    "lat": 43.9876458,
-    "lng": 3.6010904
   }
 ]
