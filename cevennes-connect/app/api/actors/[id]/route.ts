@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
 
 export const dynamic = 'force-dynamic'
-
-const DATA_PATH = path.join(process.cwd(), 'public', 'data', 'actors-data.json')
 
 // GET single actor
 export async function GET(
@@ -12,8 +8,9 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const fileContent = fs.readFileSync(DATA_PATH, 'utf-8')
-    const data = JSON.parse(fileContent)
+    // Fetch from GitHub raw file
+    const response = await fetch('https://raw.githubusercontent.com/gaetanSimonot/cevennes-sud-website/main/cevennes-connect/public/data/actors-data.json')
+    const data = await response.json()
 
     // Find actor across all categories
     for (const category of Object.keys(data)) {
@@ -54,13 +51,16 @@ export async function PUT(
 ) {
   try {
     const updates = await request.json()
-    const fileContent = fs.readFileSync(DATA_PATH, 'utf-8')
-    const data = JSON.parse(fileContent)
+
+    // Fetch current data from GitHub
+    const response = await fetch('https://raw.githubusercontent.com/gaetanSimonot/cevennes-sud-website/main/cevennes-connect/public/data/actors-data.json')
+    const data = await response.json()
 
     // Find and update actor
     let found = false
     let oldCategory = ''
     let actorIndex = -1
+    let oldActor: any = null
 
     for (const category of Object.keys(data)) {
       actorIndex = data[category].findIndex((a: any, index: number) => {
@@ -70,6 +70,7 @@ export async function PUT(
 
       if (actorIndex !== -1) {
         oldCategory = category
+        oldActor = data[category][actorIndex]
         found = true
         break
       }
@@ -84,7 +85,7 @@ export async function PUT(
 
     // If category changed, move actor
     const newCategory = updates.category || oldCategory
-    const actorData = { ...data[oldCategory][actorIndex], ...updates }
+    const actorData = { ...oldActor, ...updates }
 
     if (newCategory !== oldCategory) {
       // Remove from old category
@@ -99,8 +100,27 @@ export async function PUT(
       data[oldCategory][actorIndex] = actorData
     }
 
-    // Save
-    fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2))
+    // Commit to GitHub
+    const commitResponse = await fetch(`${request.nextUrl.origin}/api/github-commit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        filePath: 'cevennes-connect/public/data/actors-data.json',
+        content: JSON.stringify(data, null, 2),
+        commitMessage: `✏️ Modification acteur: ${actorData.name}
+
+📂 Catégorie: ${newCategory}${oldCategory !== newCategory ? ` (ancienne: ${oldCategory})` : ''}
+Modifications:
+${Object.keys(updates).map(key => `- ${key}: "${oldActor[key]}" → "${updates[key]}"`).join('\n')}
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)`
+      })
+    })
+
+    if (!commitResponse.ok) {
+      const error = await commitResponse.json()
+      throw new Error(error.error || 'GitHub commit failed')
+    }
 
     return NextResponse.json({ success: true, actor: actorData })
 
@@ -119,11 +139,14 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const fileContent = fs.readFileSync(DATA_PATH, 'utf-8')
-    const data = JSON.parse(fileContent)
+    // Fetch current data from GitHub
+    const response = await fetch('https://raw.githubusercontent.com/gaetanSimonot/cevennes-sud-website/main/cevennes-connect/public/data/actors-data.json')
+    const data = await response.json()
 
     // Find and delete actor
     let found = false
+    let deletedActor: any = null
+    let deletedCategory = ''
 
     for (const category of Object.keys(data)) {
       const actorIndex = data[category].findIndex((a: any, index: number) => {
@@ -132,6 +155,8 @@ export async function DELETE(
       })
 
       if (actorIndex !== -1) {
+        deletedActor = data[category][actorIndex]
+        deletedCategory = category
         data[category].splice(actorIndex, 1)
         found = true
         break
@@ -145,8 +170,26 @@ export async function DELETE(
       )
     }
 
-    // Save
-    fs.writeFileSync(DATA_PATH, JSON.stringify(data, null, 2))
+    // Commit to GitHub
+    const commitResponse = await fetch(`${request.nextUrl.origin}/api/github-commit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        filePath: 'cevennes-connect/public/data/actors-data.json',
+        content: JSON.stringify(data, null, 2),
+        commitMessage: `🗑️ Suppression acteur: ${deletedActor.name}
+
+📂 Catégorie: ${deletedCategory}
+📍 Adresse: ${deletedActor.address}
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)`
+      })
+    })
+
+    if (!commitResponse.ok) {
+      const error = await commitResponse.json()
+      throw new Error(error.error || 'GitHub commit failed')
+    }
 
     return NextResponse.json({ success: true })
 
