@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Créer un Événement - Cévennes Sud</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Configuration -->
+    <script src="js/config.js"></script>
+
+    <!-- Google Maps API -->
+    <script>
+        document.write('<script src="https://maps.googleapis.com/maps/api/js?key=' + CONFIG.GOOGLE_MAPS_API_KEY + '&libraries=places"><\/script>');
+    </script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .form-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+        }
+        #map {
+            height: 300px;
+            border-radius: 12px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1 class="text-4xl font-bold text-gray-900 mb-2 text-center">
+            <i class="fas fa-calendar-plus text-purple-600 mr-3"></i>
+            Créer un Événement
+        </h1>
+        <p class="text-center text-gray-600 mb-8">Remplissez le formulaire pour ajouter un événement</p>
+
+        <form id="eventForm" class="space-y-6">
+            <!-- Titre -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-heading mr-2 text-purple-500"></i>Titre de l'événement *
+                </label>
+                <input type="text" id="title" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: Festival de Musique des Cévennes">
+            </div>
+
+            <!-- Catégorie -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-tags mr-2 text-purple-500"></i>Catégorie *
+                </label>
+                <select id="category" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <option value="">-- Sélectionnez une catégorie --</option>
+                    <option value="concert">🎵 Concert</option>
+                    <option value="festival">🎪 Festival</option>
+                    <option value="marche">🛍️ Marché</option>
+                    <option value="exposition">🎨 Exposition</option>
+                    <option value="theatre">🎭 Théâtre</option>
+                    <option value="sport">⚽ Sport</option>
+                    <option value="conference">💬 Conférence</option>
+                    <option value="autre">📌 Autre</option>
+                </select>
+            </div>
+
+            <!-- Description -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-align-left mr-2 text-purple-500"></i>Description *
+                </label>
+                <textarea id="description" required rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Décrivez l'événement..."></textarea>
+            </div>
+
+            <!-- Date et Heure -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-calendar mr-2 text-purple-500"></i>Date *
+                    </label>
+                    <input type="date" id="date" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-clock mr-2 text-purple-500"></i>Heure *
+                    </label>
+                    <input type="time" id="time" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                </div>
+            </div>
+
+            <!-- Lieu -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-map-marker-alt mr-2 text-purple-500"></i>Lieu *
+                </label>
+                <input type="text" id="location" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: Place du village de Ganges">
+            </div>
+
+            <!-- Adresse avec recherche Google -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-location-dot mr-2 text-purple-500"></i>Adresse complète *
+                </label>
+                <input type="text" id="address" required class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="34190 Ganges">
+                <div id="map"></div>
+                <div class="mt-2 text-sm text-gray-600">
+                    <span>Coordonnées: </span>
+                    <span id="coordinates">Non définies</span>
+                </div>
+            </div>
+
+            <!-- Prix -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-euro-sign mr-2 text-purple-500"></i>Prix
+                </label>
+                <input type="text" id="price" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: Gratuit, 10€, 5-15€">
+            </div>
+
+            <!-- Organisateur -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-users mr-2 text-purple-500"></i>Organisateur
+                </label>
+                <input type="text" id="organizer" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Ex: Association Cévennes Culture">
+            </div>
+
+            <!-- Contact -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-phone mr-2 text-purple-500"></i>Contact (téléphone ou email)
+                </label>
+                <input type="text" id="contact" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="04 67 73 XX XX ou email@exemple.fr">
+            </div>
+
+            <!-- Site web -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-globe mr-2 text-purple-500"></i>Site web ou lien
+                </label>
+                <input type="url" id="website" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="https://www.exemple.fr">
+            </div>
+
+            <!-- URL Image -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-image mr-2 text-purple-500"></i>URL de l'image/affiche
+                </label>
+                <input type="url" id="image" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="https://...">
+            </div>
+
+            <!-- Coordonnées cachées -->
+            <input type="hidden" id="lat" value="43.9339">
+            <input type="hidden" id="lng" value="3.7086">
+
+            <!-- Boutons -->
+            <div class="flex gap-4 pt-6">
+                <button type="submit" class="flex-1 bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition-all">
+                    <i class="fas fa-download mr-2"></i>Télécharger JSON
+                </button>
+                <button type="button" onclick="resetForm()" class="px-8 py-4 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-all">
+                    <i class="fas fa-redo mr-2"></i>Réinitialiser
+                </button>
+            </div>
+        </form>
+
+        <!-- Résultat JSON -->
+        <div id="result" class="mt-8 hidden">
+            <h3 class="text-2xl font-bold text-gray-900 mb-4">
+                <i class="fas fa-code mr-2 text-purple-600"></i>JSON Généré
+            </h3>
+            <div class="bg-gray-900 text-green-400 p-6 rounded-xl overflow-x-auto">
+                <pre id="jsonOutput" class="text-sm"></pre>
+            </div>
+            <div class="mt-4 flex gap-4">
+                <button onclick="saveToGitHub()" class="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-xl transition-all">
+                    <i class="fab fa-github mr-2"></i>Commit GitHub
+                </button>
+                <button onclick="copyJSON()" class="flex-1 bg-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-purple-700 transition-all">
+                    <i class="fas fa-copy mr-2"></i>Copier JSON
+                </button>
+                <button onclick="downloadJSON()" class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all">
+                    <i class="fas fa-download mr-2"></i>Télécharger
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-6 text-center">
+            <a href="evenements.html" class="inline-block bg-gray-200 text-gray-700 px-8 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-all">
+                <i class="fas fa-arrow-left mr-2"></i>Retour aux Événements
+            </a>
+        </div>
+    </div>
+
+    <script>
+        let map, marker, autocomplete;
+        let generatedData = null;
+
+        // Initialiser la carte
+        function initMap() {
+            const ganges = { lat: 43.9339, lng: 3.7086 };
+
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: ganges,
+                zoom: 14
+            });
+
+            marker = new google.maps.Marker({
+                position: ganges,
+                map: map,
+                draggable: true
+            });
+
+            // Autocomplete pour l'adresse
+            const addressInput = document.getElementById('address');
+            autocomplete = new google.maps.places.Autocomplete(addressInput, {
+                componentRestrictions: { country: 'fr' },
+                fields: ['geometry', 'formatted_address']
+            });
+
+            autocomplete.addListener('place_changed', () => {
+                const place = autocomplete.getPlace();
+                if (place.geometry) {
+                    const location = place.geometry.location;
+                    updateLocation(location.lat(), location.lng());
+                    map.setCenter(location);
+                    marker.setPosition(location);
+                }
+            });
+
+            // Drag du marker
+            marker.addListener('dragend', () => {
+                const position = marker.getPosition();
+                updateLocation(position.lat(), position.lng());
+            });
+        }
+
+        function updateLocation(lat, lng) {
+            document.getElementById('lat').value = lat.toFixed(6);
+            document.getElementById('lng').value = lng.toFixed(6);
+            document.getElementById('coordinates').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+        }
+
+        // Soumettre le formulaire
+        document.getElementById('eventForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = {
+                id: Date.now(),
+                title: document.getElementById('title').value,
+                category: document.getElementById('category').value,
+                description: document.getElementById('description').value,
+                date: document.getElementById('date').value,
+                time: document.getElementById('time').value,
+                location: document.getElementById('location').value,
+                address: document.getElementById('address').value,
+                price: document.getElementById('price').value || 'Non renseigné',
+                organizer: document.getElementById('organizer').value || '',
+                contact: document.getElementById('contact').value || '',
+                website: document.getElementById('website').value || '',
+                lat: parseFloat(document.getElementById('lat').value),
+                lng: parseFloat(document.getElementById('lng').value),
+                premium_level: 'standard',
+                image: document.getElementById('image').value || 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
+            };
+
+            generatedData = formData;
+
+            // Afficher le JSON
+            document.getElementById('jsonOutput').textContent = JSON.stringify(formData, null, 2);
+            document.getElementById('result').classList.remove('hidden');
+            document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+
+            // Télécharger automatiquement
+            downloadJSON();
+        });
+
+        function resetForm() {
+            document.getElementById('eventForm').reset();
+            document.getElementById('result').classList.add('hidden');
+            updateLocation(43.9339, 3.7086);
+            marker.setPosition({ lat: 43.9339, lng: 3.7086 });
+            map.setCenter({ lat: 43.9339, lng: 3.7086 });
+        }
+
+        function copyJSON() {
+            const jsonText = document.getElementById('jsonOutput').textContent;
+            navigator.clipboard.writeText(jsonText).then(() => {
+                alert('✅ JSON copié dans le presse-papier !');
+            });
+        }
+
+        function downloadJSON() {
+            if (!generatedData) return;
+
+            const dataStr = JSON.stringify(generatedData, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            const exportFileDefaultName = `event-${generatedData.id}.json`;
+
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+
+            alert(`✅ Fichier téléchargé: ${exportFileDefaultName}`);
+        }
+
+        async function saveToGitHub() {
+            if (!generatedData) {
+                alert('❌ Aucun événement à sauvegarder. Créez d\'abord un événement.');
+                return;
+            }
+
+            const button = event.target;
+            const originalText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sauvegarde...';
+
+            try {
+                // 1. Récupérer les événements existants
+                const getResponse = await fetch('/data/events-data.json');
+                if (!getResponse.ok) {
+                    throw new Error('Impossible de récupérer le fichier events-data.json');
+                }
+                const currentEvents = await getResponse.json();
+
+                // 2. Vérifier les doublons
+                const isDuplicate = currentEvents.some(existing =>
+                    existing.date === generatedData.date &&
+                    (existing.location.toLowerCase() === generatedData.location.toLowerCase() ||
+                     existing.address.toLowerCase() === generatedData.address.toLowerCase() ||
+                     existing.title.toLowerCase() === generatedData.title.toLowerCase())
+                );
+
+                if (isDuplicate) {
+                    if (!confirm('⚠️ Un événement similaire existe déjà (même date et lieu/titre/adresse).\n\nVoulez-vous quand même l\'ajouter ?')) {
+                        button.disabled = false;
+                        button.innerHTML = originalText;
+                        return;
+                    }
+                }
+
+                // 3. Ajouter le nouvel événement
+                currentEvents.push(generatedData);
+
+                // 4. Commit sur GitHub
+                const commitResponse = await fetch('/api/github-commit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filePath: 'cevennes-connect/data/events-data.json',
+                        content: JSON.stringify(currentEvents, null, 2),
+                        commitMessage: `✨ Ajout événement: ${generatedData.title}
+
+📅 ${generatedData.date} à ${generatedData.time}
+📍 ${generatedData.location}
+
+🤖 Generated via admin-add-event.html`
+                    })
+                });
+
+                if (!commitResponse.ok) {
+                    const error = await commitResponse.json();
+                    throw new Error(error.error || 'Erreur lors du commit sur GitHub');
+                }
+
+                alert(`✅ Événement "${generatedData.title}" ajouté et committé sur GitHub !`);
+
+                // Reset form
+                resetForm();
+
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert(`❌ Erreur lors de la sauvegarde :\n\n${error.message}`);
+            } finally {
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
+        }
+
+        // Initialiser la carte au chargement
+        window.addEventListener('load', initMap);
+    </script>
+</body>
+</html>
