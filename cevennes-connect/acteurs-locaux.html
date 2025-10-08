@@ -1162,12 +1162,6 @@
 
         // Setup event listeners
         function setupEventListeners() {
-            // Mobile menu
-            document.getElementById('mobile-menu-btn').addEventListener('click', function() {
-                const menu = document.getElementById('mobile-menu');
-                menu.classList.toggle('hidden');
-            });
-
             // Search
             document.getElementById('searchInput').addEventListener('input', function(e) {
                 filterActors();
