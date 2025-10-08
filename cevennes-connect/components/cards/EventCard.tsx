@@ -91,7 +91,7 @@ export function EventCard({ event }: EventCardProps) {
           )}
         </div>
 
-        {(event.phone || event.website) && (
+        {(event.contact || event.website) && (
           <div className="flex gap-2 mt-4">
             {event.contact && (
               <a

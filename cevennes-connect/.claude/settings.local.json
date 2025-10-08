@@ -19,7 +19,8 @@
       "Bash(curl -s \"https://cevennes-sud-website.vercel.app/index.html\")",
       "Bash(curl -s \"https://cevennes-sud-website.vercel.app/acteurs-locaux.html\")",
       "Bash(npx create-next-app:*)",
-      "Bash(npm install)"
+      "Bash(npm install)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

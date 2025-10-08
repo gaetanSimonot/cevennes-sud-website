@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'link'
+import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Input, TextArea } from '@/components/ui/Input'
 
@@ -33,7 +33,7 @@ export default function ArtefactIAPage() {
             </Link>
             <div>
               <h1 className="text-xl font-bold text-gray-900">Artefact IA</h1>
-              <p className="text-sm text-gray-500">Extraction automatique d'informations</p>
+              <p className="text-sm text-gray-500">Extraction automatique d&apos;informations</p>
             </div>
           </div>
         </div>

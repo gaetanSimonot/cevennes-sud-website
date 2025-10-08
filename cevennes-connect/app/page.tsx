@@ -1,36 +1,14 @@
 import Link from 'next/link'
+import { Header } from '@/components/layout/Header'
+import { Footer } from '@/components/layout/Footer'
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-100">
-        <nav className="container-custom py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
-              <span className="text-white text-2xl">🏔️</span>
-            </div>
-            <div>
-              <h1 className="font-bold text-xl text-gray-900">Cévennes Sud</h1>
-              <p className="text-sm text-gray-500">Votre communauté connectée</p>
-            </div>
-          </div>
-          <div className="hidden md:flex items-center space-x-6">
-            <Link href="/acteurs-locaux" className="text-gray-700 hover:text-purple-600 transition">
-              Acteurs Locaux
-            </Link>
-            <Link href="/evenements" className="text-gray-700 hover:text-pink-600 transition">
-              Événements
-            </Link>
-            <Link href="/echangeons" className="text-gray-700 hover:text-blue-600 transition">
-              Échangeons
-            </Link>
-          </div>
-        </nav>
-      </header>
+    <div className="min-h-screen flex flex-col">
+      <Header theme="emerald" />
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-600 text-white py-24">
+      <section className="bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-600 text-white py-24 flex-1">
         <div className="container-custom text-center">
           <div className="floating mb-6">
             <div className="w-20 h-20 mx-auto bg-white/20 backdrop-blur-lg rounded-3xl flex items-center justify-center shadow-2xl">
@@ -104,14 +82,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="container-custom text-center">
-          <p className="text-gray-400">
-            © 2025 Cévennes Connect. Fait avec ❤️ pour notre belle communauté locale.
-          </p>
-        </div>
-      </footer>
-    </main>
+      <Footer />
+    </div>
   )
 }

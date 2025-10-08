@@ -71,7 +71,7 @@ export function filterBySearch<T extends { name?: string; title?: string; descri
   return items.filter(item => {
     const name = 'name' in item ? item.name : 'title' in item ? item.title : ''
     return (
-      name.toLowerCase().includes(term) ||
+      (name || '').toLowerCase().includes(term) ||
       item.description.toLowerCase().includes(term)
     )
   })
