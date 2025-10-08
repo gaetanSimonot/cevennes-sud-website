@@ -1,9 +1,87 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Input, TextArea } from '@/components/ui/Input'
+
+// Default AI prompt
+const DEFAULT_PROMPT = `Tu es un assistant spécialisé dans l'extraction d'informations d'événements depuis des copier-coller brouillons, des images ou du texte mal formaté.
+
+**TA MISSION : ÊTRE ROBUSTE ET EFFICACE**
+
+Tu vas recevoir des données parfois sales (copier-coller, caractères bizarres, formatage cassé, infos mélangées). Ton job est d'isoler SEULEMENT les infos essentielles et créer des événements valides.
+
+**RÈGLES STRICTES** :
+
+1. **GESTION DES COPIER-COLLER SALES** :
+   - Ignore les caractères spéciaux bizarres (emojis cassés, unicode étrange, etc.)
+   - Nettoie les espaces multiples, sauts de ligne inutiles
+   - Extrait SEULEMENT les infos utiles, ignore le bruit
+   - Si le texte est incompréhensible, fais de ton mieux avec ce qui est lisible
+   - FORMAT SPÉCIAL : Si tu vois "Ville (Code postal)" à la fin → c'est l'adresse complète
+   - Exemple : "Valflaunès (34270)" → address: "34270 Valflaunès"
+
+2. **CARACTÈRES DANGEREUX POUR JSON** :
+   - Échappe TOUJOURS les guillemets doubles dans les textes
+   - Remplace les guillemets typographiques par des guillemets simples (')
+   - Retire les retours chariots dans les textes (une seule ligne)
+   - Supprime les backslashes orphelins
+   - Pas de caractères de contrôle (TAB, NULL, etc.)
+
+3. **UNE IMAGE = UN SEUL ÉVÉNEMENT** : Même si l'affiche mentionne plusieurs dates, c'est UN événement
+
+4. **PRIORITÉ AUX INFOS MINIMALES** :
+   - **OBLIGATOIRE** : title + date + ville (dans address ou location)
+   - **IMPORTANT** : time, category
+   - **OPTIONNEL** : tout le reste
+   - Si tu n'es pas sûr d'une info → laisse vide "" plutôt que de risquer une erreur
+
+5. **EN CAS DE DOUTE** :
+   - Date floue ? → Mets la première date mentionnée ou laisse vide
+   - Heure floue ? → Mets "14:00" par défaut ou laisse vide
+   - Lieu vague ? → Mets au moins le nom de la ville dans address
+   - Prix inconnu ? → Mets "Non renseigné"
+
+6. **VILLE OBLIGATOIRE** : L'adresse DOIT contenir une ville des Cévennes (Le Vigan, Ganges, Saint-Hippolyte-du-Fort, Sumène, Valleraugue, etc.). Sans ville, pas de carte !
+
+Pour chaque événement, extrais :
+
+- **title** (OBLIGATOIRE) : Titre de l'événement
+- **category** : "festival", "marche", "culture", "sport", "atelier", "theatre"
+- **description** : 1-2 phrases MAX, propres, sans caractères bizarres
+- **date** : YYYY-MM-DD (OBLIGATOIRE)
+- **time** : HH:MM (24h)
+- **location** : Nom du lieu
+- **address** : Ville + code postal minimum (ex: "30120 Le Vigan")
+- **price** : Ex: "Gratuit", "10€"
+- **organizer** : Nom de l'organisateur
+- **contact** : Email ou tel
+- **website** : URL complète
+
+**IMPORTANT** :
+- Retourne UNIQUEMENT du JSON valide, propre, sans texte avant/après
+- Chaque string doit être échappée correctement
+- Pas d'images base64, toujours "image": ""
+- Si aucun événement valide détecté → retourne []
+
+Format attendu :
+[
+  {
+    "title": "Marché de Valflaunès",
+    "category": "marche",
+    "description": "Marché artisanal local tous les dimanches matin",
+    "date": "2025-10-12",
+    "time": "09:00",
+    "location": "Place Gabriel Calmels",
+    "address": "34270 Valflaunès",
+    "price": "Gratuit",
+    "organizer": "",
+    "contact": "",
+    "website": "",
+    "image": ""
+  }
+]`
 
 interface ExtractedEvent {
   id?: number
@@ -30,7 +108,7 @@ interface LogEntry {
 }
 
 export default function ArtefactIAPage() {
-  const [activeTab, setActiveTab] = useState<'text' | 'url' | 'image'>('text')
+  const [activeTab, setActiveTab] = useState<'text' | 'url' | 'image' | 'settings'>('text')
   const [textContent, setTextContent] = useState('')
   const [urlContent, setUrlContent] = useState('')
   const [uploadedImages, setUploadedImages] = useState<{ data: string; name: string }[]>([])
@@ -42,8 +120,34 @@ export default function ArtefactIAPage() {
     { message: '📝 Ou coller du texte / liens', type: 'info' },
     { message: '⚠️ L\'analyse peut prendre 10-30 secondes', type: 'warning' },
   ])
+  const [customPrompt, setCustomPrompt] = useState(DEFAULT_PROMPT)
+  const [editingPrompt, setEditingPrompt] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const logConsoleRef = useRef<HTMLDivElement>(null)
+
+  // Load custom prompt from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('artefact-ai-prompt')
+    if (saved) {
+      setCustomPrompt(saved)
+    }
+  }, [])
+
+  // Save prompt to localStorage
+  const savePrompt = () => {
+    localStorage.setItem('artefact-ai-prompt', customPrompt)
+    addLog('✅ Consignes IA sauvegardées', 'success')
+    setEditingPrompt(false)
+  }
+
+  // Reset to default prompt
+  const resetPrompt = () => {
+    if (confirm('Réinitialiser les consignes IA par défaut ?')) {
+      setCustomPrompt(DEFAULT_PROMPT)
+      localStorage.setItem('artefact-ai-prompt', DEFAULT_PROMPT)
+      addLog('🔄 Consignes IA réinitialisées', 'info')
+    }
+  }
 
   const addLog = (message: string, type: LogEntry['type'] = 'info') => {
     setLogs(prev => [...prev, { message, type }])
@@ -124,85 +228,10 @@ export default function ArtefactIAPage() {
         }
       }
 
-      // Prepare OpenAI prompt
-      const prompt = `Tu es un assistant spécialisé dans l'extraction d'informations d'événements depuis des copier-coller brouillons, des images ou du texte mal formaté.
-
-**TA MISSION : ÊTRE ROBUSTE ET EFFICACE**
-
-Tu vas recevoir des données parfois sales (copier-coller, caractères bizarres, formatage cassé, infos mélangées). Ton job est d'isoler SEULEMENT les infos essentielles et créer des événements valides.
-
-**RÈGLES STRICTES** :
-
-1. **GESTION DES COPIER-COLLER SALES** :
-   - Ignore les caractères spéciaux bizarres (emojis cassés, unicode étrange, etc.)
-   - Nettoie les espaces multiples, sauts de ligne inutiles
-   - Extrait SEULEMENT les infos utiles, ignore le bruit
-   - Si le texte est incompréhensible, fais de ton mieux avec ce qui est lisible
-   - FORMAT SPÉCIAL : Si tu vois "Ville (Code postal)" à la fin → c'est l'adresse complète
-   - Exemple : "Valflaunès (34270)" → address: "34270 Valflaunès"
-
-2. **CARACTÈRES DANGEREUX POUR JSON** :
-   - Échappe TOUJOURS les guillemets doubles dans les textes
-   - Remplace les guillemets typographiques par des guillemets simples (')
-   - Retire les retours chariots dans les textes (une seule ligne)
-   - Supprime les backslashes orphelins
-   - Pas de caractères de contrôle (TAB, NULL, etc.)
-
-3. **UNE IMAGE = UN SEUL ÉVÉNEMENT** : Même si l'affiche mentionne plusieurs dates, c'est UN événement
-
-4. **PRIORITÉ AUX INFOS MINIMALES** :
-   - **OBLIGATOIRE** : title + date + ville (dans address ou location)
-   - **IMPORTANT** : time, category
-   - **OPTIONNEL** : tout le reste
-   - Si tu n'es pas sûr d'une info → laisse vide "" plutôt que de risquer une erreur
-
-5. **EN CAS DE DOUTE** :
-   - Date floue ? → Mets la première date mentionnée ou laisse vide
-   - Heure floue ? → Mets "14:00" par défaut ou laisse vide
-   - Lieu vague ? → Mets au moins le nom de la ville dans address
-   - Prix inconnu ? → Mets "Non renseigné"
-
-6. **VILLE OBLIGATOIRE** : L'adresse DOIT contenir une ville des Cévennes (Le Vigan, Ganges, Saint-Hippolyte-du-Fort, Sumène, Valleraugue, etc.). Sans ville, pas de carte !
-
-Pour chaque événement, extrais :
-
-- **title** (OBLIGATOIRE) : Titre de l'événement
-- **category** : "festival", "marche", "culture", "sport", "atelier", "theatre"
-- **description** : 1-2 phrases MAX, propres, sans caractères bizarres
-- **date** : YYYY-MM-DD (OBLIGATOIRE)
-- **time** : HH:MM (24h)
-- **location** : Nom du lieu
-- **address** : Ville + code postal minimum (ex: "30120 Le Vigan")
-- **price** : Ex: "Gratuit", "10€"
-- **organizer** : Nom de l'organisateur
-- **contact** : Email ou tel
-- **website** : URL complète
-
-${inputText ? `\n**Données brutes fournies :**\n${inputText}` : ''}
-
-**IMPORTANT** :
-- Retourne UNIQUEMENT du JSON valide, propre, sans texte avant/après
-- Chaque string doit être échappée correctement
-- Pas d'images base64, toujours "image": ""
-- Si aucun événement valide détecté → retourne []
-
-Format attendu :
-[
-  {
-    "title": "Marché de Valflaunès",
-    "category": "marche",
-    "description": "Marché artisanal local tous les dimanches matin",
-    "date": "2025-10-12",
-    "time": "09:00",
-    "location": "Place Gabriel Calmels",
-    "address": "34270 Valflaunès",
-    "price": "Gratuit",
-    "organizer": "",
-    "contact": "",
-    "website": "",
-    "image": ""
-  }
-]`
+      // Prepare OpenAI prompt - use custom prompt with optional input text
+      const prompt = inputText
+        ? `${customPrompt}\n\n**Données brutes fournies :**\n${inputText}`
+        : customPrompt
 
       // Prepare messages
       const messages: any[] = [
@@ -486,6 +515,13 @@ ${extractedEvents.map((e, i) => `${i + 1}. ${e.title} - ${e.date} à ${e.locatio
                 >
                   📸 Screenshot
                 </Button>
+                <Button
+                  variant={activeTab === 'settings' ? 'primary' : 'secondary'}
+                  onClick={() => setActiveTab('settings')}
+                  size="sm"
+                >
+                  ⚙️ Paramètres
+                </Button>
               </div>
 
               {/* Text Tab */}
@@ -572,15 +608,85 @@ ${extractedEvents.map((e, i) => `${i + 1}. ${e.title} - ${e.date} à ${e.locatio
                 </div>
               )}
 
+              {/* Settings Tab */}
+              {activeTab === 'settings' && (
+                <div className="mb-6">
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                    <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                      ⚙️ Configuration de l&apos;Agent IA
+                    </h3>
+                    <p className="text-sm text-blue-700 mb-3">
+                      Modifiez les consignes données à l&apos;IA pour extraire les événements.
+                      Les consignes sont sauvegardées localement dans votre navigateur.
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant={editingPrompt ? 'secondary' : 'primary'}
+                        size="sm"
+                        onClick={() => setEditingPrompt(!editingPrompt)}
+                      >
+                        {editingPrompt ? '📖 Annuler' : '✏️ Modifier'}
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={resetPrompt}
+                      >
+                        🔄 Réinitialiser
+                      </Button>
+                    </div>
+                  </div>
+
+                  {editingPrompt ? (
+                    <div>
+                      <TextArea
+                        label="Consignes pour l'IA"
+                        value={customPrompt}
+                        onChange={(e) => setCustomPrompt(e.target.value)}
+                        rows={20}
+                        placeholder="Entrez les consignes pour l'IA..."
+                      />
+                      <div className="mt-4 flex gap-2">
+                        <Button
+                          variant="primary"
+                          onClick={savePrompt}
+                          className="flex-1"
+                        >
+                          💾 Sauvegarder
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          onClick={() => setEditingPrompt(false)}
+                          className="flex-1"
+                        >
+                          ❌ Annuler
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                        Aperçu des consignes actuelles:
+                      </h4>
+                      <pre className="text-xs text-gray-600 whitespace-pre-wrap max-h-60 overflow-y-auto">
+                        {customPrompt.substring(0, 500)}...
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Analyze Button */}
-              <Button
-                onClick={handleAnalyze}
-                variant="primary"
-                className="w-full"
-                disabled={isAnalyzing}
-              >
-                {isAnalyzing ? '⏳ Analyse en cours...' : '🧠 Analyser avec l\'IA'}
-              </Button>
+              {activeTab !== 'settings' && (
+                <Button
+                  onClick={handleAnalyze}
+                  variant="primary"
+                  className="w-full"
+                  disabled={isAnalyzing}
+                >
+                  {isAnalyzing ? '⏳ Analyse en cours...' : '🧠 Analyser avec l\'IA'}
+                </Button>
+              )}
             </div>
 
             {/* Right Column - Output */}
