@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion Acteurs Locaux - Admin</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .actor-row {
+            transition: all 0.3s ease;
+        }
+
+        .actor-row:hover {
+            background: #f8fafc;
+            transform: translateX(4px);
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-standard {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .badge-premium {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-mega-premium {
+            background: #fef3c7;
+            color: #b45309;
+            box-shadow: 0 0 15px rgba(234, 179, 8, 0.3);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">
+                    <i class="fas fa-users-cog mr-3 text-blue-600"></i>
+                    Gestion des Acteurs Locaux
+                </h1>
+                <p class="text-gray-600 mt-2">Éditer, supprimer et gérer les niveaux premium</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="saveChanges()" class="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-xl transition-all">
+                    <i class="fas fa-save mr-2"></i>Sauvegarder sur GitHub
+                </button>
+                <a href="admin.html" class="bg-gray-200 text-gray-700 px-6 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-all inline-block">
+                    <i class="fas fa-arrow-left mr-2"></i>Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6">
+                <div class="text-3xl font-bold text-blue-600" id="totalCount">0</div>
+                <div class="text-sm text-gray-600 mt-1">Total acteurs</div>
+            </div>
+            <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-6">
+                <div class="text-3xl font-bold text-gray-600" id="standardCount">0</div>
+                <div class="text-sm text-gray-600 mt-1">Standard</div>
+            </div>
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-6">
+                <div class="text-3xl font-bold text-blue-600" id="premiumCount">0</div>
+                <div class="text-sm text-gray-600 mt-1">Premium</div>
+            </div>
+            <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-2xl p-6">
+                <div class="text-3xl font-bold text-yellow-600" id="megaPremiumCount">0</div>
+                <div class="text-sm text-gray-600 mt-1">Mega Premium</div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="mb-6 flex gap-4 items-center">
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="🔍 Rechercher un acteur..."
+                class="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+            <select id="categoryFilter" class="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500">
+                <option value="all">Toutes catégories</option>
+                <option value="commerce">Commerce</option>
+                <option value="restaurant">Restaurant</option>
+                <option value="artisan">Artisan</option>
+                <option value="therapeute">Thérapeute</option>
+                <option value="service">Service</option>
+                <option value="association">Association</option>
+            </select>
+            <select id="levelFilter" class="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500">
+                <option value="all">Tous niveaux</option>
+                <option value="standard">Standard</option>
+                <option value="premium">Premium</option>
+                <option value="mega-premium">Mega Premium</option>
+            </select>
+        </div>
+
+        <!-- Actors List -->
+        <div class="bg-gray-50 rounded-2xl p-6">
+            <div id="actorsList" class="space-y-3">
+                <!-- Actors will be loaded here -->
+            </div>
+            <div id="noResults" class="hidden text-center py-12 text-gray-500">
+                <i class="fas fa-search text-4xl mb-4"></i>
+                <p>Aucun acteur trouvé</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-6">Éditer l'acteur</h2>
+            <form id="editForm" class="space-y-4">
+                <input type="hidden" id="editIndex">
+                <input type="hidden" id="editCategory">
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nom</label>
+                    <input type="text" id="editName" class="w-full px-4 py-2 border border-gray-300 rounded-lg" required>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Niveau Premium</label>
+                    <select id="editLevel" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                        <option value="standard">Standard (nom uniquement)</option>
+                        <option value="premium">Premium (carte complète)</option>
+                        <option value="mega-premium">Mega Premium (extra large + badge)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea id="editDescription" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Adresse</label>
+                    <input type="text" id="editAddress" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Téléphone</label>
+                        <input type="text" id="editPhone" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" id="editEmail" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Site Web</label>
+                    <input type="url" id="editWebsite" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-check mr-2"></i>Enregistrer
+                    </button>
+                    <button type="button" onclick="closeEditModal()" class="flex-1 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
+                        Annuler
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let allActors = {
+            commerce: [],
+            restaurant: [],
+            artisan: [],
+            therapeute: [],
+            service: [],
+            association: []
+        };
+        let filteredActors = [];
+        let hasChanges = false;
+
+        // Load actors data
+        async function loadActors() {
+            try {
+                const response = await fetch('data/actors-data.json');
+                allActors = await response.json();
+
+                // S'assurer que chaque acteur a un premium_level par défaut
+                for (const category in allActors) {
+                    allActors[category] = allActors[category].map(actor => ({
+                        ...actor,
+                        premium_level: actor.premium_level || 'standard'
+                    }));
+                }
+
+                updateStats();
+                filterActors();
+            } catch (error) {
+                console.error('Error loading actors:', error);
+                alert('Erreur lors du chargement des acteurs');
+            }
+        }
+
+        // Update stats
+        function updateStats() {
+            let total = 0, standard = 0, premium = 0, megaPremium = 0;
+
+            for (const category in allActors) {
+                allActors[category].forEach(actor => {
+                    total++;
+                    if (actor.premium_level === 'mega-premium') megaPremium++;
+                    else if (actor.premium_level === 'premium') premium++;
+                    else standard++;
+                });
+            }
+
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('standardCount').textContent = standard;
+            document.getElementById('premiumCount').textContent = premium;
+            document.getElementById('megaPremiumCount').textContent = megaPremium;
+        }
+
+        // Filter actors
+        function filterActors() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const levelFilter = document.getElementById('levelFilter').value;
+
+            filteredActors = [];
+
+            for (const category in allActors) {
+                if (categoryFilter !== 'all' && category !== categoryFilter) continue;
+
+                allActors[category].forEach((actor, index) => {
+                    if (levelFilter !== 'all' && actor.premium_level !== levelFilter) return;
+
+                    if (search && !actor.name.toLowerCase().includes(search) &&
+                        !actor.address.toLowerCase().includes(search)) return;
+
+                    filteredActors.push({ ...actor, category, index });
+                });
+            }
+
+            renderActors();
+        }
+
+        // Render actors
+        function renderActors() {
+            const container = document.getElementById('actorsList');
+            const noResults = document.getElementById('noResults');
+
+            if (filteredActors.length === 0) {
+                container.innerHTML = '';
+                noResults.classList.remove('hidden');
+                return;
+            }
+
+            noResults.classList.add('hidden');
+            container.innerHTML = filteredActors.map(actor => {
+                const badgeClass = actor.premium_level === 'mega-premium' ? 'badge-mega-premium' :
+                                   actor.premium_level === 'premium' ? 'badge-premium' : 'badge-standard';
+                const levelLabel = actor.premium_level === 'mega-premium' ? '⭐ Mega Premium' :
+                                  actor.premium_level === 'premium' ? '💎 Premium' : '📍 Standard';
+
+                return `
+                    <div class="actor-row bg-white rounded-xl p-4 flex items-center justify-between border border-gray-200">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-1">
+                                <h3 class="font-bold text-gray-900">${actor.name}</h3>
+                                <span class="badge ${badgeClass}">${levelLabel}</span>
+                                <span class="text-xs text-gray-500">${getCategoryLabel(actor.category)}</span>
+                            </div>
+                            <p class="text-sm text-gray-600">${actor.address || 'Pas d\'adresse'}</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="editActor('${actor.category}', ${actor.index})" class="bg-blue-100 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-200 transition-colors">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="upgradeLevel('${actor.category}', ${actor.index})" class="bg-yellow-100 text-yellow-600 px-4 py-2 rounded-lg hover:bg-yellow-200 transition-colors" title="Changer niveau">
+                                <i class="fas fa-arrow-up"></i>
+                            </button>
+                            <button onclick="deleteActor('${actor.category}', ${actor.index})" class="bg-red-100 text-red-600 px-4 py-2 rounded-lg hover:bg-red-200 transition-colors">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Edit actor
+        function editActor(category, index) {
+            const actor = allActors[category][index];
+            document.getElementById('editIndex').value = index;
+            document.getElementById('editCategory').value = category;
+            document.getElementById('editName').value = actor.name;
+            document.getElementById('editLevel').value = actor.premium_level || 'standard';
+            document.getElementById('editDescription').value = actor.description || '';
+            document.getElementById('editAddress').value = actor.address || '';
+            document.getElementById('editPhone').value = actor.phone || '';
+            document.getElementById('editEmail').value = actor.email || '';
+            document.getElementById('editWebsite').value = actor.website || '';
+
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        // Close modal
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+
+        // Save edit
+        document.getElementById('editForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const category = document.getElementById('editCategory').value;
+            const index = parseInt(document.getElementById('editIndex').value);
+
+            allActors[category][index] = {
+                ...allActors[category][index],
+                name: document.getElementById('editName').value,
+                premium_level: document.getElementById('editLevel').value,
+                description: document.getElementById('editDescription').value,
+                address: document.getElementById('editAddress').value,
+                phone: document.getElementById('editPhone').value,
+                email: document.getElementById('editEmail').value,
+                website: document.getElementById('editWebsite').value
+            };
+
+            hasChanges = true;
+            closeEditModal();
+            updateStats();
+            filterActors();
+        });
+
+        // Upgrade level
+        function upgradeLevel(category, index) {
+            const actor = allActors[category][index];
+            const levels = ['standard', 'premium', 'mega-premium'];
+            const currentIndex = levels.indexOf(actor.premium_level || 'standard');
+            const nextIndex = (currentIndex + 1) % levels.length;
+
+            actor.premium_level = levels[nextIndex];
+            hasChanges = true;
+            updateStats();
+            filterActors();
+        }
+
+        // Delete actor
+        function deleteActor(category, index) {
+            const actor = allActors[category][index];
+            if (!confirm(`Êtes-vous sûr de vouloir supprimer "${actor.name}" ?`)) return;
+
+            allActors[category].splice(index, 1);
+            hasChanges = true;
+            updateStats();
+            filterActors();
+        }
+
+        // Save changes to GitHub
+        async function saveChanges() {
+            if (!hasChanges) {
+                alert('Aucune modification à sauvegarder');
+                return;
+            }
+
+            if (!confirm('Êtes-vous sûr de vouloir sauvegarder les modifications sur GitHub ?')) return;
+
+            try {
+                const response = await fetch('/api/github-commit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filePath: 'cevennes-connect/data/actors-data.json',
+                        content: JSON.stringify(allActors, null, 2),
+                        commitMessage: `🛠️ Mise à jour acteurs locaux via admin
+
+Modifications effectuées depuis l'interface d'administration
+
+🤖 Generated via admin-manage-actors.html`
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Erreur inconnue');
+                }
+
+                const result = await response.json();
+                alert('✅ Modifications sauvegardées sur GitHub !');
+                hasChanges = false;
+            } catch (error) {
+                alert(`❌ Erreur lors de la sauvegarde :\n\n${error.message}`);
+            }
+        }
+
+        // Utility functions
+        function getCategoryLabel(category) {
+            const labels = {
+                commerce: 'Commerce',
+                restaurant: 'Restaurant',
+                artisan: 'Artisan',
+                therapeute: 'Thérapeute',
+                service: 'Service',
+                association: 'Association'
+            };
+            return labels[category] || category;
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', filterActors);
+        document.getElementById('categoryFilter').addEventListener('change', filterActors);
+        document.getElementById('levelFilter').addEventListener('change', filterActors);
+
+        // Close modal on background click
+        document.getElementById('editModal').addEventListener('click', (e) => {
+            if (e.target.id === 'editModal') closeEditModal();
+        });
+
+        // Warn before leaving with unsaved changes
+        window.addEventListener('beforeunload', (e) => {
+            if (hasChanges) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // Load on start
+        loadActors();
+    </script>
+</body>
+</html>
