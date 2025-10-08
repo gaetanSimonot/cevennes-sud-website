@@ -182,9 +182,7 @@
         let generatedData = null;
 
         // Configuration chargée depuis config.js
-        const GITHUB_TOKEN = CONFIG.GITHUB_TOKEN;
-        const GITHUB_REPO = CONFIG.GITHUB_REPO;
-        const FILE_PATH = CONFIG.FILE_PATH;
+        // Configuration déplacée vers API serverless pour sécurité
 
         // Initialiser la carte
         function initMap() {
@@ -235,19 +233,13 @@
         async function saveToGitHub(actorData) {
             try {
                 // 1. Récupérer le fichier actuel
-                const getResponse = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}`, {
-                    headers: {
-                        'Authorization': `token ${GITHUB_TOKEN}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
-                });
+                const getResponse = await fetch('/data/actors-data.json');
 
                 if (!getResponse.ok) {
                     throw new Error('Impossible de récupérer le fichier actors-data.json');
                 }
 
-                const fileData = await getResponse.json();
-                const currentContent = JSON.parse(atob(fileData.content));
+                const currentContent = await getResponse.json();
 
                 // 2. Ajouter le nouvel acteur dans la bonne catégorie
                 if (!currentContent[actorData.category]) {
@@ -255,28 +247,30 @@
                 }
                 currentContent[actorData.category].push(actorData);
 
-                // 3. Mettre à jour le fichier sur GitHub
-                const updateResponse = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/contents/${FILE_PATH}`, {
-                    method: 'PUT',
+                // 3. Mettre à jour le fichier sur GitHub via API serverless
+                const updateResponse = await fetch('/api/github-commit', {
+                    method: 'POST',
                     headers: {
-                        'Authorization': `token ${GITHUB_TOKEN}`,
-                        'Accept': 'application/vnd.github.v3+json',
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        message: `Ajout de ${actorData.name} dans la catégorie ${actorData.category}`,
-                        content: btoa(unescape(encodeURIComponent(JSON.stringify(currentContent, null, 2)))),
-                        sha: fileData.sha
+                        filePath: 'cevennes-connect/data/actors-data.json',
+                        content: JSON.stringify(currentContent, null, 2),
+                        commitMessage: `✨ Ajout de ${actorData.name} dans la catégorie ${actorData.category}
+
+🤖 Generated via admin-add-actor.html`
                     })
                 });
 
                 if (!updateResponse.ok) {
-                    throw new Error('Impossible de sauvegarder sur GitHub');
+                    const error = await updateResponse.json();
+                    throw new Error(error.error || 'Impossible de sauvegarder sur GitHub');
                 }
 
                 return true;
             } catch (error) {
                 console.error('Erreur:', error);
+                alert(`❌ Erreur lors de la sauvegarde :\n\n${error.message}`);
                 return false;
             }
         }
