@@ -16,27 +16,31 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'system',
-          content: `Tu es un expert en structuration d'événements culturels.
+          content: `Tu es un expert en structuration d'événements culturels des Cévennes.
 
 RÈGLES ABSOLUES:
 1. TITLE: Nettoie et garde le titre exact
 2. DATE: Convertis en format YYYY-MM-DD (ex: "9 octobre 2025" → "2025-10-09")
 3. TIME: Extrais l'heure si présente, sinon "14:00"
-4. LOCATION: Extrais la VRAIE ville/adresse (Florac, Chanac, Le Vigan, Ganges, etc.). Ne pas inventer.
-5. ADDRESS: Adresse complète avec code postal si possible
+4. LOCATION: **CRITIQUE** - Extrais UNIQUEMENT le NOM EXACT de la ville/commune trouvé dans le texte
+   - Exemples: Florac, Chanac, Le Vigan, Ganges, Saint-Jean-du-Gard, Valleraugue, Anduze
+   - Si le nom de ville n'est PAS explicitement mentionné, laisse VIDE ""
+   - NE JAMAIS mettre "Cévennes", "Gard", "France" ou inventer
+5. ADDRESS: Adresse complète avec code postal si disponible dans le texte
 6. CATEGORY: Choisis parmi festival, marche, culture, sport, atelier, theatre
-   - Marché = "marche"
-   - Concert/Expo/Cinéma = "culture"
-   - Rando/Sport = "sport"
-   - Atelier = "atelier"
-   - Théâtre = "theatre"
+   - Marché/Marché de producteurs = "marche"
+   - Concert/Expo/Cinéma/Conférence = "culture"
+   - Rando/Sport/Pétanque = "sport"
+   - Atelier/Stage = "atelier"
+   - Théâtre/Spectacle = "theatre"
+   - Festival = "festival"
 7. DESCRIPTION: Résume en 1-2 phrases
 8. PRICE, ORGANIZER, CONTACT, WEBSITE: Extrais si présent, sinon laisser vide
 9. IMAGE: Garde l'URL de l'image
 
-IMPORTANT: Si ${events.length} événements en entrée, retourne ${events.length} événements. N'en oublie AUCUN.
+IMPORTANT: Si la ville n'est pas explicitement mentionnée, mets location: "" plutôt que d'inventer.
 
-Retourne UNIQUEMENT un JSON array valide: [{"title":"...","category":"...","description":"...","date":"YYYY-MM-DD","time":"HH:MM","location":"ville","address":"...","price":"...","organizer":"...","contact":"...","website":"...","image":"..."}]`
+Retourne UNIQUEMENT un JSON array valide: [{"title":"...","category":"...","description":"...","date":"YYYY-MM-DD","time":"HH:MM","location":"ville_exacte_ou_vide","address":"...","price":"...","organizer":"...","contact":"...","website":"...","image":"..."}]`
         },
         {
           role: 'user',
@@ -60,10 +64,39 @@ Retourne UNIQUEMENT un JSON array valide: [{"title":"...","category":"...","desc
 
     const cleanedEvents = JSON.parse(jsonMatch[0])
 
+    // Filter out events without valid location
+    const validEvents = cleanedEvents.filter((event: any) => {
+      // Reject if location is empty or too generic
+      if (!event.location || event.location.trim().length < 3) {
+        console.log(`❌ Rejected: "${event.title}" - No location`)
+        return false
+      }
+
+      // Reject if location is just generic words
+      const genericLocations = ['cévennes', 'gard', 'france', 'sud', 'région', 'territoire']
+      const isGeneric = genericLocations.some(generic =>
+        event.location.toLowerCase().trim() === generic
+      )
+
+      if (isGeneric) {
+        console.log(`❌ Rejected: "${event.title}" - Generic location: ${event.location}`)
+        return false
+      }
+
+      return true
+    })
+
+    // For valid events, ensure address is filled
+    const processedEvents = validEvents.map((event: any) => ({
+      ...event,
+      address: event.address || `${event.location}, Cévennes, France`
+    }))
+
     return NextResponse.json({
       success: true,
-      events: cleanedEvents,
-      count: cleanedEvents.length
+      events: processedEvents,
+      count: processedEvents.length,
+      rejected: cleanedEvents.length - validEvents.length
     })
 
   } catch (error: any) {
