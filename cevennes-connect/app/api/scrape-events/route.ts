@@ -113,6 +113,14 @@ async function scrapeURL(url: string): Promise<ScrapedEvent[]> {
   return events.slice(0, 50)
 }
 
+interface ExistingEvent {
+  id: number
+  title: string
+  date: string
+  location: string | null
+  address: string | null
+}
+
 async function checkDuplicates(events: ScrapedEvent[]): Promise<ScrapedEvent[]> {
   try {
     // Récupérer tous les événements existants depuis Supabase
@@ -124,7 +132,7 @@ async function checkDuplicates(events: ScrapedEvent[]): Promise<ScrapedEvent[]> 
 
     // Marquer les doublons
     return events.map(event => {
-      const duplicate = existingEvents.find(existing => {
+      const duplicate = existingEvents.find((existing: ExistingEvent) => {
         const titleMatch = existing.title.toLowerCase().trim() === event.title.toLowerCase().trim()
         const dateMatch = existing.date === event.date
         const locationMatch =
