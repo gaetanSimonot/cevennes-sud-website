@@ -107,12 +107,24 @@ interface LogEntry {
   type: 'info' | 'success' | 'error' | 'warning'
 }
 
+interface ScrapedEvent {
+  title: string
+  date: string
+  location: string
+  description: string
+  imageUrl?: string
+  selected?: boolean
+}
+
 export default function ArtefactIAPage() {
-  const [activeTab, setActiveTab] = useState<'text' | 'url' | 'image' | 'settings'>('text')
+  const [activeTab, setActiveTab] = useState<'text' | 'url' | 'image' | 'scraper' | 'settings'>('text')
   const [textContent, setTextContent] = useState('')
   const [urlContent, setUrlContent] = useState('')
+  const [scraperUrl, setScraperUrl] = useState('')
   const [uploadedImages, setUploadedImages] = useState<{ data: string; name: string }[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [isScraping, setIsScraping] = useState(false)
+  const [scrapedEvents, setScrapedEvents] = useState<ScrapedEvent[]>([])
   const [extractedEvents, setExtractedEvents] = useState<ExtractedEvent[] | null>(null)
   const [logs, setLogs] = useState<LogEntry[]>([
     { message: '🤖 Prêt à analyser vos événements avec OpenAI GPT-4 Vision', type: 'info' },
@@ -184,6 +196,85 @@ export default function ArtefactIAPage() {
   const removeImage = (index: number) => {
     setUploadedImages(prev => prev.filter((_, i) => i !== index))
     addLog('✓ Image supprimée', 'info')
+  }
+
+  const handleScrapeAgenda = async () => {
+    if (!scraperUrl.trim()) {
+      addLog('❌ Veuillez entrer une URL d\'agenda', 'error')
+      return
+    }
+
+    setIsScraping(true)
+    addLog('\n🌐 Démarrage du scraping...', 'info')
+    addLog(`🔗 URL cible: ${scraperUrl}`, 'info')
+
+    try {
+      const response = await fetch('/api/scrape-events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: scraperUrl })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Erreur lors du scraping')
+      }
+
+      if (data.events && data.events.length > 0) {
+        const eventsWithSelection = data.events.map((e: ScrapedEvent) => ({ ...e, selected: true }))
+        setScrapedEvents(eventsWithSelection)
+        addLog(`✅ ${data.events.length} événement(s) détecté(s) !`, 'success')
+        addLog('📋 Sélectionnez les événements à importer', 'info')
+      } else {
+        addLog('⚠️ Aucun événement détecté sur cette page', 'warning')
+        setScrapedEvents([])
+      }
+    } catch (error: any) {
+      addLog(`❌ Erreur de scraping: ${error.message}`, 'error')
+      alert(`❌ Erreur:\n\n${error.message}\n\nAssurez-vous que l'URL est accessible et contient des événements.`)
+    } finally {
+      setIsScraping(false)
+    }
+  }
+
+  const toggleScrapedEvent = (index: number) => {
+    setScrapedEvents(prev => prev.map((e, i) =>
+      i === index ? { ...e, selected: !e.selected } : e
+    ))
+  }
+
+  const handleImportScrapedEvents = async () => {
+    const selectedEvents = scrapedEvents.filter(e => e.selected)
+
+    if (selectedEvents.length === 0) {
+      addLog('❌ Aucun événement sélectionné', 'error')
+      return
+    }
+
+    addLog(`\n🚀 Import de ${selectedEvents.length} événement(s) vers OpenAI...`, 'info')
+
+    // Convertir les événements scrapés en texte pour l'IA
+    const eventsText = selectedEvents.map((e, i) =>
+      `Événement ${i + 1}:
+Titre: ${e.title}
+Date: ${e.date}
+Lieu: ${e.location}
+Description: ${e.description}
+${e.imageUrl ? `Image: ${e.imageUrl}` : ''}
+---`
+    ).join('\n\n')
+
+    // Déclencher l'analyse IA avec les événements scrapés
+    setTextContent(eventsText)
+    setActiveTab('text')
+    setScrapedEvents([])
+    setScraperUrl('')
+
+    // Lancer automatiquement l'analyse
+    setTimeout(() => {
+      handleAnalyze()
+    }, 500)
   }
 
   const handleAnalyze = async () => {
@@ -497,7 +588,7 @@ export default function ArtefactIAPage() {
               </h2>
 
               {/* Tabs */}
-              <div className="flex gap-2 mb-6">
+              <div className="flex gap-2 mb-6 flex-wrap">
                 <Button
                   variant={activeTab === 'text' ? 'primary' : 'secondary'}
                   onClick={() => setActiveTab('text')}
@@ -518,6 +609,13 @@ export default function ArtefactIAPage() {
                   size="sm"
                 >
                   📸 Screenshot
+                </Button>
+                <Button
+                  variant={activeTab === 'scraper' ? 'primary' : 'secondary'}
+                  onClick={() => setActiveTab('scraper')}
+                  size="sm"
+                >
+                  🌐 Scraper Agenda
                 </Button>
                 <Button
                   variant={activeTab === 'settings' ? 'primary' : 'secondary'}
@@ -607,6 +705,121 @@ export default function ArtefactIAPage() {
                           </div>
                         ))}
                       </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Scraper Tab */}
+              {activeTab === 'scraper' && (
+                <div className="mb-6">
+                  <div className="bg-gradient-to-br from-cyan-50 to-blue-50 border-2 border-cyan-200 rounded-2xl p-6 mb-6">
+                    <h3 className="text-xl font-bold text-cyan-900 mb-3 flex items-center gap-2">
+                      🌐 Scraper d&apos;Agenda Externe
+                    </h3>
+                    <p className="text-sm text-cyan-700 mb-4">
+                      Entrez l&apos;URL d&apos;un agenda en ligne (eterritoire.fr, Facebook Events, etc.).
+                      L&apos;outil va extraire automatiquement les événements détectés.
+                    </p>
+
+                    <Input
+                      label="URL de l'agenda"
+                      value={scraperUrl}
+                      onChange={(e) => setScraperUrl(e.target.value)}
+                      placeholder="https://www.eterritoire.fr/agenda/..."
+                      disabled={isScraping}
+                    />
+
+                    <div className="mt-4">
+                      <Button
+                        variant="primary"
+                        onClick={handleScrapeAgenda}
+                        disabled={isScraping || !scraperUrl.trim()}
+                      >
+                        {isScraping ? '⏳ Scraping en cours...' : '🚀 Lancer le scraping'}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Scraped Events Preview */}
+                  {scrapedEvents.length > 0 && (
+                    <div className="bg-white border-2 border-gray-200 rounded-2xl p-6">
+                      <h3 className="text-lg font-bold text-gray-900 mb-4">
+                        📋 Événements détectés ({scrapedEvents.filter(e => e.selected).length}/{scrapedEvents.length} sélectionnés)
+                      </h3>
+
+                      <div className="space-y-3 max-h-96 overflow-y-auto mb-4">
+                        {scrapedEvents.map((event, index) => (
+                          <div
+                            key={index}
+                            className={`
+                              border-2 rounded-xl p-4 transition-all cursor-pointer
+                              ${event.selected
+                                ? 'border-cyan-500 bg-cyan-50'
+                                : 'border-gray-200 bg-gray-50'}
+                            `}
+                            onClick={() => toggleScrapedEvent(index)}
+                          >
+                            <div className="flex items-start gap-3">
+                              <input
+                                type="checkbox"
+                                checked={event.selected}
+                                onChange={() => toggleScrapedEvent(index)}
+                                className="mt-1 w-5 h-5 text-cyan-600 rounded"
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                              <div className="flex-1">
+                                <h4 className="font-bold text-gray-900 mb-1">{event.title}</h4>
+                                {event.date && (
+                                  <p className="text-sm text-gray-600 mb-1">
+                                    📅 {event.date}
+                                  </p>
+                                )}
+                                {event.location && (
+                                  <p className="text-sm text-gray-600 mb-1">
+                                    📍 {event.location}
+                                  </p>
+                                )}
+                                {event.description && (
+                                  <p className="text-xs text-gray-500 line-clamp-2">
+                                    {event.description}
+                                  </p>
+                                )}
+                              </div>
+                              {event.imageUrl && (
+                                <img
+                                  src={event.imageUrl}
+                                  alt={event.title}
+                                  className="w-16 h-16 object-cover rounded-lg"
+                                />
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex gap-3">
+                        <Button
+                          variant="primary"
+                          onClick={handleImportScrapedEvents}
+                          disabled={scrapedEvents.filter(e => e.selected).length === 0}
+                        >
+                          ✨ Analyser avec l&apos;IA ({scrapedEvents.filter(e => e.selected).length})
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          onClick={() => {
+                            setScrapedEvents([])
+                            setScraperUrl('')
+                          }}
+                        >
+                          🗑️ Effacer
+                        </Button>
+                      </div>
+
+                      <p className="text-xs text-gray-500 mt-3">
+                        💡 Les événements sélectionnés seront analysés par l&apos;IA pour extraction des détails
+                      </p>
                     </div>
                   )}
                 </div>
