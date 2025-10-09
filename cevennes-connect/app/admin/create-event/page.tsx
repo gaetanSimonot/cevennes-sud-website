@@ -402,7 +402,7 @@ export default function CreateEventPage() {
                 <option value="mega-premium">Mega Premium (top priorité)</option>
               </select>
               <p className="mt-2 text-sm text-gray-600">
-                Les événements premium sont mis en avant sur la page d'accueil et dans les résultats
+                Les événements premium sont mis en avant sur la page d&apos;accueil et dans les résultats
               </p>
             </div>
 
