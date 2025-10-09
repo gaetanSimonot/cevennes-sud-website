@@ -269,6 +269,28 @@ export default function EditEventPage() {
               )}
             </div>
 
+            {/* Premium Level */}
+            <div>
+              <h2 className="text-lg font-bold text-gray-900 mb-4">Niveau de visibilité</h2>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Niveau premium
+                </label>
+                <select
+                  value={formData.premium_level || 'standard'}
+                  onChange={(e) => handleChange('premium_level', e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                  <option value="standard">Standard (gratuit)</option>
+                  <option value="premium">Premium (mise en avant)</option>
+                  <option value="mega-premium">Mega Premium (top priorité)</option>
+                </select>
+                <p className="mt-2 text-sm text-gray-600">
+                  Les événements premium sont mis en avant sur la page d&apos;accueil et dans les résultats
+                </p>
+              </div>
+            </div>
+
             {/* Actions */}
             <div className="flex items-center justify-between pt-6 border-t border-gray-200">
               <Link href="/admin/manage-events">
