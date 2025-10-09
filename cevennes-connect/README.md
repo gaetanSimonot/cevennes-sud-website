@@ -14,9 +14,10 @@ Plateforme locale pour le Sud Cévennes (25km autour de Ganges).
 - **Next.js 14** (App Router)
 - **TypeScript**
 - **Tailwind CSS**
-- **Google Maps API**
-- **OpenAI API** (extraction automatique)
-- **GitHub API** (storage des données)
+- **Supabase** (PostgreSQL database)
+- **Google Maps API** (cartes interactives)
+- **Google Places API** (import automatique)
+- **OpenAI GPT-4 Vision** (extraction IA depuis texte/URL/screenshot)
 
 ## 📁 Structure du Projet
 
@@ -39,10 +40,8 @@ cevennes-connect/
 │   └── cards/            # EventCard, ActorCard
 ├── lib/                  # Utilitaires
 │   ├── types.ts         # Types TypeScript
-│   └── utils.ts         # Fonctions utilitaires
-├── data/                # Données JSON
-│   ├── actors-data.json # Acteurs locaux
-│   └── events-data.json # Événements
+│   ├── utils.ts         # Fonctions utilitaires
+│   └── supabase.ts      # Client Supabase
 └── public/              # Assets statiques
 ```
 
@@ -63,12 +62,17 @@ cevennes-connect/
 
    Créer `.env.local` avec :
    ```
-   GITHUB_TOKEN=ghp_xxxxx
+   # Supabase
+   NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJxxx...
+   SUPABASE_SERVICE_KEY=eyJxxx...
+
+   # OpenAI
    OPENAI_API_KEY=sk-xxxxx
-   GOOGLE_MAPS_API_KEY=AIzaSyxxxxx
+
+   # Google Maps
+   NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=AIzaSyxxxxx
    GOOGLE_PLACES_API_KEY=AIzaSyxxxxx
-   GITHUB_REPO=username/repo
-   ADMIN_PASSWORD=votre_mot_de_passe
    ```
 
 4. **Lancer en développement**
@@ -80,22 +84,52 @@ cevennes-connect/
 
 ## 📊 Données
 
-Les données sont stockées dans des fichiers JSON dans le dossier `/data/` :
+Les données sont stockées dans **Supabase** (PostgreSQL) :
 
-- **actors-data.json** : Annuaire structuré par catégories (commerce, restaurant, artisan, therapeute, service, association)
-- **events-data.json** : Liste d'événements avec dates, lieux, catégories
+- **Table `actors`** : Annuaire structuré par catégories (commerce, restaurant, artisan, therapeute, service, association)
+- **Table `events`** : Liste d'événements avec dates, lieux, catégories
 
 ### Système Premium
 
-3 niveaux d'affichage :
-- **standard** : Nom uniquement
-- **premium** : Carte avec photo
-- **mega-premium** : Carte complète + badge animé
+3 niveaux d'affichage différenciés :
+
+#### Événements
+- **standard** : Carte compacte (icône + titre + date/lieu)
+- **premium** : Carte complète avec image, border jaune, fond gradient
+- **mega-premium** : Carte large avec image, border purple, fond gradient, toutes les infos
+
+#### Acteurs (Cartes)
+- **standard** : Mini-carte (icône + nom + catégorie)
+- **premium** : Carte complète avec image, description, contacts
+- **mega-premium** : Carte complète avec image, description, contacts, mise en avant
+
+#### Acteurs (Carte Google Maps)
+- **standard** : Petit point (6px, semi-transparent)
+- **premium** : Point moyen (10px, border jaune 3px) + tooltip au survol
+- **mega-premium** : Gros point (14px, border purple 4px) + tooltip au survol
+- Tooltip au survol : image + nom + description + téléphone
+- Popup au clic : toutes les infos complètes
+
+### Vue Hybride Carte+Liste
+
+Mode inspiré d'Airbnb :
+- Carte sticky à gauche
+- Liste scrollable à droite avec cartes acteurs
+- Hover sur liste → highlight sur carte
+- Synchronisation bidirectionnelle
 
 ## 🔐 Admin
 
 Accès : `/admin`
-Mot de passe : défini dans `.env.local` (ADMIN_PASSWORD)
+
+### Pages Admin CRUD
+
+- **Dashboard** : Stats temps réel (acteurs, événements à venir)
+- **Gestion Acteurs** : Liste, édition, suppression, bulk delete, pagination (20/page)
+- **Gestion Événements** : Liste, édition, suppression, bulk delete, pagination (20/page)
+- **Créer Acteur** : Formulaire avec validation + Google Maps autocomplete
+- **Créer Événement** : Formulaire avec validation + Google Maps autocomplete
+- Tous les changements sont instantanés (Supabase)
 
 ### Artefact IA
 
@@ -105,11 +139,11 @@ L'outil principal pour ajouter du contenu automatiquement :
 2. **URL** : Extraire depuis une page web
 3. **Screenshot** : Upload image et extraction OCR + IA
 
-L'IA (OpenAI GPT-4) extrait et structure automatiquement les données, puis les commit directement dans les JSON sur GitHub.
+L'IA (OpenAI GPT-4 Vision) extrait et structure automatiquement les données, puis les ajoute directement dans Supabase.
 
 ### Import Google Places
 
-Import massif depuis Google Places API avec reformulation automatique des descriptions par IA.
+Import massif depuis Google Places API avec reformulation automatique des descriptions par OpenAI GPT-4.
 
 ## 🌍 Deploy
 
@@ -129,14 +163,21 @@ npm run lint     # Vérifier ESLint
 
 ## 📝 Workflow
 
-1. Admin se connecte sur `/admin`
-2. Utilise l'Artefact IA (texte/URL/screenshot)
-3. IA extrait et structure les données
-4. Formulaire se remplit automatiquement
-5. Admin vérifie/modifie si besoin
-6. Clic "Publier" → Commit JSON sur GitHub
-7. Vercel redéploie automatiquement (~30sec)
-8. Nouveau contenu visible sur le site
+### Ajout Rapide (Artefact IA)
+1. Admin ouvre `/admin/artefact-ia`
+2. Colle texte / URL / screenshot
+3. IA extrait et structure automatiquement
+4. Formulaire se remplit
+5. Admin vérifie/modifie
+6. Clic "Publier" → Ajouté dans Supabase instantanément
+7. Visible immédiatement sur le site (pas de redéploiement)
+
+### Gestion Manuelle
+1. Admin ouvre `/admin/manage-actors` ou `/admin/manage-events`
+2. Liste paginée avec filtres (catégorie, recherche, temps)
+3. Édition directe ou suppression
+4. Bulk delete pour suppression multiple
+5. Changements instantanés dans Supabase
 
 ## 🎨 Thèmes Couleur
 
