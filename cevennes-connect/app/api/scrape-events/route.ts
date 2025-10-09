@@ -181,13 +181,81 @@ async function scrapeURL(url: string, deep: boolean = false): Promise<ScrapedEve
       const eventLinks = await extractEventLinks(url)
       console.log(`📋 ${eventLinks.length} liens d'événements trouvés`)
 
+      // Collecter tous les HTMLs d'abord (sans appeler OpenAI)
+      const htmlPages: { url: string; html: string }[] = []
       for (const link of eventLinks) {
-        const event = await scrapeEventDetail(link)
-        if (event) {
-          events.push(event)
+        try {
+          const { data: htmlContent } = await axios.get(link, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+            timeout: 10000
+          })
+          htmlPages.push({ url: link, html: htmlContent.substring(0, 15000) })
+          await new Promise(resolve => setTimeout(resolve, 300))
+        } catch (error) {
+          console.error(`Failed to fetch ${link}`)
         }
-        // Pause pour éviter de surcharger le serveur
-        await new Promise(resolve => setTimeout(resolve, 500))
+      }
+
+      // Un seul appel OpenAI pour tous les événements (batch)
+      if (htmlPages.length > 0) {
+        console.log(`🤖 Extraction batch de ${htmlPages.length} pages avec OpenAI...`)
+
+        try {
+          const openaiResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
+            model: 'gpt-4-turbo',
+            temperature: 0,
+            messages: [
+              {
+                role: 'system',
+                content: `Tu es un expert en extraction d'événements depuis du HTML.
+
+RÈGLES:
+1. IGNORE menus, navigation, footer, sidebar
+2. Pour CHAQUE page HTML, extrais l'événement principal
+3. TITLE: Titre exact de l'événement
+4. DATE: Format "9 octobre 2025" ou "Du 9 au 12 octobre"
+5. LOCATION: NOM EXACT de la ville (Florac, Ganges, Le Vigan, etc.) OU vide ""
+6. DESCRIPTION: Description complète (max 500 caractères)
+
+Retourne un JSON array avec UN événement par page:
+[{"title":"...","date":"...","location":"...","description":"...","imageUrl":"..."}]
+
+Si une page n'est pas un événement, omets-la du résultat.`
+              },
+              {
+                role: 'user',
+                content: `Extrais les événements de ces ${htmlPages.length} pages HTML:\n\n${htmlPages.map((p, i) => `PAGE ${i + 1} (${p.url}):\n${p.html}\n\n---\n\n`).join('')}`
+              }
+            ]
+          }, {
+            headers: {
+              'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+              'Content-Type': 'application/json'
+            }
+          })
+
+          const aiContent = openaiResponse.data.choices[0].message.content.trim()
+          const jsonMatch = aiContent.match(/\[\s*\{[\s\S]*\}\s*\]/)
+
+          if (jsonMatch) {
+            const extracted = JSON.parse(jsonMatch[0])
+            extracted.forEach((event: any, index: number) => {
+              if (event.title && isValidTitle(event.title)) {
+                events.push({
+                  title: event.title,
+                  date: event.date || '',
+                  location: event.location || '',
+                  description: event.description || '',
+                  imageUrl: event.imageUrl || undefined,
+                  sourceUrl: htmlPages[index]?.url || url
+                })
+              }
+            })
+            console.log(`✅ ${events.length} événements extraits en batch`)
+          }
+        } catch (error) {
+          console.error('OpenAI batch error:', error)
+        }
       }
 
       return events
