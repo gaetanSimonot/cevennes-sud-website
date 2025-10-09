@@ -91,17 +91,17 @@ export function GoogleMap({
         path: google.maps.SymbolPath.CIRCLE,
         scale: 6,
         fillColor: color,
-        fillOpacity: 0.7,
+        fillOpacity: 0.8,
         strokeColor: '#ffffff',
-        strokeWeight: 1
+        strokeWeight: 1.5
       }
     }
 
-    // Premium: marker plus visible
+    // Premium: point moyen avec border jaune
     if (premiumLevel === 'premium') {
       return {
         path: google.maps.SymbolPath.CIRCLE,
-        scale: 12,
+        scale: 10,
         fillColor: color,
         fillOpacity: 1,
         strokeColor: '#fbbf24',
@@ -109,94 +109,50 @@ export function GoogleMap({
       }
     }
 
-    // Mega-premium: custom HTML marker (pancarte)
-    return null // Will use custom overlay
+    // Mega-premium: gros point avec border purple
+    if (premiumLevel === 'mega-premium') {
+      return {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 14,
+        fillColor: color,
+        fillOpacity: 1,
+        strokeColor: '#a855f7',
+        strokeWeight: 4
+      }
+    }
+
+    return null
   }
 
-  const createMegaPremiumOverlay = (actor: Actor, isHighlighted: boolean) => {
-    const content = document.createElement('div')
-    content.style.cssText = `
-      position: absolute;
-      transform: translate(-50%, -50%);
-      cursor: pointer;
-      transition: all 0.3s ease;
-      z-index: ${isHighlighted ? 2000 : 1000};
-      animation: pulse 2s ease-in-out infinite;
-    `
-
-    const size = isHighlighted ? 70 : 50
-
-    content.innerHTML = `
-      <style>
-        @keyframes pulse {
-          0%, 100% { transform: translate(-50%, -50%) scale(1); }
-          50% { transform: translate(-50%, -50%) scale(1.1); }
-        }
-        @keyframes rotate {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-      </style>
+  const createTooltip = (actor: Actor) => {
+    return `
       <div style="
-        position: relative;
-        width: ${size}px;
-        height: ${size}px;
+        background: white;
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        max-width: 250px;
+        font-family: system-ui, -apple-system, sans-serif;
       ">
-        <!-- Glow effect -->
-        <div style="
-          position: absolute;
-          inset: -10px;
-          background: radial-gradient(circle, rgba(168, 85, 247, 0.6) 0%, transparent 70%);
-          border-radius: 50%;
-          filter: blur(15px);
-        "></div>
-
-        <!-- Star icon -->
-        <div style="
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 0 20px rgba(251, 191, 36, 0.8), 0 4px 20px rgba(0,0,0,0.3);
-          border: 3px solid #fff;
-        ">
-          <span style="font-size: ${size * 0.6}px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">⭐</span>
-        </div>
-
-        <!-- Diamond badge -->
-        <div style="
-          position: absolute;
-          top: -8px;
-          right: -8px;
-          width: 28px;
-          height: 28px;
-          background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-          border: 2px solid white;
-        ">
-          <span style="font-size: 16px;">💎</span>
-        </div>
+        ${actor.image ? `
+          <img src="${actor.image}"
+               style="width: 100%; height: 100px; object-fit: cover; border-radius: 8px; margin-bottom: 8px;"
+               onerror="this.style.display='none'"
+          />
+        ` : ''}
+        <h3 style="margin: 0 0 6px 0; font-size: 15px; font-weight: 600; color: #1f2937;">
+          ${actor.name}
+        </h3>
+        <p style="margin: 0 0 8px 0; font-size: 13px; color: #6b7280; line-height: 1.4;">
+          ${actor.description || ''}
+        </p>
+        ${actor.phone ? `
+          <p style="margin: 4px 0 0 0; font-size: 12px; color: #9ca3af;">
+            📞 ${actor.phone}
+          </p>
+        ` : ''}
       </div>
     `
-
-    content.addEventListener('mouseenter', () => {
-      content.style.transform = 'translate(-50%, -50%) scale(1.2)'
-      content.style.zIndex = '2000'
-    })
-
-    content.addEventListener('mouseleave', () => {
-      content.style.transform = 'translate(-50%, -50%) scale(1)'
-      content.style.zIndex = isHighlighted ? '2000' : '1000'
-    })
-
-    return content
   }
 
   const updateMarkers = () => {
@@ -211,84 +167,44 @@ export function GoogleMap({
       if (!actor.lat || !actor.lng) return
 
       const premiumLevel = actor.premium_level || 'standard'
-
-      // Mega-premium: custom overlay
-      if (premiumLevel === 'mega-premium') {
-        const isHighlighted = highlightedActorId === actor.id
-        const overlay = new google.maps.OverlayView()
-
-        overlay.onAdd = function() {
-          const panes = this.getPanes()
-          const content = createMegaPremiumOverlay(actor, isHighlighted)
-
-          panes!.overlayMouseTarget.appendChild(content)
-
-          content.addEventListener('click', () => {
-            const infoWindow = new google.maps.InfoWindow({
-              content: `
-                <div style="max-width: 300px;">
-                  ${actor.image ? `<img src="${actor.image}" style="width: 100%; height: 120px; object-fit: cover; margin-bottom: 12px; border-radius: 8px;" />` : ''}
-                  <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                    <span style="font-size: 24px;">💎</span>
-                    <h3 style="font-weight: bold; margin: 0; background: linear-gradient(135deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${actor.name}</h3>
-                  </div>
-                  <p style="color: #666; margin-bottom: 12px; line-height: 1.5;">${actor.description}</p>
-                  ${actor.address ? `<p style="font-size: 14px; color: #888; margin-bottom: 8px;"><strong>📍</strong> ${actor.address}</p>` : ''}
-                  ${actor.phone ? `<p style="font-size: 14px; color: #888; margin-bottom: 8px;"><strong>📞</strong> ${actor.phone}</p>` : ''}
-                  ${actor.email ? `<p style="font-size: 14px; color: #888; margin-bottom: 8px;"><strong>✉️</strong> ${actor.email}</p>` : ''}
-                  ${actor.website ? `<p style="font-size: 14px;"><a href="${actor.website}" target="_blank" style="color: #a855f7; text-decoration: none; font-weight: 600;">🌐 Visiter le site</a></p>` : ''}
-                </div>
-              `
-            })
-            infoWindow.setPosition({ lat: actor.lat!, lng: actor.lng! })
-            infoWindow.open(googleMapRef.current!)
-          })
-
-          // Store content for cleanup
-          ;(overlay as any).content = content
-        }
-
-        overlay.draw = function() {
-          const projection = this.getProjection()
-          const position = projection.fromLatLngToDivPixel(new google.maps.LatLng(actor.lat!, actor.lng!))
-          const content = (this as any).content
-          if (content && position) {
-            content.style.left = position.x + 'px'
-            content.style.top = position.y + 'px'
-          }
-        }
-
-        overlay.onRemove = function() {
-          const content = (this as any).content
-          if (content && content.parentNode) {
-            content.parentNode.removeChild(content)
-          }
-        }
-
-        overlay.setMap(googleMapRef.current)
-        markersRef.current.push(overlay as any)
-        return
-      }
-
-      // Standard et Premium: markers classiques
       const icon = createActorMarkerIcon(actor)
+
       const marker = new google.maps.Marker({
         position: { lat: actor.lat, lng: actor.lng },
         map: googleMapRef.current!,
         title: actor.name,
         icon: icon!,
-        zIndex: premiumLevel === 'premium' ? 100 : 50
+        zIndex: premiumLevel === 'mega-premium' ? 200 : premiumLevel === 'premium' ? 100 : 50
       })
 
+      // Tooltip (hover) - Only for premium and mega-premium
+      if (premiumLevel === 'premium' || premiumLevel === 'mega-premium') {
+        const tooltip = new google.maps.InfoWindow({
+          content: createTooltip(actor)
+        })
+
+        marker.addListener('mouseover', () => {
+          tooltip.open(googleMapRef.current!, marker)
+        })
+
+        marker.addListener('mouseout', () => {
+          tooltip.close()
+        })
+      }
+
+      // InfoWindow (click) - For all
       const infoWindow = new google.maps.InfoWindow({
         content: `
-          <div style="max-width: 300px;">
-            ${premiumLevel === 'premium' ? '<div style="background: linear-gradient(90deg, #fbbf24, #f59e0b); padding: 4px 12px; margin: -8px -8px 12px -8px; border-radius: 4px 4px 0 0;"><span style="color: white; font-size: 12px; font-weight: bold;">⭐ PREMIUM</span></div>' : ''}
-            <h3 style="font-weight: bold; margin-bottom: 8px;">${actor.name}</h3>
-            <p style="color: #666; margin-bottom: 8px;">${actor.description}</p>
-            ${actor.address ? `<p style="font-size: 14px; color: #888;"><strong>📍</strong> ${actor.address}</p>` : ''}
-            ${actor.phone ? `<p style="font-size: 14px; color: #888;"><strong>📞</strong> ${actor.phone}</p>` : ''}
-            ${actor.website ? `<p style="font-size: 14px;"><a href="${actor.website}" target="_blank" style="color: #3b82f6;">🌐 Site web</a></p>` : ''}
+          <div style="max-width: 300px; font-family: system-ui, -apple-system, sans-serif;">
+            ${actor.image ? `<img src="${actor.image}" style="width: 100%; height: 120px; object-fit: cover; margin-bottom: 12px; border-radius: 8px;" onerror="this.style.display='none'" />` : ''}
+            ${premiumLevel === 'mega-premium' ? '<div style="display: inline-block; background: linear-gradient(135deg, #a855f7, #ec4899); color: white; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; margin-bottom: 12px;">MEGA PREMIUM</div>' : ''}
+            ${premiumLevel === 'premium' ? '<div style="display: inline-block; background: linear-gradient(90deg, #fbbf24, #f59e0b); color: white; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; margin-bottom: 12px;">PREMIUM</div>' : ''}
+            <h3 style="font-weight: 600; margin: 8px 0; font-size: 16px; color: #1f2937;">${actor.name}</h3>
+            <p style="color: #6b7280; margin-bottom: 12px; line-height: 1.5; font-size: 14px;">${actor.description || ''}</p>
+            ${actor.address ? `<p style="font-size: 13px; color: #9ca3af; margin: 6px 0;"><strong>📍</strong> ${actor.address}</p>` : ''}
+            ${actor.phone ? `<p style="font-size: 13px; color: #9ca3af; margin: 6px 0;"><strong>📞</strong> ${actor.phone}</p>` : ''}
+            ${actor.email ? `<p style="font-size: 13px; color: #9ca3af; margin: 6px 0;"><strong>✉️</strong> ${actor.email}</p>` : ''}
+            ${actor.website ? `<p style="font-size: 13px; margin-top: 8px;"><a href="${actor.website}" target="_blank" style="color: #3b82f6; text-decoration: none; font-weight: 500;">🌐 Visiter le site</a></p>` : ''}
           </div>
         `
       })
