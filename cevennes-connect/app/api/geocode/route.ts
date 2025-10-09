@@ -31,8 +31,30 @@ export async function GET(req: NextRequest) {
     const geocodeResponse = await fetch(geocodeUrl)
     const data = await geocodeResponse.json()
 
-    // Retourner la réponse
-    return NextResponse.json(data, { status: 200 })
+    console.log(`Geocoding: ${address}`)
+
+    // Si succès, extraire lat/lng du premier résultat
+    if (data.status === 'OK' && data.results && data.results.length > 0) {
+      const location = data.results[0].geometry.location
+      const formattedAddress = data.results[0].formatted_address
+
+      console.log(`✅ Geocoded: ${address} → ${location.lat}, ${location.lng}`)
+
+      return NextResponse.json({
+        lat: location.lat,
+        lng: location.lng,
+        formatted_address: formattedAddress,
+        status: 'OK'
+      }, { status: 200 })
+    }
+
+    console.log(`❌ Geocoding failed for: ${address} - Status: ${data.status}`)
+
+    // Retourner l'erreur Google
+    return NextResponse.json({
+      error: `Geocoding failed: ${data.status}`,
+      status: data.status
+    }, { status: 404 })
 
   } catch (error: any) {
     console.error('Geocoding Error:', error)
@@ -73,8 +95,30 @@ export async function POST(req: NextRequest) {
     const geocodeResponse = await fetch(geocodeUrl)
     const data = await geocodeResponse.json()
 
-    // Retourner la réponse
-    return NextResponse.json(data, { status: 200 })
+    console.log(`Geocoding (POST): ${address}`)
+
+    // Si succès, extraire lat/lng du premier résultat
+    if (data.status === 'OK' && data.results && data.results.length > 0) {
+      const location = data.results[0].geometry.location
+      const formattedAddress = data.results[0].formatted_address
+
+      console.log(`✅ Geocoded: ${address} → ${location.lat}, ${location.lng}`)
+
+      return NextResponse.json({
+        lat: location.lat,
+        lng: location.lng,
+        formatted_address: formattedAddress,
+        status: 'OK'
+      }, { status: 200 })
+    }
+
+    console.log(`❌ Geocoding failed for: ${address} - Status: ${data.status}`)
+
+    // Retourner l'erreur Google
+    return NextResponse.json({
+      error: `Geocoding failed: ${data.status}`,
+      status: data.status
+    }, { status: 404 })
 
   } catch (error: any) {
     console.error('Geocoding Error:', error)
