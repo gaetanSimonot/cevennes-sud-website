@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/Button'
 import { Input, TextArea } from '@/components/ui/Input'
 
 // Default AI prompt
-const DEFAULT_PROMPT = `Tu es un assistant spécialisé dans l'extraction d'informations d'événements depuis des copier-coller brouillons, des images ou du texte mal formaté.
+const DEFAULT_PROMPT = `RÈGLE ABSOLUE : Extrait TOUS les événements du texte. Si tu vois 15 événements, retourne 15 événements. N'en oublie AUCUN.
+
+Tu es un assistant spécialisé dans l'extraction d'informations d'événements depuis des copier-coller brouillons, des images ou du texte mal formaté.
 
 **TA MISSION : EXTRAIRE LE MAXIMUM D'ÉVÉNEMENTS**
 
@@ -356,15 +358,15 @@ ${e.imageUrl ? `Image: ${e.imageUrl}` : ''}
       }
 
       // Call OpenAI API
-      addLog('⏳ Appel à OpenAI GPT-4 Vision...', 'info')
+      addLog('⏳ Appel à OpenAI GPT-4 Turbo...', 'info')
       const response = await fetch('/api/openai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'gpt-4o',
+          model: 'gpt-4-turbo',
           messages,
           max_tokens: 4000,
-          temperature: 0.7
+          temperature: 0.1
         })
       })
 
@@ -409,13 +411,14 @@ ${e.imageUrl ? `Image: ${e.imageUrl}` : ''}
         eventsArray = [eventsArray]
       }
 
+      console.log(`Événements extraits : ${eventsArray.length}`)
+      addLog(`✅ ${eventsArray.length} événement(s) extrait(s) par l'IA`, 'success')
+
       if (eventsArray.length === 0) {
         addLog('⚠️ Aucun événement valide détecté', 'warning')
         setIsAnalyzing(false)
         return
       }
-
-      addLog(`✅ ${eventsArray.length} événement(s) détecté(s) !`, 'success')
 
       // Geocode addresses
       addLog('🗺️ Géocodage des adresses en cours...', 'info')
