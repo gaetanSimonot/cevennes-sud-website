@@ -4,6 +4,46 @@ import axios from 'axios'
 
 export const dynamic = 'force-dynamic'
 
+// Fonction pour convertir date texte en format standardisé
+function parseDate(dateStr: string): string {
+  if (!dateStr) return ''
+
+  // Nettoyer les espaces
+  let cleaned = dateStr.replace(/\s+/g, ' ').trim()
+
+  // Mapping des mois français
+  const mois: Record<string, string> = {
+    'janvier': '01', 'jan': '01',
+    'février': '02', 'fév': '02', 'fevrier': '02', 'fev': '02',
+    'mars': '03', 'mar': '03',
+    'avril': '04', 'avr': '04',
+    'mai': '05',
+    'juin': '06',
+    'juillet': '07', 'juil': '07',
+    'août': '08', 'aout': '08',
+    'septembre': '09', 'sept': '09', 'sep': '09',
+    'octobre': '10', 'oct': '10',
+    'novembre': '11', 'nov': '11',
+    'décembre': '12', 'déc': '12', 'dec': '12'
+  }
+
+  // Essayer d'extraire jour, mois, année
+  const regex = /(\d{1,2})\s*(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre|jan|fév|mar|avr|mai|juin|juil|août|sep|oct|nov|déc|fevrier|aout|dec)\.?\s*(\d{4})?/i
+  const match = cleaned.match(regex)
+
+  if (match) {
+    const jour = match[1].padStart(2, '0')
+    const moisNom = match[2].toLowerCase().replace('.', '')
+    const moisNum = mois[moisNom] || '01'
+    const annee = match[3] || '2025'
+
+    return `${annee}-${moisNum}-${jour}`
+  }
+
+  // Si pas de match, retourner la date nettoyée
+  return cleaned
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -36,20 +76,58 @@ export async function POST(
 
     const scrapedEvents = scrapeResponse.data.events || []
 
-    // Store results in scraped_events_pending table
-    const eventsToInsert = scrapedEvents.map((event: any) => ({
-      scraping_config_id: parseInt(id),
-      title: event.title || '',
-      date: event.date || null,
-      location: event.location || '',
-      description: event.description || '',
-      image: event.imageUrl || null,
-      source_url: event.sourceUrl || config.url,
-      validated: false,
-      rejected: false,
-      is_duplicate: event.isDuplicate || false,
-      duplicate_of: event.duplicateOf || null
-    }))
+    // Geocode locations and prepare events for insertion
+    const eventsToInsert = []
+    for (const event of scrapedEvents) {
+      let lat = null
+      let lng = null
+      let address = event.location || '30120 Le Vigan'
+
+      // Try to geocode if location exists
+      if (event.location && event.location.trim()) {
+        try {
+          const geocodeUrl = `${baseUrl}/api/geocode?address=${encodeURIComponent(event.location + ', Cévennes, France')}`
+          const geoResponse = await axios.get(geocodeUrl)
+
+          if (geoResponse.data.lat && geoResponse.data.lng) {
+            lat = geoResponse.data.lat
+            lng = geoResponse.data.lng
+            address = geoResponse.data.formatted_address || event.location
+          }
+        } catch (geoError) {
+          console.error('Geocoding error:', geoError)
+          // Default to Ganges coordinates
+          lat = 43.9339
+          lng = 3.7086
+        }
+      } else {
+        // No location, use default Ganges coordinates
+        lat = 43.9339
+        lng = 3.7086
+      }
+
+      // Parse date et time
+      const parsedDate = parseDate(event.date || '')
+      const timeMatch = event.date?.match(/(\d{1,2}):(\d{2})/)
+      const time = timeMatch ? `${timeMatch[1].padStart(2, '0')}:${timeMatch[2]}` : '14:00'
+
+      eventsToInsert.push({
+        scraping_config_id: parseInt(id),
+        title: event.title || '',
+        date: parsedDate || null,
+        time: time,
+        location: event.location || '',
+        address: address,
+        description: event.description || '',
+        image: event.imageUrl || null,
+        lat: lat,
+        lng: lng,
+        validated: false,
+        rejected: false,
+        is_duplicate: event.isDuplicate || false,
+        duplicate_of: event.duplicateOf || null
+      })
+    }
 
     // Insert events if any were scraped
     let insertedCount = 0
