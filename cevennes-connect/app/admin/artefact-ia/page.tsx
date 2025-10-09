@@ -64,6 +64,10 @@ Pour chaque événement, extrais :
 - **time** : HH:MM (24h)
 - **location** : Nom du lieu
 - **address** : Ville + code postal minimum (ex: "30120 Le Vigan")
+- **lat** et **lng** : UTILISE LA RECHERCHE WEB pour trouver les coordonnées GPS du lieu mentionné
+  - Cherche "[nom du lieu] près de Ganges, Cévennes, France" sur Google Maps
+  - Si le lieu est à plus de 50km de Ganges (43.9339, 3.7086), retourne null
+  - Retourne les coordonnées exactes trouvées
 - **price** : Ex: "Gratuit", "10€"
 - **organizer** : Nom de l'organisateur
 - **contact** : Email ou tel
@@ -89,6 +93,8 @@ Format attendu :
     "time": "09:00",
     "location": "Place Gabriel Calmels",
     "address": "34270 Valflaunès",
+    "lat": 43.7234,
+    "lng": 3.8956,
     "price": "Gratuit",
     "organizer": "",
     "contact": "",
@@ -559,12 +565,12 @@ export default function ArtefactIAPage() {
       }
 
       // Call OpenAI API
-      addLog('⏳ Appel à OpenAI GPT-4 Turbo...', 'info')
+      addLog('⏳ Appel à OpenAI GPT-4o avec recherche web...', 'info')
       const response = await fetch('/api/openai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: 'gpt-4-turbo',
+          model: 'gpt-4o',
           messages,
           max_tokens: 4000,
           temperature: 0.1
@@ -647,8 +653,12 @@ export default function ArtefactIAPage() {
         eventData.image = categoryImages[eventData.category] || categoryImages['culture']
         eventData.premium_level = 'standard'
 
-        // Geocode
-        if (eventData.address && eventData.address.trim() !== '') {
+        // Utiliser les coordonnées GPS fournies par OpenAI (via recherche web)
+        if (eventData.lat && eventData.lng) {
+          // L'IA a déjà trouvé les coordonnées via recherche web
+          addLog(`✅ GPS trouvé via IA: ${eventData.location} (${eventData.lat}, ${eventData.lng})`, 'success')
+        } else if (eventData.address && eventData.address.trim() !== '') {
+          // Fallback: géocoder si l'IA n'a pas trouvé
           try {
             const searchAddress = `${eventData.address}, Cévennes, France`
             const geoResponse = await fetch('/api/geocode', {
