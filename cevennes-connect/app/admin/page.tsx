@@ -193,6 +193,17 @@ export default function AdminPage() {
             </p>
           </Link>
 
+          {/* Scraping Automatique */}
+          <Link href="/admin/scraping-auto" className="card hover:scale-105 transition-transform">
+            <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4">
+              <span className="text-3xl">🤖</span>
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Scraping Automatique</h3>
+            <p className="text-gray-600">
+              Scraping récurrent d&apos;agendas externes avec validation
+            </p>
+          </Link>
+
           {/* Import Google */}
           <Link href="/admin/import-google" className="card hover:scale-105 transition-transform">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl flex items-center justify-center mb-4">
