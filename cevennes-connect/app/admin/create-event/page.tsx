@@ -169,7 +169,7 @@ export default function CreateEventPage() {
         website: formData.website || '',
         lat: formData.lat!,
         lng: formData.lng!,
-        premium_level: 'standard',
+        premium_level: (formData.premium_level as 'standard' | 'premium' | 'mega-premium') || 'standard',
         image: formData.image || categoryImages[formData.category!] || categoryImages['culture']
       }
 
@@ -385,6 +385,26 @@ export default function CreateEventPage() {
               onChange={handleChange}
               placeholder="https://..."
             />
+
+            {/* Premium Level */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Niveau de visibilité
+              </label>
+              <select
+                name="premium_level"
+                value={formData.premium_level}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              >
+                <option value="standard">Standard (gratuit)</option>
+                <option value="premium">Premium (mise en avant)</option>
+                <option value="mega-premium">Mega Premium (top priorité)</option>
+              </select>
+              <p className="mt-2 text-sm text-gray-600">
+                Les événements premium sont mis en avant sur la page d'accueil et dans les résultats
+              </p>
+            </div>
 
             {/* Buttons */}
             <div className="flex gap-4 pt-6">
