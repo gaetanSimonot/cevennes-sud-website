@@ -296,6 +296,14 @@ export default function ArtefactIAPage() {
       const geocodePromises = eventsArray.map(async (eventData, index) => {
         eventData.id = Date.now() + index
 
+        // Validate and normalize category
+        const validCategories = ['festival', 'marche', 'culture', 'sport', 'atelier', 'theatre']
+        if (!eventData.category || !validCategories.includes(eventData.category.toLowerCase())) {
+          eventData.category = 'culture' // Default fallback
+        } else {
+          eventData.category = eventData.category.toLowerCase()
+        }
+
         // Category images
         const categoryImages: Record<string, string> = {
           'festival': 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
