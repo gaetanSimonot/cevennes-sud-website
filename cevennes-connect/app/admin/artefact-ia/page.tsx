@@ -266,29 +266,53 @@ export default function ArtefactIAPage() {
       return
     }
 
-    addLog(`\n🚀 Import de ${selectedEvents.length} événement(s) vers OpenAI...`, 'info')
+    addLog(`\n🚀 Conversion de ${selectedEvents.length} événement(s) scrapés en JSON...`, 'info')
 
-    // Convertir les événements scrapés en texte pour l'IA
-    const eventsText = selectedEvents.map((e, i) =>
-      `Événement ${i + 1}:
-Titre: ${e.title}
-Date: ${e.date}
-Lieu: ${e.location}
-Description: ${e.description}
-${e.imageUrl ? `Image: ${e.imageUrl}` : ''}
----`
-    ).join('\n\n')
+    // Convertir directement les événements scrapés en format ExtractedEvent
+    const convertedEvents: ExtractedEvent[] = selectedEvents.map(event => ({
+      title: event.title || 'Événement sans titre',
+      category: 'culture', // Catégorie par défaut
+      description: event.description || '',
+      date: event.date || '',
+      time: '14:00', // Heure par défaut
+      location: event.location || '',
+      address: event.location || '30120 Le Vigan',
+      price: 'Non renseigné',
+      organizer: '',
+      contact: '',
+      website: '',
+      image: event.imageUrl || ''
+    }))
 
-    // Déclencher l'analyse IA avec les événements scrapés
-    setTextContent(eventsText)
-    setActiveTab('text')
+    addLog(`✅ ${convertedEvents.length} événement(s) converti(s) !`, 'success')
+
+    // Géocoder les adresses
+    addLog('🗺️ Géocodage des adresses en cours...', 'info')
+    for (const event of convertedEvents) {
+      if (event.address) {
+        try {
+          const geocodeResponse = await fetch(
+            `/api/geocode?address=${encodeURIComponent(event.address)}`
+          )
+          if (geocodeResponse.ok) {
+            const geocodeData = await geocodeResponse.json()
+            if (geocodeData.lat && geocodeData.lng) {
+              event.lat = geocodeData.lat
+              event.lng = geocodeData.lng
+              addLog(`  ✓ Géocodé: ${event.title}`, 'success')
+            }
+          }
+        } catch (error) {
+          addLog(`  ⚠ Géocodage échoué pour: ${event.title}`, 'warning')
+        }
+      }
+    }
+
+    // Afficher les événements extraits
+    setExtractedEvents(convertedEvents)
     setScrapedEvents([])
     setScraperUrl('')
-
-    // Lancer automatiquement l'analyse
-    setTimeout(() => {
-      handleAnalyze()
-    }, 500)
+    addLog('✅ Import terminé ! Vérifiez les événements ci-dessous', 'success')
   }
 
   const handleAnalyze = async () => {
@@ -843,7 +867,7 @@ ${e.imageUrl ? `Image: ${e.imageUrl}` : ''}
                           onClick={handleImportScrapedEvents}
                           disabled={scrapedEvents.filter(e => e.selected).length === 0}
                         >
-                          ✨ Analyser avec l&apos;IA ({scrapedEvents.filter(e => e.selected).length})
+                          ✅ Importer ({scrapedEvents.filter(e => e.selected).length})
                         </Button>
                         <Button
                           variant="secondary"
@@ -857,7 +881,7 @@ ${e.imageUrl ? `Image: ${e.imageUrl}` : ''}
                       </div>
 
                       <p className="text-xs text-gray-500 mt-3">
-                        💡 Les événements sélectionnés seront analysés par l&apos;IA pour extraction des détails
+                        💡 Les événements sélectionnés seront convertis en JSON puis géocodés automatiquement
                       </p>
                     </div>
                   )}
