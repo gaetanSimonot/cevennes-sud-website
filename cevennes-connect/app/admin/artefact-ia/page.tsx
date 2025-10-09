@@ -332,6 +332,18 @@ export default function ArtefactIAPage() {
         return
       }
 
+      // Ajouter les sourceUrl dans le champ website
+      addLog('🔗 Ajout des liens sources...', 'info')
+      convertedEvents.forEach((event, index) => {
+        if (selectedEvents[index] && selectedEvents[index].sourceUrl) {
+          // Si pas de website déjà défini, utiliser le sourceUrl
+          if (!event.website || event.website === '') {
+            event.website = selectedEvents[index].sourceUrl
+            addLog(`  ✓ Lien ajouté: ${event.title}`, 'success')
+          }
+        }
+      })
+
       // Géocoder les adresses
       addLog('🗺️ Géocodage des adresses en cours...', 'info')
       for (const event of convertedEvents) {
