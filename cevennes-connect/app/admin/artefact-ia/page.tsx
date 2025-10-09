@@ -217,19 +217,31 @@ export default function ArtefactIAPage() {
 
   const handleScrapeAgenda = async () => {
     if (!scraperUrl.trim()) {
-      addLog('❌ Veuillez entrer une URL d\'agenda', 'error')
+      addLog('❌ Veuillez entrer au moins une URL', 'error')
+      return
+    }
+
+    // Parser les URLs (une par ligne)
+    const urls = scraperUrl
+      .split('\n')
+      .map(u => u.trim())
+      .filter(u => u.length > 0 && u.startsWith('http'))
+
+    if (urls.length === 0) {
+      addLog('❌ Aucune URL valide détectée', 'error')
       return
     }
 
     setIsScraping(true)
     addLog('\n🌐 Démarrage du scraping...', 'info')
-    addLog(`🔗 URL cible: ${scraperUrl}`, 'info')
+    addLog(`🔗 ${urls.length} URL(s) à scraper`, 'info')
+    urls.forEach((u, i) => addLog(`  ${i + 1}. ${u}`, 'info'))
 
     try {
       const response = await fetch('/api/scrape-events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: scraperUrl })
+        body: JSON.stringify({ urls })
       })
 
       const data = await response.json()
@@ -239,17 +251,25 @@ export default function ArtefactIAPage() {
       }
 
       if (data.events && data.events.length > 0) {
-        const eventsWithSelection = data.events.map((e: ScrapedEvent) => ({ ...e, selected: true }))
+        // Marquer tous comme sélectionnés par défaut (sauf les doublons)
+        const eventsWithSelection = data.events.map((e: ScrapedEvent) => ({
+          ...e,
+          selected: !e.isDuplicate // Ne pas sélectionner les doublons par défaut
+        }))
         setScrapedEvents(eventsWithSelection)
-        addLog(`✅ ${data.events.length} événement(s) détecté(s) !`, 'success')
-        addLog('📋 Sélectionnez les événements à importer', 'info')
+
+        addLog(`\n✅ ${data.summary}`, 'success')
+        if (data.duplicatesCount > 0) {
+          addLog(`⚠️ ${data.duplicatesCount} doublon(s) détecté(s) (désélectionnés)`, 'warning')
+        }
+        addLog('📋 Vérifiez et ajustez la sélection', 'info')
       } else {
-        addLog('⚠️ Aucun événement détecté sur cette page', 'warning')
+        addLog('⚠️ Aucun événement détecté', 'warning')
         setScrapedEvents([])
       }
     } catch (error: any) {
       addLog(`❌ Erreur de scraping: ${error.message}`, 'error')
-      alert(`❌ Erreur:\n\n${error.message}\n\nAssurez-vous que l'URL est accessible et contient des événements.`)
+      alert(`❌ Erreur:\n\n${error.message}\n\nVérifiez que les URLs sont accessibles.`)
     } finally {
       setIsScraping(false)
     }
@@ -788,13 +808,19 @@ export default function ArtefactIAPage() {
                       L&apos;outil va extraire automatiquement les événements détectés.
                     </p>
 
-                    <Input
-                      label="URL de l'agenda"
+                    <TextArea
+                      label="URLs des agendas (une par ligne)"
                       value={scraperUrl}
                       onChange={(e) => setScraperUrl(e.target.value)}
-                      placeholder="https://www.eterritoire.fr/agenda/..."
+                      rows={6}
+                      placeholder="https://www.eterritoire.fr/agenda/...
+https://www.facebook.com/events/...
+https://autre-agenda.com/..."
                       disabled={isScraping}
                     />
+                    <p className="text-xs text-cyan-600 mt-2">
+                      💡 Collez plusieurs URLs (une par ligne) pour scraper en parallèle
+                    </p>
 
                     <div className="mt-4">
                       <Button
@@ -819,13 +845,24 @@ export default function ArtefactIAPage() {
                           <div
                             key={index}
                             className={`
-                              border-2 rounded-xl p-4 transition-all cursor-pointer
-                              ${event.selected
-                                ? 'border-cyan-500 bg-cyan-50'
-                                : 'border-gray-200 bg-gray-50'}
+                              border-2 rounded-xl p-4 transition-all cursor-pointer relative
+                              ${event.isDuplicate
+                                ? 'border-red-300 bg-red-50 opacity-75'
+                                : event.selected
+                                  ? 'border-cyan-500 bg-cyan-50'
+                                  : 'border-gray-200 bg-gray-50'}
                             `}
                             onClick={() => toggleScrapedEvent(index)}
                           >
+                            {/* Badge doublon */}
+                            {event.isDuplicate && (
+                              <div className="absolute top-2 right-2">
+                                <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-full">
+                                  ⚠️ DOUBLON
+                                </span>
+                              </div>
+                            )}
+
                             <div className="flex items-start gap-3">
                               <input
                                 type="checkbox"
@@ -835,7 +872,9 @@ export default function ArtefactIAPage() {
                                 onClick={(e) => e.stopPropagation()}
                               />
                               <div className="flex-1">
-                                <h4 className="font-bold text-gray-900 mb-1">{event.title}</h4>
+                                <h4 className={`font-bold mb-1 ${event.isDuplicate ? 'text-red-700' : 'text-gray-900'}`}>
+                                  {event.title}
+                                </h4>
                                 {event.date && (
                                   <p className="text-sm text-gray-600 mb-1">
                                     📅 {event.date}
