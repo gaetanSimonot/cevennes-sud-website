@@ -362,6 +362,11 @@ export default function EvenementsPage() {
                       const premiumLevel = event.premium_level || 'standard'
                       const isStandard = premiumLevel === 'standard'
 
+                      // Debug
+                      if (premiumLevel !== 'standard') {
+                        console.log('Event premium détecté:', event.title, 'Level:', premiumLevel)
+                      }
+
                       // Déterminer les classes CSS
                       let cardClasses = 'bg-white rounded-2xl transition-all cursor-pointer'
 
