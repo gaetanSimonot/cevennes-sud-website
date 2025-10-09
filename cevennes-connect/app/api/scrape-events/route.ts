@@ -79,9 +79,26 @@ async function scrapeURL(url: string): Promise<ScrapedEvent[]> {
           .text() ||
           $elem.find('[datetime]').first().attr('datetime') || '')
 
-        const location = cleanText($elem.find('.location, .lieu, .place, [class*="lieu"], [class*="location"], [itemprop="location"]')
+        // Essayer de trouver la localisation avec plusieurs sélecteurs
+        let location = cleanText($elem.find('.location, .lieu, .place, [class*="lieu"], [class*="location"], [itemprop="location"]')
           .first()
           .text())
+
+        // Si pas trouvé, essayer avec address
+        if (!location || location.length < 3) {
+          location = cleanText($elem.find('.address, .adresse, [class*="address"], [class*="adresse"], [itemprop="address"]')
+            .first()
+            .text())
+        }
+
+        // Si toujours pas trouvé, chercher dans le texte des patterns de ville
+        if (!location || location.length < 3) {
+          const fullText = $elem.text()
+          const cityMatch = fullText.match(/(Le Vigan|Ganges|Saint-Hippolyte|Sumène|Valleraugue|Lasalle|Saint-André-de-Valborgne|Saint-Jean-du-Gard|Anduze)/i)
+          if (cityMatch) {
+            location = cityMatch[0]
+          }
+        }
 
         const description = cleanText($elem.find('.description, .excerpt, .summary, p, [itemprop="description"]')
           .first()
