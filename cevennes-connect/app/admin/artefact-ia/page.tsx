@@ -59,8 +59,12 @@ Pour chaque événement, extrais :
 - **contact** : Email ou tel
 - **website** : URL complète
 
-**IMPORTANT** :
-- Retourne UNIQUEMENT du JSON valide, propre, sans texte avant/après
+**IMPORTANT - FORMAT DE SORTIE** :
+- ⚠️ RETOURNE UNIQUEMENT DU JSON VALIDE, RIEN D'AUTRE
+- ❌ PAS de texte explicatif avant ou après le JSON
+- ❌ PAS de "Voici les événements" ou "Je suis prêt"
+- ❌ PAS de markdown, commentaires ou explications
+- ✅ Commence directement par [ et termine par ]
 - Chaque string doit être échappée correctement
 - Pas d'images base64, toujours "image": ""
 - Si aucun événement valide détecté → retourne []
@@ -364,10 +368,34 @@ ${e.imageUrl ? `Image: ${e.imageUrl}` : ''}
       const data = await response.json()
       addLog('✅ Réponse reçue de OpenAI', 'success')
 
-      // Parse JSON response
+      // Parse JSON response - extraire le JSON même s'il y a du texte autour
       let jsonText = data.choices[0].message.content.trim()
+
+      // Nettoyer les code fences markdown
       jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-      let eventsArray: ExtractedEvent[] = JSON.parse(jsonText)
+
+      // Essayer d'extraire le JSON si c'est mélangé avec du texte
+      const jsonMatch = jsonText.match(/\[\s*\{[\s\S]*\}\s*\]/)
+      if (jsonMatch) {
+        jsonText = jsonMatch[0]
+      } else {
+        // Sinon chercher un objet unique
+        const singleObjectMatch = jsonText.match(/\{\s*"[\s\S]*\}/)
+        if (singleObjectMatch) {
+          jsonText = singleObjectMatch[0]
+        }
+      }
+
+      addLog('🔍 JSON détecté, parsing...', 'info')
+
+      let eventsArray: ExtractedEvent[]
+      try {
+        eventsArray = JSON.parse(jsonText)
+      } catch (parseError: any) {
+        addLog('❌ Erreur de parsing JSON', 'error')
+        addLog(`📄 Réponse brute: ${data.choices[0].message.content.substring(0, 200)}...`, 'warning')
+        throw new Error(`Parsing JSON échoué: ${parseError.message}. L'IA n'a pas retourné du JSON valide.`)
+      }
 
       if (!Array.isArray(eventsArray)) {
         eventsArray = [eventsArray]
