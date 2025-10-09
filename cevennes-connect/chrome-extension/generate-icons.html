@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Générateur d'icônes</title>
+</head>
+<body>
+  <h1>Générateur d'icônes Cévennes Connect</h1>
+  <p>Instructions :</p>
+  <ol>
+    <li>Ouvrez ce fichier dans Chrome</li>
+    <li>Les icônes s'affichent ci-dessous</li>
+    <li>Clic droit sur chaque image → "Enregistrer l'image sous..."</li>
+    <li>Sauvegardez dans le dossier <code>icons/</code> avec les noms exacts</li>
+  </ol>
+
+  <h2>icon16.png</h2>
+  <canvas id="icon16" width="16" height="16"></canvas>
+
+  <h2>icon48.png</h2>
+  <canvas id="icon48" width="48" height="48"></canvas>
+
+  <h2>icon128.png</h2>
+  <canvas id="icon128" width="128" height="128"></canvas>
+
+  <script>
+    function drawIcon(canvasId, size) {
+      const canvas = document.getElementById(canvasId)
+      const ctx = canvas.getContext('2d')
+
+      // Gradient background
+      const gradient = ctx.createLinearGradient(0, 0, size, size)
+      gradient.addColorStop(0, '#667eea')
+      gradient.addColorStop(1, '#764ba2')
+
+      ctx.fillStyle = gradient
+      ctx.fillRect(0, 0, size, size)
+
+      // White circle border
+      ctx.strokeStyle = 'white'
+      ctx.lineWidth = size * 0.05
+      ctx.beginPath()
+      ctx.arc(size / 2, size / 2, size * 0.35, 0, Math.PI * 2)
+      ctx.stroke()
+
+      // Mountain emoji or text
+      ctx.fillStyle = 'white'
+      ctx.font = `bold ${size * 0.5}px Arial`
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText('🏔', size / 2, size / 2)
+
+      // Auto download
+      const link = document.createElement('a')
+      link.download = `${canvasId}.png`
+      link.href = canvas.toDataURL()
+      link.textContent = `Télécharger ${canvasId}.png`
+      link.style.display = 'block'
+      link.style.marginBottom = '20px'
+      canvas.parentNode.insertBefore(link, canvas.nextSibling)
+    }
+
+    drawIcon('icon16', 16)
+    drawIcon('icon48', 48)
+    drawIcon('icon128', 128)
+  </script>
+</body>
+</html>
