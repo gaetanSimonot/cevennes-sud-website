@@ -362,19 +362,29 @@ export default function EvenementsPage() {
                       const premiumLevel = event.premium_level || 'standard'
                       const isStandard = premiumLevel === 'standard'
 
+                      // Déterminer les classes CSS
+                      let cardClasses = 'bg-white rounded-2xl transition-all cursor-pointer'
+
+                      if (hoveredEventId === event.id) {
+                        cardClasses += ' ring-2 ring-pink-500 shadow-xl scale-[1.02]'
+                      }
+
+                      if (isPast) {
+                        cardClasses += ' opacity-60'
+                      }
+
+                      if (premiumLevel === 'mega-premium') {
+                        cardClasses += ' ring-4 ring-purple-500 shadow-2xl p-6 bg-gradient-to-br from-purple-50 via-pink-50 to-white'
+                      } else if (premiumLevel === 'premium') {
+                        cardClasses += ' ring-2 ring-yellow-400 shadow-xl p-5 bg-gradient-to-br from-yellow-50 to-white'
+                      } else {
+                        cardClasses += ' shadow-sm p-3 hover:shadow-md'
+                      }
+
                       return (
                         <div
                           key={event.id}
-                          className={`
-                            bg-white rounded-2xl transition-all cursor-pointer
-                            ${hoveredEventId === event.id ? 'ring-2 ring-pink-500 shadow-xl scale-[1.02]' : ''}
-                            ${isPast ? 'opacity-60' : ''}
-                            ${premiumLevel === 'mega-premium'
-                              ? 'ring-4 ring-purple-500 shadow-2xl p-6 bg-gradient-to-br from-purple-50 via-pink-50 to-white'
-                              : premiumLevel === 'premium'
-                              ? 'ring-2 ring-yellow-400 shadow-xl p-5 bg-gradient-to-br from-yellow-50 to-white'
-                              : 'shadow-sm p-3 hover:shadow-md'}
-                          `}
+                          className={cardClasses}
                           onMouseEnter={() => setHoveredEventId(event.id ?? null)}
                           onMouseLeave={() => setHoveredEventId(null)}
                         >
