@@ -663,8 +663,8 @@ export default function ArtefactIAPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-500 via-purple-600 to-indigo-600">
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="bg-white rounded-3xl shadow-2xl p-8">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-7xl">
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 lg:p-8">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
@@ -672,18 +672,18 @@ export default function ArtefactIAPage() {
                 <Button variant="ghost" size="sm">← Retour Admin</Button>
               </Link>
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 text-center mb-2">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 text-center mb-2">
               ✨ Artefact IA - Extraction d&apos;Événements
             </h1>
-            <p className="text-center text-gray-600">
+            <p className="text-center text-sm sm:text-base text-gray-600">
               Glissez un screenshot, collez du texte ou un lien - L&apos;IA extrait et reformule automatiquement !
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
             {/* Left Column - Input */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
                 📥 Sources d&apos;Information
               </h2>
 
@@ -813,11 +813,11 @@ export default function ArtefactIAPage() {
               {/* Scraper Tab */}
               {activeTab === 'scraper' && (
                 <div className="mb-6">
-                  <div className="bg-gradient-to-br from-cyan-50 to-blue-50 border-2 border-cyan-200 rounded-2xl p-6 mb-6">
-                    <h3 className="text-xl font-bold text-cyan-900 mb-3 flex items-center gap-2">
+                  <div className="bg-gradient-to-br from-cyan-50 to-blue-50 border-2 border-cyan-200 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6">
+                    <h3 className="text-lg sm:text-xl font-bold text-cyan-900 mb-3 flex items-center gap-2">
                       🌐 Scraper d&apos;Agenda Externe
                     </h3>
-                    <p className="text-sm text-cyan-700 mb-4">
+                    <p className="text-xs sm:text-sm text-cyan-700 mb-4">
                       Entrez l&apos;URL d&apos;un agenda en ligne (eterritoire.fr, Facebook Events, etc.).
                       L&apos;outil va extraire automatiquement les événements détectés.
                     </p>
@@ -849,12 +849,12 @@ https://autre-agenda.com/..."
 
                   {/* Scraped Events Preview */}
                   {scrapedEvents.length > 0 && (
-                    <div className="bg-white border-2 border-gray-200 rounded-2xl p-6">
-                      <h3 className="text-lg font-bold text-gray-900 mb-4">
+                    <div className="bg-white border-2 border-gray-200 rounded-xl sm:rounded-2xl p-4 sm:p-6">
+                      <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-4">
                         📋 Événements détectés ({scrapedEvents.filter(e => e.selected).length}/{scrapedEvents.length} sélectionnés)
                       </h3>
 
-                      <div className="space-y-3 max-h-96 overflow-y-auto mb-4">
+                      <div className="space-y-2 sm:space-y-3 max-h-80 sm:max-h-96 overflow-y-auto mb-4">
                         {scrapedEvents.map((event, index) => (
                           <div
                             key={index}
@@ -877,25 +877,25 @@ https://autre-agenda.com/..."
                               </div>
                             )}
 
-                            <div className="flex items-start gap-3">
+                            <div className="flex items-start gap-2 sm:gap-3">
                               <input
                                 type="checkbox"
                                 checked={event.selected}
                                 onChange={() => toggleScrapedEvent(index)}
-                                className="mt-1 w-5 h-5 text-cyan-600 rounded"
+                                className="mt-1 w-4 h-4 sm:w-5 sm:h-5 text-cyan-600 rounded"
                                 onClick={(e) => e.stopPropagation()}
                               />
-                              <div className="flex-1">
-                                <h4 className={`font-bold mb-1 ${event.isDuplicate ? 'text-red-700' : 'text-gray-900'}`}>
+                              <div className="flex-1 min-w-0">
+                                <h4 className={`font-bold mb-1 text-sm sm:text-base ${event.isDuplicate ? 'text-red-700' : 'text-gray-900'}`}>
                                   {event.title}
                                 </h4>
                                 {event.date && (
-                                  <p className="text-sm text-gray-600 mb-1">
+                                  <p className="text-xs sm:text-sm text-gray-600 mb-1">
                                     📅 {event.date}
                                   </p>
                                 )}
                                 {event.location && (
-                                  <p className="text-sm text-gray-600 mb-1">
+                                  <p className="text-xs sm:text-sm text-gray-600 mb-1">
                                     📍 {event.location}
                                   </p>
                                 )}
@@ -909,7 +909,7 @@ https://autre-agenda.com/..."
                                 <img
                                   src={event.imageUrl}
                                   alt={event.title}
-                                  className="w-16 h-16 object-cover rounded-lg"
+                                  className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-lg flex-shrink-0"
                                 />
                               )}
                             </div>
@@ -917,11 +917,12 @@ https://autre-agenda.com/..."
                         ))}
                       </div>
 
-                      <div className="flex gap-3">
+                      <div className="flex flex-wrap gap-2 sm:gap-3">
                         <Button
                           variant="primary"
                           onClick={handleImportScrapedEvents}
                           disabled={scrapedEvents.filter(e => e.selected).length === 0}
+                          className="flex-1 min-w-[120px] text-sm sm:text-base"
                         >
                           ✅ Importer ({scrapedEvents.filter(e => e.selected).length})
                         </Button>
@@ -931,6 +932,7 @@ https://autre-agenda.com/..."
                             setScrapedEvents([])
                             setScraperUrl('')
                           }}
+                          className="text-sm sm:text-base"
                         >
                           🗑️ Effacer
                         </Button>
@@ -1017,7 +1019,7 @@ https://autre-agenda.com/..."
                 <Button
                   onClick={handleAnalyze}
                   variant="primary"
-                  className="w-full"
+                  className="w-full text-sm sm:text-base"
                   disabled={isAnalyzing}
                 >
                   {isAnalyzing ? '⏳ Analyse en cours...' : '🧠 Analyser avec l\'IA'}
@@ -1027,14 +1029,14 @@ https://autre-agenda.com/..."
 
             {/* Right Column - Output */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
                 🤖 Traitement IA
               </h2>
 
               {/* Log Console */}
               <div
                 ref={logConsoleRef}
-                className="bg-gray-900 text-green-400 p-6 rounded-xl h-80 overflow-y-auto mb-6 font-mono text-sm"
+                className="bg-gray-900 text-green-400 p-3 sm:p-4 lg:p-6 rounded-xl h-64 sm:h-80 overflow-y-auto mb-6 font-mono text-xs sm:text-sm"
               >
                 {logs.map((log, index) => (
                   <div
@@ -1057,17 +1059,17 @@ https://autre-agenda.com/..."
                   <h3 className="text-xl font-bold text-gray-900 mb-4">
                     ✅ Événement(s) Généré(s)
                   </h3>
-                  <div className="bg-gray-900 text-green-400 p-6 rounded-xl overflow-x-auto mb-4 max-h-96">
-                    <pre className="text-sm">{JSON.stringify(extractedEvents, null, 2)}</pre>
+                  <div className="bg-gray-900 text-green-400 p-3 sm:p-4 lg:p-6 rounded-xl overflow-x-auto mb-4 max-h-64 sm:max-h-96">
+                    <pre className="text-xs sm:text-sm">{JSON.stringify(extractedEvents, null, 2)}</pre>
                   </div>
-                  <div className="flex gap-3">
-                    <Button onClick={handleCopyJSON} variant="secondary" className="flex-1">
+                  <div className="flex flex-wrap gap-2 sm:gap-3">
+                    <Button onClick={handleCopyJSON} variant="secondary" className="flex-1 min-w-[100px]">
                       📋 Copier
                     </Button>
-                    <Button onClick={handleDownloadJSON} variant="secondary" className="flex-1">
+                    <Button onClick={handleDownloadJSON} variant="secondary" className="flex-1 min-w-[100px]">
                       💾 Télécharger
                     </Button>
-                    <Button onClick={handleCommitToGitHub} variant="primary" className="flex-1">
+                    <Button onClick={handleCommitToGitHub} variant="primary" className="flex-1 min-w-[100px]">
                       📤 GitHub
                     </Button>
                   </div>
