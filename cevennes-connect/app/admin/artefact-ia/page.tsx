@@ -398,7 +398,7 @@ export default function ArtefactIAPage() {
       }
 
       // Dédupliquer les URLs
-      const urls = [...new Set(matches)]
+      const urls = Array.from(new Set(matches))
 
       addLog(`✅ ${urls.length} URL(s) Facebook détectée(s)`, 'success')
 
