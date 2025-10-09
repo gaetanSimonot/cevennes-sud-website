@@ -395,10 +395,10 @@ export default function EvenementsPage() {
                           )}
 
                           {/* Image - Only for premium */}
-                          {!isStandard && event.image_url && (
+                          {!isStandard && (event.image_url || event.image) && (
                             <div className={`w-full mb-3 rounded-xl overflow-hidden ${premiumLevel === 'mega-premium' ? 'h-48' : 'h-32'}`}>
                               <img
-                                src={event.image_url}
+                                src={event.image_url || event.image}
                                 alt={event.title}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
