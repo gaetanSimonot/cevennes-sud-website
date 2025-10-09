@@ -95,33 +95,73 @@ async function extractEventLinks(url: string): Promise<string[]> {
   return links.slice(0, 20) // Limiter à 20 liens max
 }
 
-// Fonction pour scraper une page de détail d'événement
+// Fonction pour scraper une page de détail d'événement avec OpenAI
 async function scrapeEventDetail(url: string): Promise<ScrapedEvent | null> {
   try {
-    const { data } = await axios.get(url, {
+    const { data: htmlContent } = await axios.get(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       },
       timeout: 10000
     })
 
-    const $ = cheerio.load(data)
+    // Utiliser OpenAI pour extraire l'événement intelligemment
+    const openaiResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
+      model: 'gpt-4-turbo',
+      temperature: 0,
+      messages: [
+        {
+          role: 'system',
+          content: `Tu es un expert en extraction d'événements depuis du HTML.
 
-    // Extraire tout le contenu pertinent
-    const title = cleanText($('h1, h2, .event-title, [class*="title"]').first().text())
-    const fullDescription = cleanText($('.description, .content, .event-description, [class*="description"], article p').text())
-    const date = cleanText($('time, .date, [class*="date"]').first().text())
-    const location = cleanText($('.location, .lieu, .address, [class*="lieu"], [class*="location"]').first().text())
-    const imageUrl = $('img[class*="event"], .event-image img, article img').first().attr('src') || ''
+RÈGLES ABSOLUES:
+1. IGNORE les menus, navigation, footer, sidebar
+2. CONCENTRE-TOI uniquement sur le contenu principal de l'événement
+3. TITLE: Titre exact de l'événement
+4. DATE: Format "9 octobre 2025" ou "Du 9 au 12 octobre"
+5. LOCATION: NOM EXACT de la ville/commune (Florac, Ganges, Le Vigan, etc.)
+   - Si pas de ville précise, laisse VIDE ""
+   - Ne JAMAIS mettre "Cévennes", "Gard", "France"
+6. DESCRIPTION: Description complète de l'événement (max 500 caractères)
+7. IMAGE: URL de l'image principale
 
-    if (isValidTitle(title)) {
-      return {
-        title,
-        date,
-        location,
-        description: fullDescription.substring(0, 1000), // Plus long pour page détail
-        imageUrl: imageUrl.startsWith('http') ? imageUrl : undefined,
-        sourceUrl: url
+Si c'est une page de menu/navigation/liste sans événement unique, retourne: {"valid": false}
+
+Retourne UNIQUEMENT un JSON valide:
+{"valid": true, "title": "...", "date": "...", "location": "ville_exacte_ou_vide", "description": "...", "imageUrl": "..."}`
+        },
+        {
+          role: 'user',
+          content: `Extrais l'événement de cette page HTML. Ignore les menus et navigation:\n\n${htmlContent.substring(0, 30000)}`
+        }
+      ]
+    }, {
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    const aiContent = openaiResponse.data.choices[0].message.content.trim()
+    const jsonMatch = aiContent.match(/\{[\s\S]*\}/)
+
+    if (jsonMatch) {
+      const extracted = JSON.parse(jsonMatch[0])
+
+      if (extracted.valid === false) {
+        console.log(`Skipped (not an event page): ${url}`)
+        return null
+      }
+
+      if (extracted.title && isValidTitle(extracted.title)) {
+        return {
+          title: extracted.title,
+          date: extracted.date || '',
+          location: extracted.location || '',
+          description: extracted.description || '',
+          imageUrl: extracted.imageUrl || undefined,
+          sourceUrl: url
+        }
       }
     }
   } catch (error) {
