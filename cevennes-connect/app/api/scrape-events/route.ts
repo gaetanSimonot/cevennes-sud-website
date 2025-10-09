@@ -14,6 +14,30 @@ interface ScrapedEvent {
   duplicateOf?: number
 }
 
+// Fonction pour nettoyer les textes scrapés
+function cleanText(text: string): string {
+  if (!text) return ''
+  // Remplacer tous les espaces multiples, \n, \t par un seul espace
+  return text.replace(/\s+/g, ' ').trim()
+}
+
+// Fonction pour valider un titre
+function isValidTitle(title: string): boolean {
+  if (!title || title.length < 4 || title.length > 200) return false
+
+  // Filtrer les titres génériques ou vides
+  const invalidTitles = [
+    'vous aimerez',
+    'voir plus',
+    'en savoir plus',
+    'cliquez ici',
+    'lire la suite'
+  ]
+
+  const lowerTitle = title.toLowerCase()
+  return !invalidTitles.some(invalid => lowerTitle.includes(invalid))
+}
+
 async function scrapeURL(url: string): Promise<ScrapedEvent[]> {
   const events: ScrapedEvent[] = []
 
@@ -41,32 +65,28 @@ async function scrapeURL(url: string): Promise<ScrapedEvent[]> {
       $(selector).each((i, elem) => {
         const $elem = $(elem)
 
-        const title = $elem.find('h1, h2, h3, h4, .title, [class*="title"], [itemprop="name"]')
+        const title = cleanText($elem.find('h1, h2, h3, h4, .title, [class*="title"], [itemprop="name"]')
           .first()
-          .text()
-          .trim()
+          .text())
 
-        const date = $elem.find('time, .date, [class*="date"], [itemprop="startDate"]')
+        const date = cleanText($elem.find('time, .date, [class*="date"], [itemprop="startDate"]')
           .first()
-          .text()
-          .trim() ||
-          $elem.find('[datetime]').first().attr('datetime') || ''
+          .text() ||
+          $elem.find('[datetime]').first().attr('datetime') || '')
 
-        const location = $elem.find('.location, .lieu, .place, [class*="lieu"], [class*="location"], [itemprop="location"]')
+        const location = cleanText($elem.find('.location, .lieu, .place, [class*="lieu"], [class*="location"], [itemprop="location"]')
           .first()
-          .text()
-          .trim()
+          .text())
 
-        const description = $elem.find('.description, .excerpt, .summary, p, [itemprop="description"]')
+        const description = cleanText($elem.find('.description, .excerpt, .summary, p, [itemprop="description"]')
           .first()
-          .text()
-          .trim()
+          .text())
 
         const imageUrl = $elem.find('img')
           .first()
           .attr('src') || ''
 
-        if (title && title.length > 3) {
+        if (isValidTitle(title)) {
           const exists = events.some(e => e.title === title && e.date === date)
           if (!exists) {
             events.push({
@@ -89,15 +109,15 @@ async function scrapeURL(url: string): Promise<ScrapedEvent[]> {
         const text = $elem.text()
 
         if (text.match(/(concert|festival|exposition|spectacle|atelier|conférence|marché)/i)) {
-          const title = $elem.find('h1, h2, h3, h4').first().text().trim()
-          if (title && title.length > 3 && title.length < 200) {
+          const title = cleanText($elem.find('h1, h2, h3, h4').first().text())
+          if (isValidTitle(title)) {
             const exists = events.some(e => e.title === title)
             if (!exists) {
               events.push({
                 title,
                 date: '',
                 location: '',
-                description: text.substring(0, 300).trim(),
+                description: cleanText(text).substring(0, 300),
                 imageUrl: $elem.find('img').first().attr('src'),
                 sourceUrl: url
               })

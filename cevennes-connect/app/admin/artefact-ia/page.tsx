@@ -291,12 +291,43 @@ export default function ArtefactIAPage() {
 
     addLog(`\n🚀 Conversion de ${selectedEvents.length} événement(s) scrapés en JSON...`, 'info')
 
-    // Convertir directement les événements scrapés en format ExtractedEvent
-    const convertedEvents: ExtractedEvent[] = selectedEvents.map(event => ({
-      title: event.title || 'Événement sans titre',
+    // Fonction pour nettoyer les chaînes (enlever \n, espaces multiples, trim)
+    const cleanString = (str: string): string => {
+      if (!str) return ''
+      return str.replace(/\s+/g, ' ').trim()
+    }
+
+    // Fonction pour nettoyer les dates (enlever \n et espaces excessifs)
+    const cleanDate = (dateStr: string): string => {
+      if (!dateStr) return ''
+      // Remplacer tous les \n et espaces multiples par un seul espace
+      let cleaned = dateStr.replace(/\s+/g, ' ').trim()
+      // Supprimer les espaces avant les chiffres isolés
+      cleaned = cleaned.replace(/\s+(\d+)\s+/g, ' $1 ')
+      return cleaned
+    }
+
+    // Convertir et filtrer les événements scrapés
+    const filteredEvents = selectedEvents.filter(event => {
+      // Filtrer les événements sans titre valide
+      const hasValidTitle = event.title &&
+        event.title.trim().length > 3 &&
+        !event.title.toLowerCase().includes('vous aimerez')
+
+      // Filtrer les événements avec des titres génériques
+      return hasValidTitle
+    })
+
+    const filteredCount = selectedEvents.length - filteredEvents.length
+    if (filteredCount > 0) {
+      addLog(`⚠️ ${filteredCount} événement(s) invalide(s) filtré(s)`, 'warning')
+    }
+
+    const convertedEvents: ExtractedEvent[] = filteredEvents.map(event => ({
+      title: cleanString(event.title) || 'Événement sans titre',
       category: 'culture', // Catégorie par défaut
-      description: event.description || '',
-      date: event.date || '',
+      description: cleanString(event.description) || '',
+      date: cleanDate(event.date) || '',
       time: '14:00', // Heure par défaut
       location: event.location || '',
       address: event.location || '30120 Le Vigan',
@@ -306,6 +337,11 @@ export default function ArtefactIAPage() {
       website: '',
       image: event.imageUrl || ''
     }))
+
+    if (convertedEvents.length === 0) {
+      addLog('❌ Aucun événement valide après filtrage', 'error')
+      return
+    }
 
     addLog(`✅ ${convertedEvents.length} événement(s) converti(s) !`, 'success')
 
