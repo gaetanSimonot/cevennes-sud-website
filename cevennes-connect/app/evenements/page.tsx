@@ -317,9 +317,24 @@ export default function EvenementsPage() {
             {/* Content */}
             {viewMode === 'cards' ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredEvents.map((event) => (
-                  <EventCard key={event.id} event={event} />
-                ))}
+                {filteredEvents
+                  .sort((a, b) => {
+                    // Sort by premium level first (mega > premium > standard)
+                    const premiumOrder: Record<string, number> = {
+                      'mega-premium': 3,
+                      'premium': 2,
+                      'standard': 1
+                    }
+                    const aLevel = premiumOrder[a.premium_level || 'standard'] || 1
+                    const bLevel = premiumOrder[b.premium_level || 'standard'] || 1
+                    if (aLevel !== bLevel) return bLevel - aLevel
+
+                    // Then by date (upcoming first)
+                    return new Date(a.date).getTime() - new Date(b.date).getTime()
+                  })
+                  .map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
               </div>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -356,137 +371,16 @@ export default function EvenementsPage() {
                       // Then by date (upcoming first)
                       return new Date(a.date).getTime() - new Date(b.date).getTime()
                     })
-                    .map((event) => {
-                      const isPast = new Date(event.date) < new Date()
-                      const categoryInfo = categories.find(c => c.key === event.category)
-                      const premiumLevel = event.premium_level || 'standard'
-                      const isStandard = premiumLevel === 'standard'
-
-                      // Debug
-                      if (premiumLevel !== 'standard') {
-                        console.log('Event premium détecté:', event.title, 'Level:', premiumLevel)
-                      }
-
-                      // Déterminer les classes CSS
-                      let cardClasses = 'bg-white rounded-2xl transition-all cursor-pointer'
-
-                      if (hoveredEventId === event.id) {
-                        cardClasses += ' ring-2 ring-pink-500 shadow-xl scale-[1.02]'
-                      }
-
-                      if (isPast) {
-                        cardClasses += ' opacity-60'
-                      }
-
-                      if (premiumLevel === 'mega-premium') {
-                        cardClasses += ' ring-4 ring-purple-500 shadow-2xl p-6 bg-gradient-to-br from-purple-50 via-pink-50 to-white'
-                      } else if (premiumLevel === 'premium') {
-                        cardClasses += ' ring-2 ring-yellow-400 shadow-xl p-5 bg-gradient-to-br from-yellow-50 to-white'
-                      } else {
-                        cardClasses += ' shadow-sm p-3 hover:shadow-md'
-                      }
-
-                      return (
-                        <div
-                          key={event.id}
-                          className={cardClasses}
-                          onMouseEnter={() => setHoveredEventId(event.id ?? null)}
-                          onMouseLeave={() => setHoveredEventId(null)}
-                        >
-                          {/* Premium badge */}
-                          {premiumLevel === 'mega-premium' && (
-                            <div className="flex items-center gap-2 mb-3">
-                              <span className="px-3 py-1.5 text-sm font-bold rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg">
-                                💎 MEGA PREMIUM
-                              </span>
-                            </div>
-                          )}
-                          {premiumLevel === 'premium' && (
-                            <div className="flex items-center gap-2 mb-3">
-                              <span className="px-3 py-1.5 text-sm font-bold rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 text-white shadow-md">
-                                ⭐ PREMIUM
-                              </span>
-                            </div>
-                          )}
-
-                          {/* Image - Only for premium */}
-                          {!isStandard && (event.image_url || event.image) && (
-                            <div className={`w-full mb-3 rounded-xl overflow-hidden ${premiumLevel === 'mega-premium' ? 'h-48' : 'h-32'}`}>
-                              <img
-                                src={event.image_url || event.image}
-                                alt={event.title}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x200?text=Image+non+disponible'
-                                }}
-                              />
-                            </div>
-                          )}
-
-                          {/* Title */}
-                          <h4 className={`font-bold text-gray-900 mb-2 ${isStandard ? 'text-base line-clamp-1' : 'text-lg line-clamp-2'}`}>
-                            {event.title}
-                          </h4>
-
-                          {/* Date and location - Compact for standard */}
-                          {isStandard ? (
-                            <div className="text-sm text-gray-600">
-                              <div className="flex items-center gap-2">
-                                <span>📅 {new Date(event.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
-                                {isPast && <span className="text-xs text-gray-400">(Passé)</span>}
-                              </div>
-                              {event.location && (
-                                <div className="truncate">📍 {event.location}</div>
-                              )}
-                            </div>
-                          ) : (
-                            <>
-                              {/* Date and category - Full for premium */}
-                              <div className="flex items-center gap-2 mb-2 text-sm">
-                                <span className="flex items-center gap-1 text-gray-600">
-                                  📅 {new Date(event.date).toLocaleDateString('fr-FR', {
-                                    day: 'numeric',
-                                    month: 'short'
-                                  })}
-                                  {isPast && ' (Passé)'}
-                                </span>
-                                <span className="px-2 py-1 bg-pink-100 text-pink-700 text-xs font-semibold rounded-full">
-                                  {categoryInfo?.icon} {categoryInfo?.label}
-                                </span>
-                              </div>
-
-                              {/* Description - Only mega-premium */}
-                              {premiumLevel === 'mega-premium' && event.description && (
-                                <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                                  {event.description}
-                                </p>
-                              )}
-
-                              {/* Location */}
-                              {event.location && (
-                                <p className="text-sm text-gray-600 truncate">
-                                  📍 {event.location}
-                                </p>
-                              )}
-
-                              {/* Price */}
-                              {event.price && (
-                                <p className="text-sm text-gray-500 mt-1">
-                                  💰 {event.price}
-                                </p>
-                              )}
-
-                              {/* Organizer - Only mega-premium */}
-                              {premiumLevel === 'mega-premium' && event.organizer && (
-                                <p className="text-xs text-gray-500 mt-2">
-                                  👥 {event.organizer}
-                                </p>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      )
-                    })}
+                    .map((event) => (
+                      <div
+                        key={event.id}
+                        onMouseEnter={() => setHoveredEventId(event.id ?? null)}
+                        onMouseLeave={() => setHoveredEventId(null)}
+                        className={hoveredEventId === event.id ? 'ring-2 ring-pink-500 rounded-2xl' : ''}
+                      >
+                        <EventCard event={event} />
+                      </div>
+                    ))}
                 </div>
               </div>
             )}
