@@ -64,17 +64,72 @@ export function GoogleMap({
       center,
       zoom,
       styles: [
-        { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#a8dce3' }, { lightness: 17 }] },
-        { featureType: 'landscape', elementType: 'geometry', stylers: [{ color: '#f5f5f5' }, { lightness: 20 }] },
-        { featureType: 'landscape.natural', elementType: 'geometry', stylers: [{ color: '#e8f5e9' }] },
-        { featureType: 'road.highway', elementType: 'geometry.fill', stylers: [{ color: '#ffffff' }, { lightness: 17 }] },
-        { featureType: 'road.arterial', elementType: 'geometry', stylers: [{ color: '#ffffff' }, { lightness: 18 }] },
-        { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#dedede' }, { lightness: 21 }] }
+        // Cache tous les POI (commerces, restaurants, etc.)
+        {
+          featureType: 'poi',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
+        // Cache les business labels
+        {
+          featureType: 'poi.business',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
+        // Cache les transits
+        {
+          featureType: 'transit',
+          elementType: 'all',
+          stylers: [{ visibility: 'off' }]
+        },
+        // Style minimaliste pour l'eau
+        {
+          featureType: 'water',
+          elementType: 'geometry',
+          stylers: [{ color: '#c9e7f2' }]
+        },
+        // Landscape nature
+        {
+          featureType: 'landscape.natural',
+          elementType: 'geometry',
+          stylers: [{ color: '#e8f5e9' }]
+        },
+        // Routes principales
+        {
+          featureType: 'road.highway',
+          elementType: 'geometry',
+          stylers: [{ color: '#ffffff' }, { weight: 1 }]
+        },
+        {
+          featureType: 'road.arterial',
+          elementType: 'geometry',
+          stylers: [{ color: '#ffffff' }]
+        },
+        // Routes locales plus discrètes
+        {
+          featureType: 'road.local',
+          elementType: 'geometry',
+          stylers: [{ color: '#f5f5f5' }]
+        },
+        // Labels de routes minimalistes
+        {
+          featureType: 'road',
+          elementType: 'labels.text.fill',
+          stylers: [{ color: '#9ca3af' }]
+        },
+        {
+          featureType: 'road',
+          elementType: 'labels.text.stroke',
+          stylers: [{ color: '#ffffff' }, { weight: 2 }]
+        }
       ],
       mapTypeControl: true,
-      streetViewControl: true,
+      streetViewControl: false,
       fullscreenControl: true,
-      zoomControl: true
+      zoomControl: true,
+      mapTypeControlOptions: {
+        style: google.maps.MapTypeControlStyle.DROPDOWN_MENU
+      }
     })
 
     googleMapRef.current = map
