@@ -289,126 +289,105 @@ export default function ArtefactIAPage() {
       return
     }
 
-    addLog(`\n🚀 Conversion de ${selectedEvents.length} événement(s) scrapés en JSON...`, 'info')
+    addLog(`\n🤖 Envoi à OpenAI pour nettoyage et enrichissement...`, 'info')
 
-    // Fonction pour nettoyer les chaînes (enlever \n, espaces multiples, trim)
-    const cleanString = (str: string): string => {
-      if (!str) return ''
-      return str.replace(/\s+/g, ' ').trim()
-    }
+    try {
+      // Appeler OpenAI pour nettoyer et structurer les événements
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openaiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'gpt-4-turbo',
+          temperature: 0,
+          messages: [
+            {
+              role: 'system',
+              content: `Tu es un expert en structuration d'événements culturels.
 
-    // Fonction pour convertir date texte en format standardisé
-    const cleanDate = (dateStr: string): string => {
-      if (!dateStr) return ''
+RÈGLES ABSOLUES:
+1. TITLE: Nettoie et garde le titre exact
+2. DATE: Convertis en format YYYY-MM-DD (ex: "9 octobre 2025" → "2025-10-09")
+3. TIME: Extrais l'heure si présente, sinon "14:00"
+4. LOCATION: Extrais la VRAIE ville/adresse (Florac, Chanac, Le Vigan, Ganges, etc.). Ne pas inventer.
+5. ADDRESS: Adresse complète avec code postal si possible
+6. CATEGORY: Choisis parmi festival, marche, culture, sport, atelier, theatre
+   - Marché = "marche"
+   - Concert/Expo/Cinéma = "culture"
+   - Rando/Sport = "sport"
+   - Atelier = "atelier"
+   - Théâtre = "theatre"
+7. DESCRIPTION: Résume en 1-2 phrases
+8. PRICE, ORGANIZER, CONTACT, WEBSITE: Extrais si présent, sinon laisser vide
+9. IMAGE: Garde l'URL de l'image
 
-      // Nettoyer les espaces
-      let cleaned = dateStr.replace(/\s+/g, ' ').trim()
+IMPORTANT: Si ${selectedEvents.length} événements en entrée, retourne ${selectedEvents.length} événements. N'en oublie AUCUN.
 
-      // Mapping des mois français
-      const mois: Record<string, string> = {
-        'janvier': '01', 'jan': '01',
-        'février': '02', 'fév': '02', 'fevrier': '02', 'fev': '02',
-        'mars': '03', 'mar': '03',
-        'avril': '04', 'avr': '04',
-        'mai': '05',
-        'juin': '06',
-        'juillet': '07', 'juil': '07',
-        'août': '08', 'aout': '08',
-        'septembre': '09', 'sept': '09', 'sep': '09',
-        'octobre': '10', 'oct': '10',
-        'novembre': '11', 'nov': '11',
-        'décembre': '12', 'déc': '12', 'dec': '12'
-      }
-
-      // Essayer d'extraire jour, mois, année
-      // Format: "Le Jeudi 9 Oct. à 14:00" ou "Du 6 au 9 Octobre"
-      const regex = /(\d{1,2})\s*(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre|jan|fév|mar|avr|mai|juin|juil|août|sep|oct|nov|déc|fevrier|aout|dec)\.?\s*(\d{4})?/i
-      const match = cleaned.match(regex)
-
-      if (match) {
-        const jour = match[1].padStart(2, '0')
-        const moisNom = match[2].toLowerCase().replace('.', '')
-        const moisNum = mois[moisNom] || '01'
-        const annee = match[3] || '2025' // Année par défaut si non spécifiée
-
-        return `${annee}-${moisNum}-${jour}`
-      }
-
-      // Si pas de match, retourner la date nettoyée en texte
-      return cleaned
-    }
-
-    // Convertir et filtrer les événements scrapés
-    const filteredEvents = selectedEvents.filter(event => {
-      // Filtrer les événements sans titre valide
-      const hasValidTitle = event.title &&
-        event.title.trim().length > 3 &&
-        !event.title.toLowerCase().includes('vous aimerez')
-
-      // Filtrer les événements avec des titres génériques
-      return hasValidTitle
-    })
-
-    const filteredCount = selectedEvents.length - filteredEvents.length
-    if (filteredCount > 0) {
-      addLog(`⚠️ ${filteredCount} événement(s) invalide(s) filtré(s)`, 'warning')
-    }
-
-    const convertedEvents: ExtractedEvent[] = filteredEvents.map(event => {
-      // Extraire l'heure si présente dans la date
-      const timeMatch = event.date.match(/(\d{1,2}):(\d{2})/)
-      const extractedTime = timeMatch ? `${timeMatch[1].padStart(2, '0')}:${timeMatch[2]}` : '14:00'
-
-      return {
-        title: cleanString(event.title) || 'Événement sans titre',
-        category: 'culture', // Catégorie par défaut
-        description: cleanString(event.description) || '',
-        date: cleanDate(event.date) || '',
-        time: extractedTime,
-        location: event.location || '',
-        address: event.location || '30120 Le Vigan',
-        price: 'Non renseigné',
-        organizer: '',
-        contact: '',
-        website: '',
-        image: event.imageUrl || ''
-      }
-    })
-
-    if (convertedEvents.length === 0) {
-      addLog('❌ Aucun événement valide après filtrage', 'error')
-      return
-    }
-
-    addLog(`✅ ${convertedEvents.length} événement(s) converti(s) !`, 'success')
-
-    // Géocoder les adresses
-    addLog('🗺️ Géocodage des adresses en cours...', 'info')
-    for (const event of convertedEvents) {
-      if (event.address) {
-        try {
-          const geocodeResponse = await fetch(
-            `/api/geocode?address=${encodeURIComponent(event.address)}`
-          )
-          if (geocodeResponse.ok) {
-            const geocodeData = await geocodeResponse.json()
-            if (geocodeData.lat && geocodeData.lng) {
-              event.lat = geocodeData.lat
-              event.lng = geocodeData.lng
-              addLog(`  ✓ Géocodé: ${event.title}`, 'success')
+Retourne UNIQUEMENT un JSON array valide: [{"title":"...","category":"...","description":"...","date":"YYYY-MM-DD","time":"HH:MM","location":"ville","address":"...","price":"...","organizer":"...","contact":"...","website":"...","image":"..."}]`
+            },
+            {
+              role: 'user',
+              content: `Nettoie et structure ces ${selectedEvents.length} événements. Trouve les VRAIES villes et catégories:\n\n${JSON.stringify(selectedEvents, null, 2)}`
             }
+          ]
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error('Erreur OpenAI')
+      }
+
+      const data = await response.json()
+      addLog('✅ Réponse reçue de OpenAI', 'success')
+
+      // Parser le JSON
+      let jsonText = data.choices[0].message.content.trim()
+      const jsonMatch = jsonText.match(/\[\s*\{[\s\S]*\}\s*\]/)
+      if (jsonMatch) {
+        jsonText = jsonMatch[0]
+      }
+
+      const convertedEvents: ExtractedEvent[] = JSON.parse(jsonText)
+      addLog(`✅ ${convertedEvents.length} événement(s) nettoyés par IA !`, 'success')
+
+      if (convertedEvents.length === 0) {
+        addLog('❌ Aucun événement valide retourné par OpenAI', 'error')
+        return
+      }
+
+      // Géocoder les adresses
+      addLog('🗺️ Géocodage des adresses en cours...', 'info')
+      for (const event of convertedEvents) {
+        if (event.address) {
+          try {
+            const geocodeResponse = await fetch(
+              `/api/geocode?address=${encodeURIComponent(event.address + ', Cévennes, France')}`
+            )
+            if (geocodeResponse.ok) {
+              const geocodeData = await geocodeResponse.json()
+              if (geocodeData.lat && geocodeData.lng) {
+                event.lat = geocodeData.lat
+                event.lng = geocodeData.lng
+                addLog(`  ✓ Géocodé: ${event.title} → ${event.address}`, 'success')
+              }
+            }
+          } catch (error) {
+            addLog(`  ⚠ Géocodage échoué pour: ${event.title}`, 'warning')
           }
-        } catch (error) {
-          addLog(`  ⚠ Géocodage échoué pour: ${event.title}`, 'warning')
         }
       }
-    }
 
-    // Afficher les événements extraits
-    setExtractedEvents(convertedEvents)
-    setScrapedEvents([])
-    setScraperUrl('')
-    addLog('✅ Import terminé ! Vérifiez les événements ci-dessous', 'success')
+      // Afficher les événements extraits
+      setExtractedEvents(convertedEvents)
+      setScrapedEvents([])
+      setScraperUrl('')
+      addLog('✅ Import terminé ! Vérifiez les événements ci-dessous', 'success')
+    } catch (error: any) {
+      addLog(`❌ Erreur: ${error.message}`, 'error')
+      console.error('Error in handleImportScrapedEvents:', error)
+    }
   }
 
   const handleAnalyze = async () => {
