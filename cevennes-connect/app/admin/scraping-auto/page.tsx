@@ -22,6 +22,7 @@ interface PendingEvent {
   date: string
   location: string
   description: string
+  image?: string
   is_duplicate: boolean
   validated: boolean
   rejected: boolean
@@ -336,37 +337,46 @@ export default function ScrapingAutoPage() {
                     .map((event) => (
                       <div
                         key={event.id}
-                        className={`border-2 rounded-xl p-4 ${
+                        className={`border-2 rounded-xl overflow-hidden ${
                           event.is_duplicate
                             ? 'border-red-300 bg-red-50'
                             : 'border-gray-200 bg-white'
                         }`}
                       >
-                        {event.is_duplicate && (
-                          <span className="inline-block px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-full mb-2">
-                            DOUBLON
-                          </span>
+                        {event.image && (
+                          <img
+                            src={event.image}
+                            alt={event.title}
+                            className="w-full h-32 object-cover"
+                          />
                         )}
-                        <h4 className="font-bold text-sm mb-1">{event.title}</h4>
-                        {event.date && <p className="text-xs text-gray-600 mb-1">📅 {event.date}</p>}
-                        {event.location && <p className="text-xs text-gray-600 mb-2">📍 {event.location}</p>}
+                        <div className="p-4">
+                          {event.is_duplicate && (
+                            <span className="inline-block px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-full mb-2">
+                              DOUBLON
+                            </span>
+                          )}
+                          <h4 className="font-bold text-sm mb-1">{event.title}</h4>
+                          {event.date && <p className="text-xs text-gray-600 mb-1">📅 {event.date}</p>}
+                          {event.location && <p className="text-xs text-gray-600 mb-2">📍 {event.location}</p>}
 
-                        <div className="flex gap-2 mt-3">
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => handleValidateEvent(event.id)}
-                            disabled={event.is_duplicate}
-                          >
-                            ✅ Valider
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => handleRejectEvent(event.id)}
-                          >
-                            ❌ Rejeter
-                          </Button>
+                          <div className="flex gap-2 mt-3">
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => handleValidateEvent(event.id)}
+                              disabled={event.is_duplicate}
+                            >
+                              ✅ Valider
+                            </Button>
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              onClick={() => handleRejectEvent(event.id)}
+                            >
+                              ❌ Rejeter
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     ))}
