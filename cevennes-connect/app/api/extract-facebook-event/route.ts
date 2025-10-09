@@ -15,9 +15,9 @@ export async function POST(request: NextRequest) {
     console.log(`Extracting Facebook event from URL: ${url}`)
     console.log(`HTML size: ${html.length} characters`)
 
-    // Call OpenAI to extract event details
+    // Call OpenAI with web search to extract event details and geocode
     const openaiResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
-      model: 'gpt-4-turbo',
+      model: 'gpt-4o',
       temperature: 0,
       messages: [
         {
@@ -39,15 +39,21 @@ RÈGLES ABSOLUES:
 10. CATEGORY: Déterminer parmi: festival, marche, culture, sport, atelier, theatre
 11. CONTACT: Email ou téléphone si mentionné
 12. IMAGE: URL de l'image principale de l'événement
+13. LAT/LNG: OBLIGATOIRE - Utilise la recherche web pour trouver les coordonnées GPS exactes du lieu
+    - Cherche "[nom du lieu] près de Ganges, Cévennes, France" sur Google Maps
+    - Si le lieu est à plus de 50km de Ganges (43.9339, 3.7086), ignore-le et retourne null
+    - Retourne les coordonnées exactes trouvées
 
-IMPORTANT: Extrais TOUTES les informations disponibles dans le HTML.
+IMPORTANT:
+- Extrais TOUTES les informations disponibles dans le HTML
+- UTILISE LA RECHERCHE WEB pour trouver les coordonnées GPS du lieu mentionné
 
 Retourne UNIQUEMENT un JSON valide:
-{"title":"...","date":"YYYY-MM-DD","time":"HH:MM","endTime":"HH:MM","location":"...","address":"...","description":"...","organizer":"...","price":"...","category":"...","contact":"...","image":"..."}`
+{"title":"...","date":"YYYY-MM-DD","time":"HH:MM","endTime":"HH:MM","location":"...","address":"...","description":"...","organizer":"...","price":"...","category":"...","contact":"...","image":"...","lat":43.xxx,"lng":3.xxx}`
         },
         {
           role: 'user',
-          content: `Extrais TOUTES les informations de cet événement Facebook:\n\n${html.substring(0, 15000)}`
+          content: `Extrais TOUTES les informations de cet événement Facebook et utilise la recherche web pour géolocaliser le lieu:\n\n${html.substring(0, 15000)}`
         }
       ]
     }, {
@@ -55,7 +61,7 @@ Retourne UNIQUEMENT un JSON valide:
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
         'Content-Type': 'application/json'
       },
-      timeout: 30000
+      timeout: 60000
     })
 
     const aiContent = openaiResponse.data.choices[0].message.content.trim()
