@@ -1,10 +1,37 @@
 // Content script qui s'exécute sur les pages Facebook Events
 console.log('🎯 Cévennes Connect - Content script loaded on Facebook Event page')
 
-// Fonction pour extraire le HTML de la page (limité pour éviter erreur 413)
+// Fonction pour extraire uniquement la section détails de l'événement
 function extractEventHTML() {
-  const html = document.documentElement.outerHTML
   const url = window.location.href
+
+  // Sélecteurs pour trouver la section des détails de l'événement Facebook
+  const selectors = [
+    '[role="main"]',
+    'main',
+    '[data-pagelet*="event"]',
+    '[data-pagelet*="Event"]',
+    '#event_summary',
+    '.event_description',
+    '[class*="event"]'
+  ]
+
+  let eventSection = null
+  for (const selector of selectors) {
+    eventSection = document.querySelector(selector)
+    if (eventSection) {
+      console.log('✅ Section trouvée avec:', selector)
+      break
+    }
+  }
+
+  // Fallback : prendre tout le body si aucune section trouvée
+  if (!eventSection) {
+    console.log('⚠️ Section spécifique non trouvée, utilisation du body')
+    eventSection = document.body
+  }
+
+  const html = eventSection ? eventSection.outerHTML : document.documentElement.outerHTML
 
   // Limiter à 100KB pour éviter payload too large
   const maxSize = 100000
