@@ -15,7 +15,8 @@ export default function ActeursLocauxPage() {
   const [filteredActors, setFilteredActors] = useState<Actor[]>([])
   const [activeCategory, setActiveCategory] = useState<ActorCategory | 'all'>('all')
   const [searchTerm, setSearchTerm] = useState('')
-  const [viewMode, setViewMode] = useState<'cards' | 'map'>('cards')
+  const [viewMode, setViewMode] = useState<'cards' | 'map' | 'hybrid'>('cards')
+  const [hoveredActorId, setHoveredActorId] = useState<string | null>(null)
 
   useEffect(() => {
     // Load actors from Supabase API
@@ -105,10 +106,16 @@ export default function ActeursLocauxPage() {
                     📋 Cartes
                   </Button>
                   <Button
+                    variant={viewMode === 'hybrid' ? 'primary' : 'secondary'}
+                    onClick={() => setViewMode('hybrid')}
+                  >
+                    🗺️ Carte + Liste
+                  </Button>
+                  <Button
                     variant={viewMode === 'map' ? 'primary' : 'secondary'}
                     onClick={() => setViewMode('map')}
                   >
-                    🗺️ Carte
+                    🗺️ Carte seule
                   </Button>
                 </div>
               </div>
@@ -141,6 +148,36 @@ export default function ActeursLocauxPage() {
                 {filteredActors.map((actor, index) => (
                   <ActorCard key={index} actor={actor} />
                 ))}
+              </div>
+            ) : viewMode === 'hybrid' ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Carte côté gauche */}
+                <div className="rounded-3xl overflow-hidden shadow-2xl sticky top-4 h-[calc(100vh-12rem)]">
+                  <GoogleMap
+                    actors={filteredActors}
+                    className="h-full"
+                    highlightedActorId={hoveredActorId}
+                  />
+                </div>
+
+                {/* Liste côté droit */}
+                <div className="space-y-4 max-h-[calc(100vh-12rem)] overflow-y-auto pr-2">
+                  <div className="sticky top-0 bg-gray-50 pb-3 z-10">
+                    <h3 className="font-semibold text-gray-900 text-lg">
+                      📍 {filteredActors.length} acteur{filteredActors.length > 1 ? 's' : ''}
+                    </h3>
+                  </div>
+                  {filteredActors.map((actor, index) => (
+                    <div
+                      key={index}
+                      onMouseEnter={() => setHoveredActorId(actor.id || null)}
+                      onMouseLeave={() => setHoveredActorId(null)}
+                      className={hoveredActorId === actor.id ? 'ring-2 ring-purple-500 rounded-2xl' : ''}
+                    >
+                      <ActorCard actor={actor} />
+                    </div>
+                  ))}
+                </div>
               </div>
             ) : (
               <div className="rounded-3xl overflow-hidden shadow-2xl">

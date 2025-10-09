@@ -10,6 +10,7 @@ interface GoogleMapProps {
   zoom?: number
   className?: string
   highlightedEventId?: number | null
+  highlightedActorId?: string | null
 }
 
 const GOOGLE_MAPS_API_KEY = 'AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw'
@@ -20,7 +21,8 @@ export function GoogleMap({
   center = { lat: 43.9339, lng: 3.7086 }, // Ganges
   zoom = 11,
   className = '',
-  highlightedEventId = null
+  highlightedEventId = null,
+  highlightedActorId = null
 }: GoogleMapProps) {
   const mapRef = useRef<HTMLDivElement>(null)
   const googleMapRef = useRef<google.maps.Map | null>(null)
@@ -53,7 +55,7 @@ export function GoogleMap({
     if (googleMapRef.current) {
       updateMarkers()
     }
-  }, [actors, events])
+  }, [actors, events, highlightedActorId, highlightedEventId])
 
   const initMap = () => {
     if (!mapRef.current || !window.google) return
@@ -111,66 +113,87 @@ export function GoogleMap({
     return null // Will use custom overlay
   }
 
-  const createMegaPremiumOverlay = (actor: Actor) => {
+  const createMegaPremiumOverlay = (actor: Actor, isHighlighted: boolean) => {
     const content = document.createElement('div')
     content.style.cssText = `
       position: absolute;
-      transform: translate(-50%, -100%);
-      background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
-      border-radius: 16px;
-      padding: 8px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      transform: translate(-50%, -50%);
       cursor: pointer;
       transition: all 0.3s ease;
-      z-index: 1000;
-      min-width: 200px;
-      max-width: 250px;
+      z-index: ${isHighlighted ? 2000 : 1000};
+      animation: pulse 2s ease-in-out infinite;
     `
 
+    const size = isHighlighted ? 70 : 50
+
     content.innerHTML = `
-      <div style="background: white; border-radius: 12px; overflow: hidden;">
-        ${actor.image ? `
-          <img src="${actor.image}"
-               style="width: 100%; height: 80px; object-fit: cover;"
-               onerror="this.style.display='none'"
-          />
-        ` : ''}
-        <div style="padding: 8px;">
-          <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-            <span style="font-size: 18px;">💎</span>
-            <h4 style="font-size: 14px; font-weight: bold; color: #1f2937; margin: 0; line-height: 1.2;">
-              ${actor.name}
-            </h4>
-          </div>
-          <p style="font-size: 11px; color: #6b7280; margin: 4px 0 0 0; line-height: 1.3;">
-            ${actor.description ? actor.description.substring(0, 60) + '...' : ''}
-          </p>
-          ${actor.phone ? `
-            <p style="font-size: 10px; color: #9ca3af; margin: 4px 0 0 0;">
-              📞 ${actor.phone}
-            </p>
-          ` : ''}
+      <style>
+        @keyframes pulse {
+          0%, 100% { transform: translate(-50%, -50%) scale(1); }
+          50% { transform: translate(-50%, -50%) scale(1.1); }
+        }
+        @keyframes rotate {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      </style>
+      <div style="
+        position: relative;
+        width: ${size}px;
+        height: ${size}px;
+      ">
+        <!-- Glow effect -->
+        <div style="
+          position: absolute;
+          inset: -10px;
+          background: radial-gradient(circle, rgba(168, 85, 247, 0.6) 0%, transparent 70%);
+          border-radius: 50%;
+          filter: blur(15px);
+        "></div>
+
+        <!-- Star icon -->
+        <div style="
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 0 20px rgba(251, 191, 36, 0.8), 0 4px 20px rgba(0,0,0,0.3);
+          border: 3px solid #fff;
+        ">
+          <span style="font-size: ${size * 0.6}px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">⭐</span>
+        </div>
+
+        <!-- Diamond badge -->
+        <div style="
+          position: absolute;
+          top: -8px;
+          right: -8px;
+          width: 28px;
+          height: 28px;
+          background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          border: 2px solid white;
+        ">
+          <span style="font-size: 16px;">💎</span>
         </div>
       </div>
-      <div style="
-        position: absolute;
-        bottom: -8px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 0;
-        height: 0;
-        border-left: 8px solid transparent;
-        border-right: 8px solid transparent;
-        border-top: 8px solid #ec4899;
-      "></div>
     `
 
     content.addEventListener('mouseenter', () => {
-      content.style.transform = 'translate(-50%, -100%) scale(1.05)'
+      content.style.transform = 'translate(-50%, -50%) scale(1.2)'
+      content.style.zIndex = '2000'
     })
 
     content.addEventListener('mouseleave', () => {
-      content.style.transform = 'translate(-50%, -100%) scale(1)'
+      content.style.transform = 'translate(-50%, -50%) scale(1)'
+      content.style.zIndex = isHighlighted ? '2000' : '1000'
     })
 
     return content
@@ -191,11 +214,12 @@ export function GoogleMap({
 
       // Mega-premium: custom overlay
       if (premiumLevel === 'mega-premium') {
+        const isHighlighted = highlightedActorId === actor.id
         const overlay = new google.maps.OverlayView()
 
         overlay.onAdd = function() {
           const panes = this.getPanes()
-          const content = createMegaPremiumOverlay(actor)
+          const content = createMegaPremiumOverlay(actor, isHighlighted)
 
           panes!.overlayMouseTarget.appendChild(content)
 
