@@ -1,6 +1,7 @@
 import axios from 'axios'
 import * as cheerio from 'cheerio'
 import { NextRequest, NextResponse } from 'next/server'
+import { supabase } from '@/lib/supabase'
 
 interface ScrapedEvent {
   title: string
@@ -8,28 +9,24 @@ interface ScrapedEvent {
   location: string
   description: string
   imageUrl?: string
+  sourceUrl: string
+  isDuplicate?: boolean
+  duplicateOf?: number
 }
 
-export async function POST(request: NextRequest) {
+async function scrapeURL(url: string): Promise<ScrapedEvent[]> {
+  const events: ScrapedEvent[] = []
+
   try {
-    const { url } = await request.json()
-
-    if (!url) {
-      return NextResponse.json({ error: 'URL is required' }, { status: 400 })
-    }
-
-    // Fetch la page avec headers pour éviter les blocages
     const { data } = await axios.get(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       },
       timeout: 10000
     })
 
     const $ = cheerio.load(data)
-    const events: ScrapedEvent[] = []
 
-    // Stratégie de scraping multi-sélecteurs pour détecter différentes structures
     const selectors = [
       'article',
       '.event',
@@ -44,60 +41,53 @@ export async function POST(request: NextRequest) {
       $(selector).each((i, elem) => {
         const $elem = $(elem)
 
-        // Extraire le titre
         const title = $elem.find('h1, h2, h3, h4, .title, [class*="title"], [itemprop="name"]')
           .first()
           .text()
           .trim()
 
-        // Extraire la date
         const date = $elem.find('time, .date, [class*="date"], [itemprop="startDate"]')
           .first()
           .text()
           .trim() ||
           $elem.find('[datetime]').first().attr('datetime') || ''
 
-        // Extraire le lieu
         const location = $elem.find('.location, .lieu, .place, [class*="lieu"], [class*="location"], [itemprop="location"]')
           .first()
           .text()
           .trim()
 
-        // Extraire la description
         const description = $elem.find('.description, .excerpt, .summary, p, [itemprop="description"]')
           .first()
           .text()
           .trim()
 
-        // Extraire l'image
         const imageUrl = $elem.find('img')
           .first()
           .attr('src') || ''
 
-        // Ajouter uniquement si on a au moins un titre
         if (title && title.length > 3) {
-          // Éviter les doublons
           const exists = events.some(e => e.title === title && e.date === date)
           if (!exists) {
             events.push({
               title,
               date,
               location,
-              description: description.substring(0, 500), // Limiter la longueur
-              imageUrl: imageUrl.startsWith('http') ? imageUrl : undefined
+              description: description.substring(0, 500),
+              imageUrl: imageUrl.startsWith('http') ? imageUrl : undefined,
+              sourceUrl: url
             })
           }
         }
       })
     })
 
-    // Si aucun événement trouvé avec les sélecteurs spécifiques, essayer une approche plus générique
+    // Fallback pour sites sans structure événementielle
     if (events.length === 0) {
       $('div, section').each((i, elem) => {
         const $elem = $(elem)
         const text = $elem.text()
 
-        // Heuristique : chercher des blocs contenant des mots-clés d'événement
         if (text.match(/(concert|festival|exposition|spectacle|atelier|conférence|marché)/i)) {
           const title = $elem.find('h1, h2, h3, h4').first().text().trim()
           if (title && title.length > 3 && title.length < 200) {
@@ -108,18 +98,100 @@ export async function POST(request: NextRequest) {
                 date: '',
                 location: '',
                 description: text.substring(0, 300).trim(),
-                imageUrl: $elem.find('img').first().attr('src')
+                imageUrl: $elem.find('img').first().attr('src'),
+                sourceUrl: url
               })
             }
           }
         }
       })
     }
+  } catch (error: any) {
+    console.error(`Error scraping ${url}:`, error.message)
+  }
+
+  return events.slice(0, 50)
+}
+
+async function checkDuplicates(events: ScrapedEvent[]): Promise<ScrapedEvent[]> {
+  try {
+    // Récupérer tous les événements existants depuis Supabase
+    const { data: existingEvents } = await supabase
+      .from('events')
+      .select('id, title, date, location, address')
+
+    if (!existingEvents) return events
+
+    // Marquer les doublons
+    return events.map(event => {
+      const duplicate = existingEvents.find(existing => {
+        const titleMatch = existing.title.toLowerCase().trim() === event.title.toLowerCase().trim()
+        const dateMatch = existing.date === event.date
+        const locationMatch =
+          existing.location?.toLowerCase().includes(event.location.toLowerCase()) ||
+          existing.address?.toLowerCase().includes(event.location.toLowerCase())
+
+        return titleMatch && (dateMatch || locationMatch)
+      })
+
+      if (duplicate) {
+        return {
+          ...event,
+          isDuplicate: true,
+          duplicateOf: duplicate.id
+        }
+      }
+
+      return event
+    })
+  } catch (error) {
+    console.error('Error checking duplicates:', error)
+    return events
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const { url, urls } = await request.json()
+
+    // Support pour une seule URL ou plusieurs URLs
+    const urlsToScrape = urls || (url ? [url] : [])
+
+    if (urlsToScrape.length === 0) {
+      return NextResponse.json({ error: 'At least one URL is required' }, { status: 400 })
+    }
+
+    console.log(`Scraping ${urlsToScrape.length} URL(s)...`)
+
+    // Scraper toutes les URLs en parallèle
+    const scrapePromises = urlsToScrape.map((u: string) => scrapeURL(u))
+    const results = await Promise.all(scrapePromises)
+
+    // Fusionner tous les événements
+    let allEvents = results.flat()
+
+    // Éliminer les doublons internes (entre URLs scrapées)
+    const seen = new Set<string>()
+    allEvents = allEvents.filter(event => {
+      const key = `${event.title}-${event.date}-${event.location}`
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+
+    // Vérifier les doublons avec la base de données
+    allEvents = await checkDuplicates(allEvents)
+
+    const duplicatesCount = allEvents.filter(e => e.isDuplicate).length
+    const newEventsCount = allEvents.filter(e => !e.isDuplicate).length
 
     return NextResponse.json({
-      events: events.slice(0, 50), // Limiter à 50 événements max
-      count: events.length,
-      url
+      events: allEvents,
+      count: allEvents.length,
+      urls: urlsToScrape,
+      duplicatesCount,
+      newEventsCount,
+      summary: `${allEvents.length} événements détectés (${newEventsCount} nouveaux, ${duplicatesCount} doublons)`
     })
 
   } catch (error: any) {

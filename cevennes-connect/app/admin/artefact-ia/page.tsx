@@ -127,6 +127,9 @@ interface ScrapedEvent {
   location: string
   description: string
   imageUrl?: string
+  sourceUrl: string
+  isDuplicate?: boolean
+  duplicateOf?: number
   selected?: boolean
 }
 
