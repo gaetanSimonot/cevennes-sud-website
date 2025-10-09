@@ -66,3 +66,13 @@
 .badge-mega-premium {
   @apply bg-gradient-to-r from-yellow-400 via-orange-500 to-pink-500 text-white animate-pulse;
 }
+
+/* Hide scrollbar */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react'
 import { Actor, Event } from '@/lib/types'
 
 interface GoogleMapProps {
@@ -11,54 +11,155 @@ interface GoogleMapProps {
   className?: string
   highlightedEventId?: number | null
   highlightedActorId?: string | null
+  selectedEventId?: number | null
+  onMarkerClick?: (eventId: number) => void
+  disableAutoInfoWindow?: boolean
+}
+
+export interface GoogleMapRef {
+  centerOnEvent: (eventId: number) => void
 }
 
 const GOOGLE_MAPS_API_KEY = 'AIzaSyCSJRp7NCeKSPiKnezVyJiJFg5dqhbWnyw'
 
-export function GoogleMap({
+export const GoogleMap = forwardRef<GoogleMapRef, GoogleMapProps>(({
   actors = [],
   events = [],
   center = { lat: 43.9339, lng: 3.7086 }, // Ganges
   zoom = 11,
   className = '',
   highlightedEventId = null,
-  highlightedActorId = null
-}: GoogleMapProps) {
+  highlightedActorId = null,
+  selectedEventId = null,
+  onMarkerClick,
+  disableAutoInfoWindow = false
+}, ref) => {
   const mapRef = useRef<HTMLDivElement>(null)
   const googleMapRef = useRef<google.maps.Map | null>(null)
   const markersRef = useRef<google.maps.Marker[]>([])
+  const currentInfoWindowRef = useRef<google.maps.InfoWindow | null>(null)
+  const eventMarkersMapRef = useRef<Map<number, { marker: google.maps.Marker, infoWindow: google.maps.InfoWindow }>>(new Map())
 
   useEffect(() => {
-    // Load Google Maps script
-    if (!window.google) {
+    // Load Google Maps script only once
+    const loadGoogleMaps = () => {
+      if (window.google?.maps) {
+        initMap()
+        return
+      }
+
+      // Check if script is already being loaded
+      const existingScript = document.querySelector('script[src*="maps.googleapis.com"]')
+      if (existingScript) {
+        existingScript.addEventListener('load', () => {
+          if (window.google?.maps) {
+            initMap()
+          }
+        })
+        return
+      }
+
+      // Load script for the first time
       const script = document.createElement('script')
       script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=marker`
       script.async = true
       script.defer = true
-      document.head.appendChild(script)
-
       script.onload = () => {
-        initMap()
+        if (window.google?.maps) {
+          initMap()
+        }
       }
-    } else {
-      initMap()
+      document.head.appendChild(script)
     }
+
+    loadGoogleMaps()
 
     return () => {
       // Cleanup markers
-      markersRef.current.forEach(marker => marker.setMap(null))
+      markersRef.current.forEach(marker => {
+        if (marker && marker.setMap) {
+          marker.setMap(null)
+        }
+      })
       markersRef.current = []
     }
   }, [])
 
+  // Create markers only when events/actors change
   useEffect(() => {
     if (googleMapRef.current) {
       updateMarkers()
     }
-  }, [actors, events, highlightedActorId, highlightedEventId])
+  }, [actors, events])
+
+  // Update marker styles when selection changes
+  useEffect(() => {
+    if (!window.google?.maps) return
+
+    eventMarkersMapRef.current.forEach((data, eventId) => {
+      const isSelected = selectedEventId === eventId
+      const event = events.find(e => e.id === eventId)
+      if (!event) return
+
+      const baseColor = getEventCategoryColor(event.category)
+
+      // Simple: default 10 → selected 14
+      const scale = isSelected ? 14 : 10
+      const strokeColor = isSelected ? '#ec4899' : '#ffffff'
+      const strokeWeight = isSelected ? 3 : 2
+      const zIndex = isSelected ? 2000 : 50
+
+      data.marker.setIcon({
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: scale,
+        fillColor: baseColor,
+        fillOpacity: 1,
+        strokeColor: strokeColor,
+        strokeWeight: strokeWeight
+      })
+      data.marker.setZIndex(zIndex)
+    })
+
+    // Handle info window (unless disabled for mobile)
+    if (selectedEventId && !disableAutoInfoWindow) {
+      const eventData = eventMarkersMapRef.current.get(selectedEventId)
+      if (eventData && googleMapRef.current) {
+        // Close previous if different
+        if (currentInfoWindowRef.current && currentInfoWindowRef.current !== eventData.infoWindow) {
+          currentInfoWindowRef.current.close()
+        }
+        // Open new one
+        eventData.infoWindow.open(googleMapRef.current, eventData.marker)
+        currentInfoWindowRef.current = eventData.infoWindow
+      }
+    }
+  }, [selectedEventId, events, disableAutoInfoWindow])
+
+  // Expose method to parent
+  useImperativeHandle(ref, () => ({
+    centerOnEvent: (eventId: number) => {
+      const eventData = eventMarkersMapRef.current.get(eventId)
+
+      if (!eventData || !googleMapRef.current) return
+
+      const { marker } = eventData
+
+      // Center and zoom
+      const position = marker.getPosition()
+      if (position) {
+        googleMapRef.current.panTo(position)
+        googleMapRef.current.setZoom(14)
+      }
+
+      // InfoWindow opening is handled by the useEffect when selectedEventId changes
+    }
+  }))
 
   const initMap = () => {
-    if (!mapRef.current || !window.google) return
+    if (!mapRef.current || !window.google?.maps) return
+
+    // Don't reinitialize if map already exists
+    if (googleMapRef.current) return
 
     const map = new google.maps.Map(mapRef.current, {
       center,
@@ -211,11 +312,22 @@ export function GoogleMap({
   }
 
   const updateMarkers = () => {
-    if (!googleMapRef.current || !window.google) return
+    if (!googleMapRef.current || !window.google?.maps) return
 
     // Clear existing markers
-    markersRef.current.forEach(marker => marker.setMap(null))
+    markersRef.current.forEach(marker => {
+      if (marker && marker.setMap) {
+        marker.setMap(null)
+      }
+    })
     markersRef.current = []
+    eventMarkersMapRef.current.clear()
+
+    // Close any open info window when recreating markers
+    if (currentInfoWindowRef.current) {
+      currentInfoWindowRef.current.close()
+      currentInfoWindowRef.current = null
+    }
 
     // Add actor markers
     actors.forEach(actor => {
@@ -273,7 +385,9 @@ export function GoogleMap({
 
     // Add event markers
     events.forEach(event => {
-      if (!event.lat || !event.lng) return
+      if (!event.lat || !event.lng || !event.id) return
+
+      const baseColor = getEventCategoryColor(event.category)
 
       const marker = new google.maps.Marker({
         position: { lat: event.lat, lng: event.lng },
@@ -281,30 +395,46 @@ export function GoogleMap({
         title: event.title,
         icon: {
           path: google.maps.SymbolPath.CIRCLE,
-          scale: 8,
-          fillColor: getEventCategoryColor(event.category),
+          scale: 10,
+          fillColor: baseColor,
           fillOpacity: 1,
           strokeColor: '#ffffff',
           strokeWeight: 2
-        }
+        },
+        zIndex: 50
       })
 
       const infoWindow = new google.maps.InfoWindow({
         content: `
-          <div style="max-width: 300px;">
-            <h3 style="font-weight: bold; margin-bottom: 8px;">${event.title}</h3>
-            <p style="color: #666; margin-bottom: 8px;">${event.description}</p>
-            ${event.date ? `<p style="font-size: 14px; color: #888;"><strong>📅</strong> ${new Date(event.date).toLocaleDateString('fr-FR')}</p>` : ''}
-            ${event.location ? `<p style="font-size: 14px; color: #888;"><strong>📍</strong> ${event.location}</p>` : ''}
-            ${event.price ? `<p style="font-size: 14px; color: #888;"><strong>💰</strong> ${event.price}</p>` : ''}
+          <div style="max-width: 300px; font-family: system-ui, -apple-system, sans-serif;">
+            ${event.image ? `<img src="${event.image}" style="width: 100%; height: 100px; object-fit: cover; margin-bottom: 12px; border-radius: 8px;" onerror="this.style.display='none'" />` : ''}
+            <h3 style="font-weight: 600; margin: 8px 0; font-size: 16px; color: #1f2937;">${event.title}</h3>
+            <p style="color: #6b7280; margin-bottom: 12px; line-height: 1.5; font-size: 14px;">${event.description || ''}</p>
+            ${event.date ? `<p style="font-size: 13px; color: #9ca3af; margin: 6px 0;"><strong>📅</strong> ${new Date(event.date).toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} ${event.time ? '• ' + event.time : ''}</p>` : ''}
+            ${event.location ? `<p style="font-size: 13px; color: #9ca3af; margin: 6px 0;"><strong>📍</strong> ${event.location}</p>` : ''}
+            ${event.price ? `<p style="font-size: 13px; color: #9ca3af; margin: 6px 0;"><strong>💰</strong> ${event.price}</p>` : ''}
           </div>
         `
       })
 
       marker.addListener('click', () => {
+        // Close any open info window
+        if (currentInfoWindowRef.current) {
+          currentInfoWindowRef.current.close()
+        }
+        // Center map on event
+        googleMapRef.current!.panTo({ lat: event.lat!, lng: event.lng! })
+        // Open info window
         infoWindow.open(googleMapRef.current!, marker)
+        currentInfoWindowRef.current = infoWindow
+        // Notify parent component
+        if (onMarkerClick && event.id) {
+          onMarkerClick(event.id)
+        }
       })
 
+      // Store marker and infoWindow for later access
+      eventMarkersMapRef.current.set(event.id, { marker, infoWindow })
       markersRef.current.push(marker)
     })
   }
@@ -336,4 +466,6 @@ export function GoogleMap({
   return (
     <div ref={mapRef} className={`w-full ${className}`} style={{ minHeight: '500px' }} />
   )
-}
+})
+
+GoogleMap.displayName = 'GoogleMap'

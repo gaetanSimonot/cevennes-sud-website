@@ -1,51 +1,25 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Header } from '@/components/layout/Header'
 import { Footer } from '@/components/layout/Footer'
-import { EventCard } from '@/components/cards/EventCard'
-import { GoogleMap } from '@/components/maps/GoogleMap'
-import { Button } from '@/components/ui/Button'
-import { Input } from '@/components/ui/Input'
+import { GoogleMap, GoogleMapRef } from '@/components/maps/GoogleMap'
+import { FilterBubbles } from '@/components/FilterBubbles'
 import { Event, EventCategory } from '@/lib/types'
-import { filterBySearch } from '@/lib/utils'
 
 export default function EvenementsPage() {
   const [events, setEvents] = useState<Event[]>([])
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([])
   const [activeCategory, setActiveCategory] = useState<EventCategory | 'all'>('all')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [viewMode, setViewMode] = useState<'cards' | 'map'>('cards')
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
-  const [timeFilter, setTimeFilter] = useState<'all' | 'upcoming' | 'past' | 'weekend' | 'week' | 'month'>('all')
-  const [hoveredEventId, setHoveredEventId] = useState<number | null>(null)
-
-  // Helper functions for date filters
-  const getWeekendDates = () => {
-    const now = new Date()
-    const dayOfWeek = now.getDay()
-    const daysUntilSaturday = dayOfWeek === 0 ? 6 : 6 - dayOfWeek
-    const saturday = new Date(now)
-    saturday.setDate(now.getDate() + daysUntilSaturday)
-    const sunday = new Date(saturday)
-    sunday.setDate(saturday.getDate() + 1)
-    return { start: saturday, end: sunday }
-  }
-
-  const getWeekDates = () => {
-    const now = new Date()
-    const end = new Date(now)
-    end.setDate(now.getDate() + 7)
-    return { start: now, end }
-  }
-
-  const getMonthDates = () => {
-    const now = new Date()
-    const end = new Date(now)
-    end.setDate(now.getDate() + 30)
-    return { start: now, end }
-  }
+  const [timeFilter, setTimeFilter] = useState<'now' | 'today' | 'weekend' | 'month' | 'all'>('all')
+  const [selectedEventId, setSelectedEventId] = useState<number | null>(null)
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
+  const [mobileDrawerState, setMobileDrawerState] = useState<'closed' | 'peek' | 'open'>('peek')
+  const [viewMode, setViewMode] = useState<'split' | 'list'>('split')
+  const desktopMapRef = useRef<GoogleMapRef>(null)
+  const mobileMapRef = useRef<GoogleMapRef>(null)
+  const desktopListRef = useRef<HTMLDivElement>(null)
+  const mobileListRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     // Load events from Supabase API
@@ -53,10 +27,8 @@ export default function EvenementsPage() {
       .then(res => res.json())
       .then((data) => {
         const eventsData = data.events || []
-        // Sort by date (most recent first)
-        const sorted = eventsData.sort((a: Event, b: Event) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        setEvents(sorted)
-        setFilteredEvents(sorted)
+        setEvents(eventsData)
+        setFilteredEvents(eventsData)
       })
       .catch(error => {
         console.error('Erreur lors du chargement des événements:', error)
@@ -71,327 +43,706 @@ export default function EvenementsPage() {
       result = result.filter(event => event.category === activeCategory)
     }
 
-    // Filter by search
-    if (searchTerm) {
-      result = filterBySearch(result, searchTerm)
-    }
-
     // Filter by time
     const now = new Date()
-    now.setHours(0, 0, 0, 0)
 
-    if (timeFilter === 'upcoming') {
-      result = result.filter(event => new Date(event.date) >= now)
-    } else if (timeFilter === 'past') {
-      result = result.filter(event => new Date(event.date) < now)
-    } else if (timeFilter === 'weekend') {
-      const { start, end } = getWeekendDates()
+    if (timeFilter === 'now') {
+      // Events in next 3 hours
+      const threeHoursLater = new Date(now.getTime() + 3 * 60 * 60 * 1000)
       result = result.filter(event => {
         const eventDate = new Date(event.date)
-        return eventDate >= start && eventDate <= end
+        return eventDate >= now && eventDate <= threeHoursLater
       })
-    } else if (timeFilter === 'week') {
-      const { start, end } = getWeekDates()
+    } else if (timeFilter === 'today') {
+      const endOfDay = new Date(now)
+      endOfDay.setHours(23, 59, 59)
       result = result.filter(event => {
         const eventDate = new Date(event.date)
-        return eventDate >= start && eventDate <= end
+        return eventDate >= now && eventDate <= endOfDay
+      })
+    } else if (timeFilter === 'weekend') {
+      const dayOfWeek = now.getDay()
+      const daysUntilSaturday = dayOfWeek === 0 ? 6 : 6 - dayOfWeek
+      const saturday = new Date(now)
+      saturday.setDate(now.getDate() + daysUntilSaturday)
+      saturday.setHours(0, 0, 0, 0)
+      const sunday = new Date(saturday)
+      sunday.setDate(saturday.getDate() + 1)
+      sunday.setHours(23, 59, 59)
+      result = result.filter(event => {
+        const eventDate = new Date(event.date)
+        return eventDate >= saturday && eventDate <= sunday
       })
     } else if (timeFilter === 'month') {
-      const { start, end } = getMonthDates()
+      const endOfMonth = new Date(now)
+      endOfMonth.setDate(now.getDate() + 30)
       result = result.filter(event => {
         const eventDate = new Date(event.date)
-        return eventDate >= start && eventDate <= end
+        return eventDate >= now && eventDate <= endOfMonth
       })
-    }
-
-    // Filter by custom date range
-    if (startDate) {
-      result = result.filter(event => new Date(event.date) >= new Date(startDate))
-    }
-    if (endDate) {
-      result = result.filter(event => new Date(event.date) <= new Date(endDate))
     }
 
     setFilteredEvents(result)
-  }, [activeCategory, searchTerm, events, timeFilter, startDate, endDate])
+  }, [activeCategory, timeFilter, events])
 
-  const categories: { key: EventCategory | 'all'; label: string; icon: string }[] = [
-    { key: 'all', label: 'Tous', icon: '🎉' },
-    { key: 'marche', label: 'Marchés', icon: '🛍️' },
-    { key: 'culture', label: 'Culture', icon: '🎭' },
-    { key: 'sport', label: 'Sport', icon: '⚽' },
-    { key: 'festival', label: 'Festivals', icon: '🎪' },
-    { key: 'atelier', label: 'Ateliers', icon: '🎨' },
-    { key: 'theatre', label: 'Théâtre', icon: '🎬' },
+  // Scroll to selected event (only within list container, not page)
+  useEffect(() => {
+    if (selectedEventId) {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        const element = document.getElementById(`event-${selectedEventId}`)
+        const listContainer = desktopListRef.current || mobileListRef.current
+
+        if (element && listContainer) {
+          // Calculate position relative to container
+          const elementRect = element.getBoundingClientRect()
+          const containerRect = listContainer.getBoundingClientRect()
+
+          // Current scroll position
+          const currentScroll = listContainer.scrollTop
+
+          // Element position relative to container's visible area
+          const elementTopRelativeToContainer = elementRect.top - containerRect.top
+
+          // Calculate scroll to center the element
+          const targetScroll = currentScroll + elementTopRelativeToContainer - (containerRect.height / 2) + (elementRect.height / 2)
+
+          // Scroll only the list container
+          listContainer.scrollTo({
+            top: targetScroll,
+            behavior: 'smooth'
+          })
+        }
+      }, 150)
+    }
+  }, [selectedEventId])
+
+  const getUserLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          })
+        },
+        (error) => {
+          console.error('Error getting location:', error)
+        }
+      )
+    }
+  }
+
+  const isEventSoon = (date: string) => {
+    const eventDate = new Date(date)
+    const now = new Date()
+    const threeHoursLater = new Date(now.getTime() + 3 * 60 * 60 * 1000)
+    return eventDate >= now && eventDate <= threeHoursLater
+  }
+
+  const categories: { key: EventCategory | 'all'; label: string; icon: string; color: string }[] = [
+    { key: 'all', label: 'Tous', icon: '🎉', color: 'bg-gray-100 text-gray-700 hover:bg-gray-200' },
+    { key: 'festival', label: 'Musique', icon: '🎵', color: 'bg-red-100 text-red-700 hover:bg-red-200' },
+    { key: 'culture', label: 'Culture', icon: '🎨', color: 'bg-blue-100 text-blue-700 hover:bg-blue-200' },
+    { key: 'theatre', label: 'Théâtre', icon: '🎭', color: 'bg-purple-100 text-purple-700 hover:bg-purple-200' },
+    { key: 'sport', label: 'Sport', icon: '⚽', color: 'bg-green-100 text-green-700 hover:bg-green-200' },
+    { key: 'atelier', label: 'Atelier', icon: '🎨', color: 'bg-orange-100 text-orange-700 hover:bg-orange-200' },
+    { key: 'marche', label: 'Marché', icon: '🛍️', color: 'bg-teal-100 text-teal-700 hover:bg-teal-200' },
+  ]
+
+  const timeFilters = [
+    { key: 'now' as const, label: 'Maintenant', icon: '🔥' },
+    { key: 'today' as const, label: 'Aujourd\'hui', icon: '📅' },
+    { key: 'weekend' as const, label: 'Ce WE', icon: '🎊' },
+    { key: 'month' as const, label: 'Ce mois', icon: '📆' },
+    { key: 'all' as const, label: 'Tous', icon: '∞' },
   ]
 
   return (
     <div className="min-h-screen flex flex-col">
       <Header theme="pink" />
 
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="bg-gradient-to-br from-pink-500 via-pink-600 to-purple-600 text-white py-20">
-          <div className="container-custom text-center">
-            <div className="floating mb-6">
-              <div className="w-20 h-20 mx-auto bg-white/20 backdrop-blur-lg rounded-3xl flex items-center justify-center shadow-2xl">
-                <span className="text-5xl">🎉</span>
+      {/* Banner with Filters - Desktop */}
+      <section className="hidden md:block bg-gradient-to-br from-pink-500 via-pink-600 to-purple-600 text-white py-4">
+        <div className="container mx-auto px-6">
+          <div className="flex items-center justify-center gap-8">
+            {/* Category Filters Column (left of "Que faire" bubble) */}
+            <div className="flex flex-col gap-1.5">
+              {categories.map(cat => (
+                <button
+                  key={cat.key}
+                  onClick={() => setActiveCategory(cat.key)}
+                  className={`
+                    px-3 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap
+                    ${activeCategory === cat.key
+                      ? 'bg-white text-pink-600 shadow-md'
+                      : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border border-white/30'}
+                  `}
+                >
+                  {cat.icon} {cat.label}
+                </button>
+              ))}
+            </div>
+
+            {/* FilterBubbles with content between */}
+            <FilterBubbles
+              onTimeFilterChange={setTimeFilter}
+              onCategoryChange={setActiveCategory}
+              currentTimeFilter={timeFilter}
+              currentCategory={activeCategory}
+            >
+              {/* View Mode + Stats - Between bubbles */}
+              <div className="flex flex-col items-center gap-2">
+                {/* View Mode Toggle */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setViewMode('split')}
+                    className={`
+                      px-4 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap
+                      ${viewMode === 'split'
+                        ? 'bg-white text-pink-600 shadow-md'
+                        : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border border-white/30'}
+                    `}
+                  >
+                    🗺️ Carte + Liste
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`
+                      px-4 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap
+                      ${viewMode === 'list'
+                        ? 'bg-white text-pink-600 shadow-md'
+                        : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border border-white/30'}
+                    `}
+                  >
+                    📋 Liste
+                  </button>
+                </div>
+
+                {/* Stats Counter */}
+                <p className="text-sm font-bold text-white">
+                  {filteredEvents.length} événement{filteredEvents.length > 1 ? 's' : ''}
+                </p>
+              </div>
+            </FilterBubbles>
+
+            {/* Time Filters Column (right of "Quand donc" bubble) */}
+            <div className="flex flex-col gap-1.5">
+              {timeFilters.map(filter => (
+                <button
+                  key={filter.key}
+                  onClick={() => setTimeFilter(filter.key)}
+                  className={`
+                    px-3 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap
+                    ${timeFilter === filter.key
+                      ? 'bg-white text-pink-600 shadow-md'
+                      : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border border-white/30'}
+                  `}
+                >
+                  {filter.icon} {filter.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      {/* Removed duplicate mobile filters */}
+      <div className="md:hidden sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm hidden">
+        <div className="px-3 py-2">
+          {/* Time Filters - Compact */}
+          <div className="flex gap-1 mb-2 overflow-x-auto scrollbar-hide">
+            {timeFilters.map(filter => (
+              <button
+                key={filter.key}
+                onClick={() => setTimeFilter(filter.key)}
+                className={`
+                  px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap flex-shrink-0
+                  ${timeFilter === filter.key
+                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700'}
+                `}
+              >
+                {filter.icon} {filter.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Category Pills - Compact */}
+          <div className="flex gap-1 overflow-x-auto scrollbar-hide">
+            {categories.map(cat => (
+              <button
+                key={cat.key}
+                onClick={() => setActiveCategory(cat.key)}
+                className={`
+                  px-3 py-1.5 rounded-full text-xs font-semibold transition-all whitespace-nowrap flex-shrink-0
+                  ${activeCategory === cat.key
+                    ? 'ring-2 ring-pink-500 ' + cat.color
+                    : cat.color}
+                `}
+              >
+                {cat.icon} {cat.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <main className="flex-1 bg-gray-50 py-6">
+        <div className="container mx-auto px-6">
+          {/* DESKTOP: Split View (Carte + Liste) */}
+          {viewMode === 'split' && (
+          <div className="hidden md:grid md:grid-cols-2 gap-6 h-[calc(100vh-16rem)]">
+            {/* Left: Map */}
+            <div className="relative h-full rounded-2xl overflow-hidden shadow-xl border-2 border-gray-200">
+              <GoogleMap
+                ref={desktopMapRef}
+                events={filteredEvents}
+                center={userLocation || { lat: 43.9339, lng: 3.7086 }}
+                zoom={userLocation ? 14 : 11}
+                className="h-full"
+                selectedEventId={selectedEventId}
+                onMarkerClick={(eventId) => setSelectedEventId(eventId)}
+              />
+            </div>
+
+            {/* Right: List */}
+            <div className="bg-white rounded-2xl shadow-xl border-2 border-gray-200 overflow-hidden">
+              <div ref={desktopListRef} className="overflow-y-auto h-full p-6 space-y-4">
+            {filteredEvents.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                <div className="text-6xl mb-4">🔍</div>
+                <p className="text-lg">Aucun événement trouvé</p>
+              </div>
+            ) : (
+              filteredEvents.map((event) => (
+                <div
+                  key={event.id}
+                  id={`event-${event.id}`}
+                  onClick={() => {
+                    if (event.id) {
+                      setSelectedEventId(event.id)
+                      desktopMapRef.current?.centerOnEvent(event.id)
+                    }
+                  }}
+                  className={`
+                    group cursor-pointer bg-white rounded-xl border-2 transition-all duration-200
+                    ${selectedEventId === event.id
+                      ? 'border-pink-500 shadow-xl ring-2 ring-pink-200 bg-pink-50'
+                      : 'border-gray-200 hover:border-gray-300 hover:shadow-md'}
+                  `}
+                >
+                  <div className="flex gap-4 p-4">
+                    {/* Image miniature */}
+                    {event.image && (
+                      <img
+                        src={event.image}
+                        alt={event.title}
+                        className="w-24 h-24 object-cover rounded-lg flex-shrink-0"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none'
+                        }}
+                      />
+                    )}
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-2 mb-2">
+                        <h3 className={`font-bold text-lg line-clamp-2 flex-1 transition-colors ${
+                          selectedEventId === event.id ? 'text-pink-700' : 'text-gray-900'
+                        }`}>
+                          {event.title}
+                        </h3>
+
+                        {/* Badges */}
+                        <div className="flex gap-1 flex-shrink-0">
+                          {isEventSoon(event.date) && (
+                            <span className="text-xl" title="Bientôt!">🔥</span>
+                          )}
+                          {event.premium_level === 'mega-premium' && (
+                            <span className="text-xl" title="Premium">⭐</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="space-y-1 text-sm text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <span>📅</span>
+                          <span>{new Date(event.date).toLocaleDateString('fr-FR', {
+                            weekday: 'short',
+                            day: 'numeric',
+                            month: 'short'
+                          })}</span>
+                          {event.time && <span>• {event.time}</span>}
+                        </div>
+
+                        {event.location && (
+                          <div className="flex items-center gap-2">
+                            <span>📍</span>
+                            <span className="line-clamp-1">{event.location}</span>
+                          </div>
+                        )}
+
+                        {event.price && (
+                          <div className="flex items-center gap-2">
+                            <span>💰</span>
+                            <span>{event.price}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Category badge */}
+                      <div className="mt-2">
+                        <span className={`
+                          inline-block px-3 py-1 rounded-full text-xs font-semibold
+                          ${categories.find(c => c.key === event.category)?.color}
+                        `}>
+                          {categories.find(c => c.key === event.category)?.icon} {event.category}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
               </div>
             </div>
-            <h1 className="font-display font-bold text-5xl lg:text-6xl mb-6">
-              Événements Locaux
-            </h1>
-            <p className="text-xl text-white/90 max-w-4xl mx-auto leading-relaxed">
-              Marchés, festivals, ateliers, spectacles... Ne manquez plus aucun événement local !
-            </p>
           </div>
-        </section>
+          )}
 
-        {/* Main Content */}
-        <section className="py-16 bg-gray-50">
-          <div className="container-custom">
-            {/* Search and Filters */}
-            <div className="mb-12 space-y-6">
-              {/* Primary: Search + View Toggle */}
-              <div className="flex flex-col md:flex-row gap-4">
-                {/* Search Bar - Most important */}
-                <div className="flex-1">
-                  <Input
-                    type="text"
-                    placeholder="🔍 Que cherchez-vous ?"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="text-lg h-14 font-medium"
+          {/* DESKTOP: List Only View */}
+          {viewMode === 'list' && (
+          <div className="hidden md:block">
+            {filteredEvents.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-96 text-gray-400">
+                <div className="text-6xl mb-4">🔍</div>
+                <p className="text-lg">Aucun événement trouvé</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredEvents.map((event) => (
+                  <div
+                    key={event.id}
+                    id={`event-${event.id}`}
+                    className={`
+                      bg-white rounded-xl border-2 transition-all duration-200 overflow-hidden
+                      ${selectedEventId === event.id
+                        ? 'border-pink-500 shadow-xl ring-2 ring-pink-200'
+                        : 'border-gray-200 hover:border-gray-300 hover:shadow-md'}
+                    `}
+                  >
+                    {/* Image */}
+                    {event.image && (
+                      <img
+                        src={event.image}
+                        alt={event.title}
+                        className="w-full h-48 object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none'
+                        }}
+                      />
+                    )}
+
+                    <div className="p-4">
+                      {/* Title and badges */}
+                      <div className="flex items-start gap-2 mb-2">
+                        <h3 className="font-bold text-lg line-clamp-2 flex-1">
+                          {event.title}
+                        </h3>
+                        <div className="flex gap-1 flex-shrink-0">
+                          {isEventSoon(event.date) && (
+                            <span className="text-xl" title="Bientôt!">🔥</span>
+                          )}
+                          {event.premium_level === 'mega-premium' && (
+                            <span className="text-xl" title="Premium">⭐</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Info */}
+                      <div className="space-y-2 text-sm text-gray-600 mb-4">
+                        <div className="flex items-center gap-2">
+                          <span>📅</span>
+                          <span>{new Date(event.date).toLocaleDateString('fr-FR', {
+                            weekday: 'short',
+                            day: 'numeric',
+                            month: 'short'
+                          })}</span>
+                          {event.time && <span>• {event.time}</span>}
+                        </div>
+
+                        {event.location && (
+                          <div className="flex items-center gap-2">
+                            <span>📍</span>
+                            <span className="line-clamp-1">{event.location}</span>
+                          </div>
+                        )}
+
+                        {event.price && (
+                          <div className="flex items-center gap-2">
+                            <span>💰</span>
+                            <span>{event.price}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Category badge */}
+                      <div className="mb-3">
+                        <span className={`
+                          inline-block px-3 py-1 rounded-full text-xs font-semibold
+                          ${categories.find(c => c.key === event.category)?.color}
+                        `}>
+                          {categories.find(c => c.key === event.category)?.icon} {event.category}
+                        </span>
+                      </div>
+
+                      {/* View on map button */}
+                      <button
+                        onClick={() => {
+                          if (event.id) {
+                            setSelectedEventId(event.id)
+                            setViewMode('split')
+                            // Small delay to ensure map is mounted
+                            setTimeout(() => {
+                              desktopMapRef.current?.centerOnEvent(event.id!)
+                            }, 100)
+                          }
+                        }}
+                        className="w-full px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all hover:scale-105"
+                      >
+                        🗺️ Voir sur la carte
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          )}
+        </div>
+
+        {/* MOBILE: Map + Bottom Drawer */}
+        <div className="md:hidden h-screen flex flex-col bg-gray-50">
+          {/* Clean Filter Banner */}
+          <div className="fixed top-16 left-0 right-0 z-40 bg-gradient-to-br from-pink-500 via-pink-600 to-purple-600 shadow-xl">
+            <div className="px-3" style={{ paddingTop: '12px', paddingBottom: '4px' }}>
+              {/* FilterBubbles - with negative margins to compensate for scale */}
+              <div className="flex justify-center -my-[72px]">
+                <div className="scale-50 origin-center">
+                  <FilterBubbles
+                    onTimeFilterChange={setTimeFilter}
+                    onCategoryChange={setActiveCategory}
+                    currentTimeFilter={timeFilter}
+                    currentCategory={activeCategory}
                   />
-                </div>
-
-                {/* View Toggle - High priority */}
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setViewMode('cards')}
-                    className={`
-                      flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all text-base
-                      ${viewMode === 'cards'
-                        ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg scale-105'
-                        : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-pink-300'}
-                    `}
-                  >
-                    📋 <span className="hidden sm:inline">Liste</span>
-                  </button>
-                  <button
-                    onClick={() => setViewMode('map')}
-                    className={`
-                      flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all text-base
-                      ${viewMode === 'map'
-                        ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg scale-105'
-                        : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-pink-300'}
-                    `}
-                  >
-                    🗺️ <span className="hidden sm:inline">Carte</span>
-                  </button>
                 </div>
               </div>
 
-              {/* Secondary: Time shortcuts - Medium priority */}
-              <div className="bg-white rounded-2xl p-4 shadow-sm">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="text-sm font-bold text-gray-700">📅 QUAND ?</span>
+              {/* Filters */}
+              <div className="space-y-1.5">
+                {/* Time Filters */}
+                <div className="overflow-x-auto scrollbar-hide -mx-3 px-3">
+                  <div className="flex gap-1.5">
+                    {timeFilters.map(filter => (
+                      <button
+                        key={filter.key}
+                        onClick={() => setTimeFilter(filter.key)}
+                        className={`
+                          px-2.5 py-1 rounded text-xs font-semibold transition-all whitespace-nowrap flex-shrink-0
+                          ${timeFilter === filter.key
+                            ? 'bg-white text-pink-600 shadow-md'
+                            : 'bg-white/10 backdrop-blur-sm text-white border border-white/30'}
+                        `}
+                      >
+                        {filter.icon} {filter.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => {
-                      setTimeFilter('weekend')
-                      setStartDate('')
-                      setEndDate('')
-                    }}
-                    className={`
-                      px-4 py-2 rounded-lg font-semibold text-sm transition-all
-                      ${timeFilter === 'weekend'
-                        ? 'bg-pink-600 text-white shadow-md'
-                        : 'bg-pink-50 text-pink-700 hover:bg-pink-100'}
-                    `}
-                  >
-                    🎉 Ce week-end
-                  </button>
-                  <button
-                    onClick={() => {
-                      setTimeFilter('week')
-                      setStartDate('')
-                      setEndDate('')
-                    }}
-                    className={`
-                      px-4 py-2 rounded-lg font-semibold text-sm transition-all
-                      ${timeFilter === 'week'
-                        ? 'bg-pink-600 text-white shadow-md'
-                        : 'bg-pink-50 text-pink-700 hover:bg-pink-100'}
-                    `}
-                  >
-                    📆 Cette semaine
-                  </button>
-                  <button
-                    onClick={() => {
-                      setTimeFilter('month')
-                      setStartDate('')
-                      setEndDate('')
-                    }}
-                    className={`
-                      px-4 py-2 rounded-lg font-semibold text-sm transition-all
-                      ${timeFilter === 'month'
-                        ? 'bg-pink-600 text-white shadow-md'
-                        : 'bg-pink-50 text-pink-700 hover:bg-pink-100'}
-                    `}
-                  >
-                    🗓️ Ce mois-ci
-                  </button>
-                  <button
-                    onClick={() => {
-                      setTimeFilter('all')
-                      setStartDate('')
-                      setEndDate('')
-                    }}
-                    className={`
-                      px-4 py-2 rounded-lg font-semibold text-sm transition-all
-                      ${timeFilter === 'all'
-                        ? 'bg-gray-700 text-white shadow-md'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}
-                    `}
-                  >
-                    Tous
-                  </button>
 
-                  {/* Custom date range */}
-                  <div className="flex gap-2 ml-auto">
-                    <input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => {
-                        setStartDate(e.target.value)
-                        setTimeFilter('all')
-                      }}
-                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-pink-500"
-                    />
-                    <input
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => {
-                        setEndDate(e.target.value)
-                        setTimeFilter('all')
-                      }}
-                      className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-pink-500"
-                    />
+                {/* Category Filters */}
+                <div className="overflow-x-auto scrollbar-hide -mx-3 px-3">
+                  <div className="flex gap-1.5">
+                    {categories.map(cat => (
+                      <button
+                        key={cat.key}
+                        onClick={() => setActiveCategory(cat.key)}
+                        className={`
+                          px-2.5 py-1 rounded text-xs font-semibold transition-all whitespace-nowrap flex-shrink-0
+                          ${activeCategory === cat.key
+                            ? 'bg-white text-pink-600 shadow-md'
+                            : 'bg-white/10 backdrop-blur-sm text-white border border-white/30'}
+                        `}
+                      >
+                        {cat.icon} {cat.label}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
-
-              {/* Tertiary: Categories - Lower priority */}
-              <div>
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="text-sm font-bold text-gray-600">CATÉGORIES</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {categories.map(cat => (
-                    <button
-                      key={cat.key}
-                      onClick={() => setActiveCategory(cat.key)}
-                      className={`
-                        px-4 py-2 rounded-lg text-sm font-medium transition-all
-                        ${activeCategory === cat.key
-                          ? 'bg-purple-600 text-white shadow-md'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}
-                      `}
-                    >
-                      {cat.icon} {cat.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
             </div>
+          </div>
 
-            {/* Stats */}
-            <div className="mb-8 text-center">
-              <p className="text-xl font-bold text-gray-900">
-                {filteredEvents.length} {filteredEvents.length > 1 ? 'événements' : 'événement'} {activeCategory !== 'all' && `(${categories.find(c => c.key === activeCategory)?.label})`}
+          {/* Map - Full background from banner */}
+          <div className="fixed top-16 left-0 right-0 bottom-0 z-0">
+            <GoogleMap
+              ref={mobileMapRef}
+              events={filteredEvents}
+              center={userLocation || { lat: 43.9339, lng: 3.7086 }}
+              zoom={userLocation ? 14 : 11}
+              className="h-full"
+              selectedEventId={selectedEventId}
+              onMarkerClick={(eventId) => setSelectedEventId(eventId)}
+              disableAutoInfoWindow={true}
+            />
+
+            {/* Event Counter - Top of map */}
+            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg z-30">
+              <p className="text-xs font-bold text-pink-600">
+                {filteredEvents.length} événement{filteredEvents.length > 1 ? 's' : ''}
               </p>
             </div>
 
-            {/* Content */}
-            {viewMode === 'cards' ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredEvents
-                  .sort((a, b) => {
-                    // Sort by premium level first (mega > premium > standard)
-                    const premiumOrder: Record<string, number> = {
-                      'mega-premium': 3,
-                      'premium': 2,
-                      'standard': 1
-                    }
-                    const aLevel = premiumOrder[a.premium_level || 'standard'] || 1
-                    const bLevel = premiumOrder[b.premium_level || 'standard'] || 1
-                    if (aLevel !== bLevel) return bLevel - aLevel
-
-                    // Then by date (upcoming first)
-                    return new Date(a.date).getTime() - new Date(b.date).getTime()
-                  })
-                  .map((event) => (
-                    <EventCard key={event.id} event={event} />
-                  ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Map */}
-                <div className="lg:col-span-2 rounded-3xl overflow-hidden shadow-2xl">
-                  <GoogleMap
-                    events={filteredEvents}
-                    className="h-[600px]"
-                    highlightedEventId={hoveredEventId}
-                  />
-                </div>
-
-                {/* Events List Sidebar */}
-                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-                  <div className="sticky top-0 bg-gray-50 pb-3 z-10">
-                    <h3 className="font-semibold text-gray-900 text-lg">
-                      📍 {filteredEvents.length} événement{filteredEvents.length > 1 ? 's' : ''}
-                    </h3>
-                  </div>
-
-                  {/* Sort events: mega-premium > premium > standard */}
-                  {filteredEvents
-                    .sort((a, b) => {
-                      // Sort by premium level first
-                      const premiumOrder: Record<string, number> = {
-                        'mega-premium': 3,
-                        'premium': 2,
-                        'standard': 1
-                      }
-                      const aLevel = premiumOrder[a.premium_level || 'standard'] || 1
-                      const bLevel = premiumOrder[b.premium_level || 'standard'] || 1
-                      if (aLevel !== bLevel) return bLevel - aLevel
-
-                      // Then by date (upcoming first)
-                      return new Date(a.date).getTime() - new Date(b.date).getTime()
-                    })
-                    .map((event) => (
-                      <div
-                        key={event.id}
-                        onMouseEnter={() => setHoveredEventId(event.id ?? null)}
-                        onMouseLeave={() => setHoveredEventId(null)}
-                        className={hoveredEventId === event.id ? 'ring-2 ring-pink-500 rounded-2xl' : ''}
-                      >
-                        <EventCard event={event} />
-                      </div>
-                    ))}
-                </div>
-              </div>
-            )}
-
-            {filteredEvents.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-500 text-lg">Aucun résultat trouvé</p>
-              </div>
-            )}
+            {/* Geolocation Button */}
+            <button
+              onClick={getUserLocation}
+              className="absolute top-4 right-4 bg-white p-3 rounded-full shadow-lg z-30"
+              title="Ma position"
+            >
+              📍
+            </button>
           </div>
-        </section>
+
+          {/* Bottom Drawer */}
+          <div
+            className={`
+              fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl transition-all duration-300 z-50
+              ${mobileDrawerState === 'closed' ? 'h-16' : ''}
+              ${mobileDrawerState === 'peek' ? 'h-64' : ''}
+              ${mobileDrawerState === 'open' ? 'h-[85vh]' : ''}
+            `}
+          >
+            {/* Handle */}
+            <div
+              className="py-3 cursor-pointer flex justify-center"
+              onClick={() => {
+                if (mobileDrawerState === 'closed') setMobileDrawerState('peek')
+                else if (mobileDrawerState === 'peek') setMobileDrawerState('open')
+                else setMobileDrawerState('peek')
+              }}
+            >
+              <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+            </div>
+
+            {/* Header */}
+            <div className="px-4 pb-3 border-b border-gray-200">
+              <h2 className="font-bold text-lg text-gray-900">
+                {filteredEvents.length} événement{filteredEvents.length > 1 ? 's' : ''}
+              </h2>
+            </div>
+
+            {/* List */}
+            <div ref={mobileListRef} className="overflow-y-auto p-4 space-y-3" style={{ height: 'calc(100% - 80px)' }}>
+              {filteredEvents.map((event) => {
+                const isExpanded = selectedEventId === event.id
+                return (
+                  <div
+                    key={event.id}
+                    id={`event-${event.id}`}
+                    onClick={() => {
+                      if (event.id) {
+                        // Toggle: if already selected, deselect
+                        setSelectedEventId(isExpanded ? null : event.id)
+                        if (!isExpanded) {
+                          mobileMapRef.current?.centerOnEvent(event.id)
+                        }
+                      }
+                    }}
+                    className={`
+                      bg-white rounded-xl shadow-sm cursor-pointer transition-all border-2
+                      ${isExpanded
+                        ? 'border-pink-500 shadow-xl ring-2 ring-pink-200 bg-pink-50'
+                        : 'border-gray-200 hover:border-gray-300 hover:shadow-md'}
+                    `}
+                  >
+                    {/* Compact View */}
+                    <div className="flex gap-3 p-3">
+                      {event.image && (
+                        <img
+                          src={event.image}
+                          alt={event.title}
+                          className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none'
+                          }}
+                        />
+                      )}
+
+                      <div className="flex-1 min-w-0">
+                        <h3 className={`font-semibold text-sm mb-1 transition-colors ${
+                          isExpanded ? 'text-pink-700' : 'text-gray-900'
+                        } ${!isExpanded ? 'line-clamp-2' : ''}`}>
+                          {event.title}
+                        </h3>
+                        <div className="text-xs text-gray-600 space-y-1">
+                          <div>📅 {new Date(event.date).toLocaleDateString('fr-FR', {
+                            weekday: 'short',
+                            day: 'numeric',
+                            month: 'short'
+                          })} {event.time && `• ${event.time}`}</div>
+                          {!isExpanded && event.location && <div className="line-clamp-1">📍 {event.location}</div>}
+                        </div>
+                      </div>
+
+                      {/* Expand indicator */}
+                      <div className="flex-shrink-0">
+                        {isExpanded ? (
+                          <span className="text-xl">▼</span>
+                        ) : (
+                          <span className="text-xl">▶</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Expanded Details */}
+                    {isExpanded && (
+                      <div className="px-3 pb-3 pt-0 space-y-2 text-sm text-gray-600">
+                        {event.location && (
+                          <div className="flex items-start gap-2">
+                            <span className="flex-shrink-0">📍</span>
+                            <span>{event.location}</span>
+                          </div>
+                        )}
+                        {event.price && (
+                          <div className="flex items-center gap-2">
+                            <span>💰</span>
+                            <span>{event.price}</span>
+                          </div>
+                        )}
+                        {event.description && (
+                          <div className="pt-2 border-t border-gray-200">
+                            <p className="text-gray-700">{event.description}</p>
+                          </div>
+                        )}
+                        {/* Category badge */}
+                        <div className="pt-2">
+                          <span className={`
+                            inline-block px-3 py-1 rounded-full text-xs font-semibold
+                            ${categories.find(c => c.key === event.category)?.color}
+                          `}>
+                            {categories.find(c => c.key === event.category)?.icon} {event.category}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
       </main>
 
       <Footer />
