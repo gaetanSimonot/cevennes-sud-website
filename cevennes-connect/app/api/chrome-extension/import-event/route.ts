@@ -20,7 +20,6 @@ export async function POST(request: NextRequest) {
         description: event.description || '',
         date: event.date,
         time: event.time || '14:00',
-        end_time: event.endTime || event.end_time,
         location: event.location || '',
         address: event.address || '',
         lat: event.lat ? parseFloat(event.lat) : null,
@@ -30,8 +29,7 @@ export async function POST(request: NextRequest) {
         organizer: event.organizer || '',
         contact: event.contact || '',
         website: event.website || event.sourceUrl || '',
-        is_premium: false,
-        created_at: new Date().toISOString()
+        is_premium: false
       }])
       .select()
 
