@@ -141,6 +141,7 @@ export default function ArtefactIAPage() {
   const [uploadedImages, setUploadedImages] = useState<{ data: string; name: string }[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isScraping, setIsScraping] = useState(false)
+  const [deepScraping, setDeepScraping] = useState(false)
   const [scrapedEvents, setScrapedEvents] = useState<ScrapedEvent[]>([])
   const [extractedEvents, setExtractedEvents] = useState<ExtractedEvent[] | null>(null)
   const [logs, setLogs] = useState<LogEntry[]>([
@@ -234,14 +235,17 @@ export default function ArtefactIAPage() {
 
     setIsScraping(true)
     addLog('\n🌐 Démarrage du scraping...', 'info')
-    addLog(`🔗 ${urls.length} URL(s) à scraper`, 'info')
+    addLog(`🔗 ${urls.length} URL(s) à scraper ${deepScraping ? '🔍 (Mode profond activé)' : '(Mode surface)'}`, 'info')
+    if (deepScraping) {
+      addLog('⏱️ Le mode profond prend plus de temps mais collecte plus d\'informations', 'info')
+    }
     urls.forEach((u, i) => addLog(`  ${i + 1}. ${u}`, 'info'))
 
     try {
       const response = await fetch('/api/scrape-events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ urls })
+        body: JSON.stringify({ urls, deep: deepScraping })
       })
 
       const data = await response.json()
@@ -836,11 +840,28 @@ https://autre-agenda.com/..."
                       💡 Collez plusieurs URLs (une par ligne) pour scraper en parallèle
                     </p>
 
-                    <div className="mt-4">
+                    <div className="mt-4 space-y-3">
+                      <label className="flex items-center gap-3 p-3 bg-cyan-50 border border-cyan-200 rounded-lg cursor-pointer hover:bg-cyan-100 transition">
+                        <input
+                          type="checkbox"
+                          checked={deepScraping}
+                          onChange={(e) => setDeepScraping(e.target.checked)}
+                          disabled={isScraping}
+                          className="w-5 h-5 text-cyan-600 rounded"
+                        />
+                        <div className="flex-1">
+                          <p className="font-semibold text-cyan-900 text-sm">🔍 Scraping en profondeur</p>
+                          <p className="text-xs text-cyan-700">
+                            Entre dans chaque événement pour collecter plus d&apos;informations (descriptions complètes, horaires, prix, etc.)
+                          </p>
+                        </div>
+                      </label>
+
                       <Button
                         variant="primary"
                         onClick={handleScrapeAgenda}
                         disabled={isScraping || !scraperUrl.trim()}
+                        className="w-full"
                       >
                         {isScraping ? '⏳ Scraping en cours...' : '🚀 Lancer le scraping'}
                       </Button>

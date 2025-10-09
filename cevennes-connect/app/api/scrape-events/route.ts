@@ -43,10 +43,117 @@ function isValidTitle(title: string): boolean {
   return !invalidTitles.some(invalid => lowerTitle.includes(invalid))
 }
 
-async function scrapeURL(url: string): Promise<ScrapedEvent[]> {
+// Fonction pour extraire les liens d'événements depuis une page liste
+async function extractEventLinks(url: string): Promise<string[]> {
+  const links: string[] = []
+
+  try {
+    const { data } = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      },
+      timeout: 10000
+    })
+
+    const $ = cheerio.load(data)
+    const baseUrl = new URL(url)
+
+    // Sélecteurs pour trouver les liens d'événements
+    const linkSelectors = [
+      'article a',
+      '.event a',
+      '.event-item a',
+      '[class*="event"] a',
+      '.agenda-item a',
+      'a[href*="event"]',
+      'a[href*="agenda"]',
+      'a[href*="fiche"]'
+    ]
+
+    linkSelectors.forEach(selector => {
+      $(selector).each((i, elem) => {
+        let href = $(elem).attr('href')
+        if (href) {
+          // Convertir en URL absolue si nécessaire
+          if (href.startsWith('/')) {
+            href = `${baseUrl.protocol}//${baseUrl.host}${href}`
+          } else if (!href.startsWith('http')) {
+            href = `${baseUrl.protocol}//${baseUrl.host}/${href}`
+          }
+
+          // Éviter les doublons
+          if (!links.includes(href) && href.includes(baseUrl.host)) {
+            links.push(href)
+          }
+        }
+      })
+    })
+  } catch (error) {
+    console.error(`Error extracting links from ${url}:`, error)
+  }
+
+  return links.slice(0, 20) // Limiter à 20 liens max
+}
+
+// Fonction pour scraper une page de détail d'événement
+async function scrapeEventDetail(url: string): Promise<ScrapedEvent | null> {
+  try {
+    const { data } = await axios.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      },
+      timeout: 10000
+    })
+
+    const $ = cheerio.load(data)
+
+    // Extraire tout le contenu pertinent
+    const title = cleanText($('h1, h2, .event-title, [class*="title"]').first().text())
+    const fullDescription = cleanText($('.description, .content, .event-description, [class*="description"], article p').text())
+    const date = cleanText($('time, .date, [class*="date"]').first().text())
+    const location = cleanText($('.location, .lieu, .address, [class*="lieu"], [class*="location"]').first().text())
+    const imageUrl = $('img[class*="event"], .event-image img, article img').first().attr('src') || ''
+
+    if (isValidTitle(title)) {
+      return {
+        title,
+        date,
+        location,
+        description: fullDescription.substring(0, 1000), // Plus long pour page détail
+        imageUrl: imageUrl.startsWith('http') ? imageUrl : undefined,
+        sourceUrl: url
+      }
+    }
+  } catch (error) {
+    console.error(`Error scraping detail ${url}:`, error)
+  }
+
+  return null
+}
+
+async function scrapeURL(url: string, deep: boolean = false): Promise<ScrapedEvent[]> {
   const events: ScrapedEvent[] = []
 
   try {
+    // Si deep scraping activé, extraire les liens et scraper chaque page
+    if (deep) {
+      console.log(`🔍 Deep scraping activé pour: ${url}`)
+      const eventLinks = await extractEventLinks(url)
+      console.log(`📋 ${eventLinks.length} liens d'événements trouvés`)
+
+      for (const link of eventLinks) {
+        const event = await scrapeEventDetail(link)
+        if (event) {
+          events.push(event)
+        }
+        // Pause pour éviter de surcharger le serveur
+        await new Promise(resolve => setTimeout(resolve, 500))
+      }
+
+      return events
+    }
+
+    // Sinon, scraping normal (surface)
     const { data } = await axios.get(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
@@ -202,7 +309,7 @@ async function checkDuplicates(events: ScrapedEvent[]): Promise<ScrapedEvent[]> 
 
 export async function POST(request: NextRequest) {
   try {
-    const { url, urls } = await request.json()
+    const { url, urls, deep = false } = await request.json()
 
     // Support pour une seule URL ou plusieurs URLs
     const urlsToScrape = urls || (url ? [url] : [])
@@ -211,11 +318,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'At least one URL is required' }, { status: 400 })
     }
 
-    console.log(`Scraping ${urlsToScrape.length} URL(s)...`)
+    console.log(`Scraping ${urlsToScrape.length} URL(s)... ${deep ? '(Deep mode 🔍)' : '(Surface mode)'}`)
 
-    // Scraper toutes les URLs en parallèle
-    const scrapePromises = urlsToScrape.map((u: string) => scrapeURL(u))
-    const results = await Promise.all(scrapePromises)
+    // Scraper toutes les URLs (en série si deep pour éviter surcharge)
+    let results: ScrapedEvent[][] = []
+    if (deep) {
+      for (const u of urlsToScrape) {
+        const events = await scrapeURL(u, true)
+        results.push(events)
+      }
+    } else {
+      const scrapePromises = urlsToScrape.map((u: string) => scrapeURL(u, false))
+      results = await Promise.all(scrapePromises)
+    }
 
     // Fusionner tous les événements
     let allEvents = results.flat()
