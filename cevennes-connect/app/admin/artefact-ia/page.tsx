@@ -134,14 +134,17 @@ interface ScrapedEvent {
 }
 
 export default function ArtefactIAPage() {
-  const [activeTab, setActiveTab] = useState<'text' | 'url' | 'image' | 'scraper' | 'settings'>('text')
+  const [activeTab, setActiveTab] = useState<'text' | 'url' | 'image' | 'scraper' | 'facebook' | 'settings'>('text')
   const [textContent, setTextContent] = useState('')
   const [urlContent, setUrlContent] = useState('')
   const [scraperUrl, setScraperUrl] = useState('')
+  const [facebookJson, setFacebookJson] = useState('')
   const [uploadedImages, setUploadedImages] = useState<{ data: string; name: string }[]>([])
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isScraping, setIsScraping] = useState(false)
   const [deepScraping, setDeepScraping] = useState(false)
+  const [isProcessingFacebook, setIsProcessingFacebook] = useState(false)
+  const [facebookProgress, setFacebookProgress] = useState({ current: 0, total: 0 })
   const [scrapedEvents, setScrapedEvents] = useState<ScrapedEvent[]>([])
   const [extractedEvents, setExtractedEvents] = useState<ExtractedEvent[] | null>(null)
   const [logs, setLogs] = useState<LogEntry[]>([
