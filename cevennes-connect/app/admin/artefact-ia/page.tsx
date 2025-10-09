@@ -292,64 +292,26 @@ export default function ArtefactIAPage() {
     addLog(`\n🤖 Envoi à OpenAI pour nettoyage et enrichissement...`, 'info')
 
     try {
-      // Appeler OpenAI pour nettoyer et structurer les événements
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      // Appeler l'API route pour nettoyer avec OpenAI
+      const response = await fetch('/api/clean-scraped-events', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${openaiKey}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'gpt-4-turbo',
-          temperature: 0,
-          messages: [
-            {
-              role: 'system',
-              content: `Tu es un expert en structuration d'événements culturels.
-
-RÈGLES ABSOLUES:
-1. TITLE: Nettoie et garde le titre exact
-2. DATE: Convertis en format YYYY-MM-DD (ex: "9 octobre 2025" → "2025-10-09")
-3. TIME: Extrais l'heure si présente, sinon "14:00"
-4. LOCATION: Extrais la VRAIE ville/adresse (Florac, Chanac, Le Vigan, Ganges, etc.). Ne pas inventer.
-5. ADDRESS: Adresse complète avec code postal si possible
-6. CATEGORY: Choisis parmi festival, marche, culture, sport, atelier, theatre
-   - Marché = "marche"
-   - Concert/Expo/Cinéma = "culture"
-   - Rando/Sport = "sport"
-   - Atelier = "atelier"
-   - Théâtre = "theatre"
-7. DESCRIPTION: Résume en 1-2 phrases
-8. PRICE, ORGANIZER, CONTACT, WEBSITE: Extrais si présent, sinon laisser vide
-9. IMAGE: Garde l'URL de l'image
-
-IMPORTANT: Si ${selectedEvents.length} événements en entrée, retourne ${selectedEvents.length} événements. N'en oublie AUCUN.
-
-Retourne UNIQUEMENT un JSON array valide: [{"title":"...","category":"...","description":"...","date":"YYYY-MM-DD","time":"HH:MM","location":"ville","address":"...","price":"...","organizer":"...","contact":"...","website":"...","image":"..."}]`
-            },
-            {
-              role: 'user',
-              content: `Nettoie et structure ces ${selectedEvents.length} événements. Trouve les VRAIES villes et catégories:\n\n${JSON.stringify(selectedEvents, null, 2)}`
-            }
-          ]
+          events: selectedEvents
         })
       })
 
       if (!response.ok) {
-        throw new Error('Erreur OpenAI')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Erreur OpenAI')
       }
 
       const data = await response.json()
       addLog('✅ Réponse reçue de OpenAI', 'success')
 
-      // Parser le JSON
-      let jsonText = data.choices[0].message.content.trim()
-      const jsonMatch = jsonText.match(/\[\s*\{[\s\S]*\}\s*\]/)
-      if (jsonMatch) {
-        jsonText = jsonMatch[0]
-      }
-
-      const convertedEvents: ExtractedEvent[] = JSON.parse(jsonText)
+      const convertedEvents: ExtractedEvent[] = data.events
       addLog(`✅ ${convertedEvents.length} événement(s) nettoyés par IA !`, 'success')
 
       if (convertedEvents.length === 0) {
