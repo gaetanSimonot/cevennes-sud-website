@@ -15,7 +15,7 @@ interface FilterBubblesProps {
 const BUBBLE_CONFIG = {
   size: {
     bubble: { width: 320, height: 320 },
-    carousel: { width: 210, height: 90, top: '58%' }
+    carousel: { width: 210, height: 130, top: '48%' } // Augmenté height de 110 à 130, remonté top de 54% à 48%
   },
   text: {
     current: { base: 'text-3xl', scale: 'scale-125' },
@@ -159,24 +159,24 @@ export function FilterBubbles({
           onTouchEnd={handleCategoryTouchEnd}
         >
           {/* Scrolling list */}
-          <div className="flex flex-col items-center justify-center h-full relative -mt-1">
+          <div className="flex flex-col items-center justify-center h-full relative">
             {/* Previous item (faded) */}
             <div className="text-center opacity-20 transition-all duration-300">
-              <p className={`font-black ${BUBBLE_CONFIG.text.faded} text-gray-600 uppercase tracking-tight leading-tight whitespace-nowrap`}>
+              <p className={`font-black ${BUBBLE_CONFIG.text.faded} text-gray-600 uppercase tracking-tight leading-relaxed whitespace-nowrap`}>
                 {categoryOptions[(categoryIndex - 1 + categoryOptions.length) % categoryOptions.length].label}
               </p>
             </div>
 
             {/* Current item (full opacity) */}
-            <div className={`text-center py-1 scale-125 relative z-10`}>
-              <p className="font-black text-[38px] text-transparent bg-clip-text bg-gradient-to-r from-amber-500 to-orange-500 uppercase tracking-tight drop-shadow-sm leading-none whitespace-nowrap">
+            <div className={`text-center py-2 scale-125 relative z-10`}>
+              <p className="font-black text-[38px] text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-cyan-600 uppercase tracking-tight drop-shadow-sm leading-relaxed whitespace-nowrap">
                 {categoryOptions[categoryIndex].label}
               </p>
             </div>
 
             {/* Next item (faded) */}
             <div className="text-center opacity-20 transition-all duration-300">
-              <p className={`font-black ${BUBBLE_CONFIG.text.faded} text-gray-600 uppercase tracking-tight leading-tight whitespace-nowrap`}>
+              <p className={`font-black ${BUBBLE_CONFIG.text.faded} text-gray-600 uppercase tracking-tight leading-relaxed whitespace-nowrap`}>
                 {categoryOptions[(categoryIndex + 1) % categoryOptions.length].label}
               </p>
             </div>
@@ -209,17 +209,17 @@ export function FilterBubbles({
           onTouchEnd={handleTimeTouchEnd}
         >
           {/* Scrolling list */}
-          <div className="flex flex-col items-center justify-center h-full relative -mt-1">
+          <div className="flex flex-col items-center justify-center h-full relative">
             {/* Previous item (faded) */}
             <div className="text-center opacity-20 transition-all duration-300">
-              <p className={`font-black ${BUBBLE_CONFIG.text.faded} text-gray-600 uppercase tracking-tight leading-tight whitespace-nowrap`}>
+              <p className={`font-black ${BUBBLE_CONFIG.text.faded} text-gray-600 uppercase tracking-tight leading-relaxed whitespace-nowrap`}>
                 {timeOptions[(timeIndex - 1 + timeOptions.length) % timeOptions.length].label}
               </p>
             </div>
 
             {/* Current item (full opacity) */}
-            <div className={`text-center py-1 ${BUBBLE_CONFIG.text.current.scale} relative z-10`}>
-              <p className={`font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-blue-600 uppercase tracking-tight drop-shadow-sm leading-none whitespace-nowrap ${
+            <div className={`text-center py-2 ${BUBBLE_CONFIG.text.current.scale} relative z-10`}>
+              <p className={`font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-blue-600 uppercase tracking-tight drop-shadow-sm leading-relaxed whitespace-nowrap ${
                 getTextSizeClass(timeOptions[timeIndex].key)
               }`}>
                 {timeOptions[timeIndex].label}
@@ -228,7 +228,7 @@ export function FilterBubbles({
 
             {/* Next item (faded) */}
             <div className="text-center opacity-20 transition-all duration-300">
-              <p className={`font-black ${BUBBLE_CONFIG.text.faded} text-gray-600 uppercase tracking-tight leading-tight whitespace-nowrap`}>
+              <p className={`font-black ${BUBBLE_CONFIG.text.faded} text-gray-600 uppercase tracking-tight leading-relaxed whitespace-nowrap`}>
                 {timeOptions[(timeIndex + 1) % timeOptions.length].label}
               </p>
             </div>

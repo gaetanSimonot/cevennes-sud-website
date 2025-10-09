@@ -14,8 +14,10 @@ export default function EvenementsPage() {
   const [timeFilter, setTimeFilter] = useState<'now' | 'today' | 'weekend' | 'month' | 'all'>('all')
   const [selectedEventId, setSelectedEventId] = useState<number | null>(null)
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
-  const [mobileDrawerState, setMobileDrawerState] = useState<'closed' | 'peek' | 'open'>('peek')
+  const [mobileDrawerHeight, setMobileDrawerHeight] = useState(256) // 256px = h-64
+  const [isDragging, setIsDragging] = useState(false)
   const [viewMode, setViewMode] = useState<'split' | 'list'>('split')
+  const [mobileViewMode, setMobileViewMode] = useState<'map' | 'list'>('map')
   const desktopMapRef = useRef<GoogleMapRef>(null)
   const mobileMapRef = useRef<GoogleMapRef>(null)
   const desktopListRef = useRef<HTMLDivElement>(null)
@@ -34,6 +36,17 @@ export default function EvenementsPage() {
         console.error('Erreur lors du chargement des événements:', error)
       })
   }, [])
+
+  // Auto-adjust drawer height when mobile view mode changes
+  useEffect(() => {
+    if (mobileViewMode === 'list') {
+      // Expand drawer to near full screen
+      setMobileDrawerHeight(window.innerHeight * 0.85)
+    } else {
+      // Minimize drawer to show map
+      setMobileDrawerHeight(120)
+    }
+  }, [mobileViewMode])
 
   useEffect(() => {
     let result = events
@@ -151,19 +164,19 @@ export default function EvenementsPage() {
   ]
 
   const timeFilters = [
+    { key: 'all' as const, label: 'Tous', icon: '∞' },
     { key: 'now' as const, label: 'Maintenant', icon: '🔥' },
     { key: 'today' as const, label: 'Aujourd\'hui', icon: '📅' },
     { key: 'weekend' as const, label: 'Ce WE', icon: '🎊' },
     { key: 'month' as const, label: 'Ce mois', icon: '📆' },
-    { key: 'all' as const, label: 'Tous', icon: '∞' },
   ]
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header theme="pink" />
+      <Header theme="cyan" />
 
       {/* Banner with Filters - Desktop */}
-      <section className="hidden md:block bg-gradient-to-br from-pink-500 via-pink-600 to-purple-600 text-white py-4">
+      <section className="hidden md:block bg-gradient-to-br from-cyan-500 via-teal-500 to-blue-500 text-white py-4">
         <div className="container mx-auto px-6">
           <div className="flex items-center justify-center gap-8">
             {/* Category Filters Column (left of "Que faire" bubble) */}
@@ -175,7 +188,7 @@ export default function EvenementsPage() {
                   className={`
                     px-3 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap
                     ${activeCategory === cat.key
-                      ? 'bg-white text-pink-600 shadow-md'
+                      ? 'bg-white text-cyan-700 shadow-md'
                       : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border border-white/30'}
                   `}
                 >
@@ -200,7 +213,7 @@ export default function EvenementsPage() {
                     className={`
                       px-4 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap
                       ${viewMode === 'split'
-                        ? 'bg-white text-pink-600 shadow-md'
+                        ? 'bg-white text-cyan-700 shadow-md'
                         : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border border-white/30'}
                     `}
                   >
@@ -211,7 +224,7 @@ export default function EvenementsPage() {
                     className={`
                       px-4 py-2 rounded-lg text-xs font-semibold transition-all whitespace-nowrap
                       ${viewMode === 'list'
-                        ? 'bg-white text-pink-600 shadow-md'
+                        ? 'bg-white text-cyan-700 shadow-md'
                         : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border border-white/30'}
                     `}
                   >
@@ -235,7 +248,7 @@ export default function EvenementsPage() {
                   className={`
                     px-3 py-1 rounded-lg text-xs font-semibold transition-all whitespace-nowrap
                     ${timeFilter === filter.key
-                      ? 'bg-white text-pink-600 shadow-md'
+                      ? 'bg-white text-cyan-700 shadow-md'
                       : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border border-white/30'}
                   `}
                 >
@@ -330,8 +343,8 @@ export default function EvenementsPage() {
                   className={`
                     group cursor-pointer bg-white rounded-xl border-2 transition-all duration-200
                     ${selectedEventId === event.id
-                      ? 'border-pink-500 shadow-xl ring-2 ring-pink-200 bg-pink-50'
-                      : 'border-gray-200 hover:border-gray-300 hover:shadow-md'}
+                      ? 'border-cyan-400 shadow-xl ring-2 ring-cyan-100 bg-gradient-to-br from-cyan-50 to-teal-50'
+                      : 'border-gray-200 hover:border-cyan-200 hover:shadow-md'}
                   `}
                 >
                   <div className="flex gap-4 p-4">
@@ -351,7 +364,7 @@ export default function EvenementsPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start gap-2 mb-2">
                         <h3 className={`font-bold text-lg line-clamp-2 flex-1 transition-colors ${
-                          selectedEventId === event.id ? 'text-pink-700' : 'text-gray-900'
+                          selectedEventId === event.id ? 'text-cyan-700' : 'text-gray-900'
                         }`}>
                           {event.title}
                         </h3>
@@ -429,8 +442,8 @@ export default function EvenementsPage() {
                     className={`
                       bg-white rounded-xl border-2 transition-all duration-200 overflow-hidden
                       ${selectedEventId === event.id
-                        ? 'border-pink-500 shadow-xl ring-2 ring-pink-200'
-                        : 'border-gray-200 hover:border-gray-300 hover:shadow-md'}
+                        ? 'border-cyan-400 shadow-xl ring-2 ring-cyan-100'
+                        : 'border-gray-200 hover:border-cyan-200 hover:shadow-md'}
                     `}
                   >
                     {/* Image */}
@@ -526,7 +539,7 @@ export default function EvenementsPage() {
         {/* MOBILE: Map + Bottom Drawer */}
         <div className="md:hidden h-screen flex flex-col bg-gray-50">
           {/* Clean Filter Banner */}
-          <div className="fixed top-16 left-0 right-0 z-40 bg-gradient-to-br from-pink-500 via-pink-600 to-purple-600 shadow-xl">
+          <div className="fixed top-16 left-0 right-0 z-40 bg-gradient-to-br from-cyan-500 via-teal-500 to-blue-500 shadow-xl">
             <div className="px-3" style={{ paddingTop: '12px', paddingBottom: '4px' }}>
               {/* FilterBubbles - with negative margins to compensate for scale */}
               <div className="flex justify-center -my-[72px]">
@@ -552,7 +565,7 @@ export default function EvenementsPage() {
                         className={`
                           px-2.5 py-1 rounded text-xs font-semibold transition-all whitespace-nowrap flex-shrink-0
                           ${timeFilter === filter.key
-                            ? 'bg-white text-pink-600 shadow-md'
+                            ? 'bg-white text-cyan-700 shadow-md'
                             : 'bg-white/10 backdrop-blur-sm text-white border border-white/30'}
                         `}
                       >
@@ -572,7 +585,7 @@ export default function EvenementsPage() {
                         className={`
                           px-2.5 py-1 rounded text-xs font-semibold transition-all whitespace-nowrap flex-shrink-0
                           ${activeCategory === cat.key
-                            ? 'bg-white text-pink-600 shadow-md'
+                            ? 'bg-white text-cyan-700 shadow-md'
                             : 'bg-white/10 backdrop-blur-sm text-white border border-white/30'}
                         `}
                       >
@@ -600,7 +613,7 @@ export default function EvenementsPage() {
 
             {/* Event Counter - Top of map */}
             <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg z-30">
-              <p className="text-xs font-bold text-pink-600">
+              <p className="text-xs font-bold bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent">
                 {filteredEvents.length} événement{filteredEvents.length > 1 ? 's' : ''}
               </p>
             </div>
@@ -615,32 +628,94 @@ export default function EvenementsPage() {
             </button>
           </div>
 
-          {/* Bottom Drawer */}
+          {/* Bottom Drawer - Draggable */}
           <div
-            className={`
-              fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl transition-all duration-300 z-50
-              ${mobileDrawerState === 'closed' ? 'h-16' : ''}
-              ${mobileDrawerState === 'peek' ? 'h-64' : ''}
-              ${mobileDrawerState === 'open' ? 'h-[85vh]' : ''}
-            `}
+            className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-50"
+            style={{
+              height: `${mobileDrawerHeight}px`,
+              transition: isDragging ? 'none' : 'height 0.3s ease'
+            }}
           >
-            {/* Handle */}
+            {/* Draggable Handle */}
             <div
-              className="py-3 cursor-pointer flex justify-center"
-              onClick={() => {
-                if (mobileDrawerState === 'closed') setMobileDrawerState('peek')
-                else if (mobileDrawerState === 'peek') setMobileDrawerState('open')
-                else setMobileDrawerState('peek')
+              className="py-3 cursor-grab active:cursor-grabbing flex justify-center touch-none"
+              onMouseDown={(e) => {
+                setIsDragging(true)
+                const startY = e.clientY
+                const startHeight = mobileDrawerHeight
+
+                const handleMouseMove = (e: MouseEvent) => {
+                  const diff = startY - e.clientY
+                  const newHeight = Math.min(Math.max(80, startHeight + diff), window.innerHeight * 0.85)
+                  setMobileDrawerHeight(newHeight)
+                }
+
+                const handleMouseUp = () => {
+                  setIsDragging(false)
+                  document.removeEventListener('mousemove', handleMouseMove)
+                  document.removeEventListener('mouseup', handleMouseUp)
+                }
+
+                document.addEventListener('mousemove', handleMouseMove)
+                document.addEventListener('mouseup', handleMouseUp)
+              }}
+              onTouchStart={(e) => {
+                setIsDragging(true)
+                const startY = e.touches[0].clientY
+                const startHeight = mobileDrawerHeight
+
+                const handleTouchMove = (e: TouchEvent) => {
+                  const diff = startY - e.touches[0].clientY
+                  const newHeight = Math.min(Math.max(80, startHeight + diff), window.innerHeight * 0.85)
+                  setMobileDrawerHeight(newHeight)
+                }
+
+                const handleTouchEnd = () => {
+                  setIsDragging(false)
+                  document.removeEventListener('touchmove', handleTouchMove)
+                  document.removeEventListener('touchend', handleTouchEnd)
+                }
+
+                document.addEventListener('touchmove', handleTouchMove)
+                document.addEventListener('touchend', handleTouchEnd)
               }}
             >
               <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
             </div>
 
-            {/* Header */}
-            <div className="px-4 pb-3 border-b border-gray-200">
+            {/* Header with view mode toggle */}
+            <div className="px-4 pb-3 border-b border-gray-200 flex items-center justify-between">
               <h2 className="font-bold text-lg text-gray-900">
                 {filteredEvents.length} événement{filteredEvents.length > 1 ? 's' : ''}
               </h2>
+
+              {/* View Mode Toggle */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setMobileViewMode('map')}
+                  className={`
+                    px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5
+                    ${mobileViewMode === 'map'
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}
+                  `}
+                >
+                  <img src="/icon-map.svg" alt="Carte" className="w-4 h-4" />
+                  Carte
+                </button>
+                <button
+                  onClick={() => setMobileViewMode('list')}
+                  className={`
+                    px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5
+                    ${mobileViewMode === 'list'
+                      ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-md'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}
+                  `}
+                >
+                  <img src="/icon-list.svg" alt="Liste" className="w-4 h-4" />
+                  Liste
+                </button>
+              </div>
             </div>
 
             {/* List */}
@@ -663,8 +738,8 @@ export default function EvenementsPage() {
                     className={`
                       bg-white rounded-xl shadow-sm cursor-pointer transition-all border-2
                       ${isExpanded
-                        ? 'border-pink-500 shadow-xl ring-2 ring-pink-200 bg-pink-50'
-                        : 'border-gray-200 hover:border-gray-300 hover:shadow-md'}
+                        ? 'border-cyan-400 shadow-xl ring-2 ring-cyan-100 bg-gradient-to-br from-cyan-50 to-teal-50'
+                        : 'border-gray-200 hover:border-cyan-200 hover:shadow-md'}
                     `}
                   >
                     {/* Compact View */}
@@ -682,7 +757,7 @@ export default function EvenementsPage() {
 
                       <div className="flex-1 min-w-0">
                         <h3 className={`font-semibold text-sm mb-1 transition-colors ${
-                          isExpanded ? 'text-pink-700' : 'text-gray-900'
+                          isExpanded ? 'text-cyan-700' : 'text-gray-900'
                         } ${!isExpanded ? 'line-clamp-2' : ''}`}>
                           {event.title}
                         </h3>
@@ -745,7 +820,10 @@ export default function EvenementsPage() {
         </div>
       </main>
 
-      <Footer />
+      {/* Footer - hidden on mobile */}
+      <div className="hidden md:block">
+        <Footer />
+      </div>
     </div>
   )
 }

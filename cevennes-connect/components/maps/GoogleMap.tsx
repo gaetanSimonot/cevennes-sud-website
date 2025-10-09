@@ -164,6 +164,7 @@ export const GoogleMap = forwardRef<GoogleMapRef, GoogleMapProps>(({
     const map = new google.maps.Map(mapRef.current, {
       center,
       zoom,
+      gestureHandling: 'greedy', // Permet manipulation à un doigt sans le message "Use two fingers"
       styles: [
         // Cache tous les POI (commerces, restaurants, etc.)
         {
