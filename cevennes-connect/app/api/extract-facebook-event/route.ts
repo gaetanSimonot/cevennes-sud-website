@@ -3,6 +3,15 @@ import axios from 'axios'
 
 export const dynamic = 'force-dynamic'
 
+// Limite de payload pour éviter erreur 413
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb'
+    }
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { html, url } = await request.json()
@@ -12,6 +21,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`Extracting Facebook event from URL: ${url}`)
+    console.log(`HTML size: ${html.length} characters`)
 
     // Call OpenAI to extract event details
     const openaiResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
@@ -45,7 +55,7 @@ Retourne UNIQUEMENT un JSON valide:
         },
         {
           role: 'user',
-          content: `Extrais TOUTES les informations de cet événement Facebook:\n\n${html.substring(0, 50000)}`
+          content: `Extrais TOUTES les informations de cet événement Facebook:\n\n${html.substring(0, 15000)}`
         }
       ]
     }, {

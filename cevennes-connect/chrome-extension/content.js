@@ -1,15 +1,19 @@
 // Content script qui s'exécute sur les pages Facebook Events
 console.log('🎯 Cévennes Connect - Content script loaded on Facebook Event page')
 
-// Fonction pour extraire le HTML de la page
+// Fonction pour extraire le HTML de la page (limité pour éviter erreur 413)
 function extractEventHTML() {
   const html = document.documentElement.outerHTML
   const url = window.location.href
 
-  console.log('📄 HTML extrait:', html.length, 'caractères')
+  // Limiter à 100KB pour éviter payload too large
+  const maxSize = 100000
+  const truncatedHtml = html.substring(0, maxSize)
+
+  console.log('📄 HTML extrait:', html.length, 'caractères (tronqué à', truncatedHtml.length, ')')
 
   return {
-    html,
+    html: truncatedHtml,
     url,
     title: document.title,
     timestamp: new Date().toISOString()
