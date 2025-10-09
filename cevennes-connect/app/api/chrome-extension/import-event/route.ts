@@ -22,14 +22,14 @@ export async function POST(request: NextRequest) {
         time: event.time || '14:00',
         location: event.location || '',
         address: event.address || '',
-        lat: event.lat ? parseFloat(event.lat) : null,
-        lng: event.lng ? parseFloat(event.lng) : null,
+        lat: event.lat ? parseFloat(event.lat) : 43.9339,
+        lng: event.lng ? parseFloat(event.lng) : 3.7086,
         image: event.image || '',
         price: event.price || '',
         organizer: event.organizer || '',
         contact: event.contact || '',
         website: event.website || event.sourceUrl || '',
-        is_premium: false
+        premium_level: 'standard'
       }])
       .select()
 
