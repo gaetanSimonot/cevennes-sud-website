@@ -297,13 +297,44 @@ export default function ArtefactIAPage() {
       return str.replace(/\s+/g, ' ').trim()
     }
 
-    // Fonction pour nettoyer les dates (enlever \n et espaces excessifs)
+    // Fonction pour convertir date texte en format standardisé
     const cleanDate = (dateStr: string): string => {
       if (!dateStr) return ''
-      // Remplacer tous les \n et espaces multiples par un seul espace
+
+      // Nettoyer les espaces
       let cleaned = dateStr.replace(/\s+/g, ' ').trim()
-      // Supprimer les espaces avant les chiffres isolés
-      cleaned = cleaned.replace(/\s+(\d+)\s+/g, ' $1 ')
+
+      // Mapping des mois français
+      const mois: Record<string, string> = {
+        'janvier': '01', 'jan': '01',
+        'février': '02', 'fév': '02', 'fevrier': '02', 'fev': '02',
+        'mars': '03', 'mar': '03',
+        'avril': '04', 'avr': '04',
+        'mai': '05',
+        'juin': '06',
+        'juillet': '07', 'juil': '07',
+        'août': '08', 'aout': '08',
+        'septembre': '09', 'sept': '09', 'sep': '09',
+        'octobre': '10', 'oct': '10',
+        'novembre': '11', 'nov': '11',
+        'décembre': '12', 'déc': '12', 'dec': '12'
+      }
+
+      // Essayer d'extraire jour, mois, année
+      // Format: "Le Jeudi 9 Oct. à 14:00" ou "Du 6 au 9 Octobre"
+      const regex = /(\d{1,2})\s*(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre|jan|fév|mar|avr|mai|juin|juil|août|sep|oct|nov|déc|fevrier|aout|dec)\.?\s*(\d{4})?/i
+      const match = cleaned.match(regex)
+
+      if (match) {
+        const jour = match[1].padStart(2, '0')
+        const moisNom = match[2].toLowerCase().replace('.', '')
+        const moisNum = mois[moisNom] || '01'
+        const annee = match[3] || '2025' // Année par défaut si non spécifiée
+
+        return `${annee}-${moisNum}-${jour}`
+      }
+
+      // Si pas de match, retourner la date nettoyée en texte
       return cleaned
     }
 
@@ -323,20 +354,26 @@ export default function ArtefactIAPage() {
       addLog(`⚠️ ${filteredCount} événement(s) invalide(s) filtré(s)`, 'warning')
     }
 
-    const convertedEvents: ExtractedEvent[] = filteredEvents.map(event => ({
-      title: cleanString(event.title) || 'Événement sans titre',
-      category: 'culture', // Catégorie par défaut
-      description: cleanString(event.description) || '',
-      date: cleanDate(event.date) || '',
-      time: '14:00', // Heure par défaut
-      location: event.location || '',
-      address: event.location || '30120 Le Vigan',
-      price: 'Non renseigné',
-      organizer: '',
-      contact: '',
-      website: '',
-      image: event.imageUrl || ''
-    }))
+    const convertedEvents: ExtractedEvent[] = filteredEvents.map(event => {
+      // Extraire l'heure si présente dans la date
+      const timeMatch = event.date.match(/(\d{1,2}):(\d{2})/)
+      const extractedTime = timeMatch ? `${timeMatch[1].padStart(2, '0')}:${timeMatch[2]}` : '14:00'
+
+      return {
+        title: cleanString(event.title) || 'Événement sans titre',
+        category: 'culture', // Catégorie par défaut
+        description: cleanString(event.description) || '',
+        date: cleanDate(event.date) || '',
+        time: extractedTime,
+        location: event.location || '',
+        address: event.location || '30120 Le Vigan',
+        price: 'Non renseigné',
+        organizer: '',
+        contact: '',
+        website: '',
+        image: event.imageUrl || ''
+      }
+    })
 
     if (convertedEvents.length === 0) {
       addLog('❌ Aucun événement valide après filtrage', 'error')
