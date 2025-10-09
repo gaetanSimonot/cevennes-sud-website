@@ -380,6 +380,111 @@ export default function ArtefactIAPage() {
     }
   }
 
+  const handleProcessFacebookURLs = async () => {
+    if (!facebookJson.trim()) {
+      addLog('❌ Veuillez coller le JSON des événements Facebook', 'error')
+      return
+    }
+
+    try {
+      // Parse le JSON
+      const facebookEvents = JSON.parse(facebookJson)
+
+      if (!Array.isArray(facebookEvents) || facebookEvents.length === 0) {
+        addLog('❌ Le JSON doit être un array d\'événements', 'error')
+        return
+      }
+
+      setIsProcessingFacebook(true)
+      setFacebookProgress({ current: 0, total: facebookEvents.length })
+      addLog(`\n🚀 Traitement de ${facebookEvents.length} événement(s) Facebook...`, 'info')
+
+      const enrichedEvents: ExtractedEvent[] = []
+
+      for (let i = 0; i < facebookEvents.length; i++) {
+        const fbEvent = facebookEvents[i]
+        setFacebookProgress({ current: i + 1, total: facebookEvents.length })
+
+        addLog(`\n📥 [${i + 1}/${facebookEvents.length}] Fetch: ${fbEvent.title || fbEvent.url}`, 'info')
+
+        try {
+          // 1. Fetch HTML
+          const fetchResponse = await fetch('/api/fetch-url', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: fbEvent.url })
+          })
+
+          if (!fetchResponse.ok) {
+            addLog(`  ❌ Erreur fetch: ${fbEvent.url}`, 'error')
+            continue
+          }
+
+          const { html } = await fetchResponse.json()
+          addLog(`  ✓ HTML récupéré`, 'success')
+
+          // 2. Extract with OpenAI
+          addLog(`  🤖 Extraction OpenAI...`, 'info')
+          const extractResponse = await fetch('/api/extract-facebook-event', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ html, url: fbEvent.url })
+          })
+
+          if (!extractResponse.ok) {
+            addLog(`  ❌ Erreur extraction OpenAI`, 'error')
+            continue
+          }
+
+          const { event } = await extractResponse.json()
+          addLog(`  ✓ Événement extrait: ${event.title}`, 'success')
+
+          // 3. Geocode si adresse présente
+          if (event.address || event.location) {
+            const addressToGeocode = event.address || `${event.location}, Cévennes, France`
+            try {
+              const geocodeResponse = await fetch(
+                `/api/geocode?address=${encodeURIComponent(addressToGeocode)}`
+              )
+              if (geocodeResponse.ok) {
+                const geocodeData = await geocodeResponse.json()
+                if (geocodeData.lat && geocodeData.lng) {
+                  event.lat = geocodeData.lat
+                  event.lng = geocodeData.lng
+                  addLog(`  ✓ Géocodé: ${addressToGeocode}`, 'success')
+                }
+              }
+            } catch (error) {
+              addLog(`  ⚠ Géocodage échoué`, 'warning')
+            }
+          }
+
+          enrichedEvents.push(event)
+
+        } catch (error: any) {
+          addLog(`  ❌ Erreur: ${error.message}`, 'error')
+        }
+
+        // Pause entre requêtes pour éviter rate limit
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+
+      addLog(`\n✅ Traitement terminé: ${enrichedEvents.length}/${facebookEvents.length} événements enrichis`, 'success')
+
+      if (enrichedEvents.length > 0) {
+        setExtractedEvents(enrichedEvents)
+        setFacebookJson('')
+        addLog('📋 Vérifiez les événements ci-dessous avant publication', 'info')
+      }
+
+    } catch (error: any) {
+      addLog(`❌ Erreur parsing JSON: ${error.message}`, 'error')
+    } finally {
+      setIsProcessingFacebook(false)
+      setFacebookProgress({ current: 0, total: 0 })
+    }
+  }
+
   const handleAnalyze = async () => {
     let inputText = textContent
 
@@ -746,6 +851,13 @@ export default function ArtefactIAPage() {
                   🌐 Scraper Agenda
                 </Button>
                 <Button
+                  variant={activeTab === 'facebook' ? 'primary' : 'secondary'}
+                  onClick={() => setActiveTab('facebook')}
+                  size="sm"
+                >
+                  📋 Facebook URLs
+                </Button>
+                <Button
                   variant={activeTab === 'settings' ? 'primary' : 'secondary'}
                   onClick={() => setActiveTab('settings')}
                   size="sm"
@@ -988,6 +1100,77 @@ https://autre-agenda.com/..."
                       </p>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Facebook Tab */}
+              {activeTab === 'facebook' && (
+                <div className="mb-6">
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 sm:p-6 mb-4">
+                    <h3 className="text-base sm:text-lg font-semibold text-blue-900 mb-2">
+                      📋 Import automatique depuis Facebook
+                    </h3>
+                    <p className="text-xs sm:text-sm text-blue-700 mb-3">
+                      Collez le JSON contenant les URLs d&apos;événements Facebook. Le système va automatiquement :
+                      <br />• Récupérer le HTML de chaque page
+                      <br />• Extraire les données avec OpenAI
+                      <br />• Géocoder les adresses
+                    </p>
+                    <p className="text-xs text-blue-600 font-semibold">
+                      Format attendu : <code className="bg-blue-100 px-2 py-1 rounded">[{`{"title": "...", "url": "..."}`}, ...]</code>
+                    </p>
+                  </div>
+
+                  <TextArea
+                    label="JSON des événements Facebook"
+                    value={facebookJson}
+                    onChange={(e) => setFacebookJson(e.target.value)}
+                    rows={10}
+                    placeholder='[
+  {"title": "Concert Jazz", "url": "https://facebook.com/events/123..."},
+  {"title": "Marché Bio", "url": "https://facebook.com/events/456..."}
+]'
+                  />
+
+                  {/* Progress bar */}
+                  {isProcessingFacebook && facebookProgress.total > 0 && (
+                    <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-4">
+                      <p className="text-sm text-blue-900 font-semibold mb-2">
+                        🔄 Enrichissement {facebookProgress.current}/{facebookProgress.total} événements...
+                      </p>
+                      <div className="w-full bg-blue-200 rounded-full h-3 overflow-hidden">
+                        <div
+                          className="bg-blue-600 h-3 transition-all duration-300"
+                          style={{ width: `${(facebookProgress.current / facebookProgress.total) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex gap-3 mt-4">
+                    <Button
+                      variant="primary"
+                      onClick={handleProcessFacebookURLs}
+                      disabled={!facebookJson.trim() || isProcessingFacebook}
+                      className="flex-1"
+                    >
+                      {isProcessingFacebook ? '⏳ Traitement en cours...' : '🚀 Analyser automatiquement'}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setFacebookJson('')
+                        setFacebookProgress({ current: 0, total: 0 })
+                      }}
+                      disabled={isProcessingFacebook}
+                    >
+                      🗑️ Effacer
+                    </Button>
+                  </div>
+
+                  <p className="text-xs text-gray-500 mt-3">
+                    💡 Une fois les événements extraits, ils apparaîtront ci-dessous pour vérification avant publication.
+                  </p>
                 </div>
               )}
 
