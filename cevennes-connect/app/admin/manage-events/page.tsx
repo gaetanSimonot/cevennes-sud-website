@@ -263,6 +263,9 @@ export default function ManageEventsPage() {
                       <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
                         Prix
                       </th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                        Niveau
+                      </th>
                       <th className="px-6 py-4 text-right text-sm font-semibold text-gray-700">
                         Actions
                       </th>
@@ -312,6 +315,19 @@ export default function ManageEventsPage() {
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600">
                           {event.price || '-'}
+                        </td>
+                        <td className="px-6 py-4">
+                          {event.premium_level === 'mega-premium' ? (
+                            <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800">
+                              💎 Mega
+                            </span>
+                          ) : event.premium_level === 'premium' ? (
+                            <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                              ⭐ Premium
+                            </span>
+                          ) : (
+                            <span className="text-gray-400 text-sm">-</span>
+                          )}
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">

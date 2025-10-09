@@ -354,6 +354,31 @@ export default function EvenementsPage() {
                     .map((event) => {
                       const isPast = new Date(event.date) < new Date()
                       const categoryInfo = categories.find(c => c.key === event.category)
+                      const premiumLevel = event.premium_level || 'standard'
+
+                      // Premium styling
+                      const premiumStyles = {
+                        'mega-premium': {
+                          card: 'ring-4 ring-purple-500 bg-gradient-to-br from-purple-50 via-pink-50 to-white shadow-2xl',
+                          badge: 'bg-gradient-to-r from-purple-600 to-pink-600 text-white',
+                          icon: '💎',
+                          label: 'MEGA PREMIUM'
+                        },
+                        'premium': {
+                          card: 'ring-2 ring-yellow-400 bg-gradient-to-br from-yellow-50 to-white shadow-xl',
+                          badge: 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white',
+                          icon: '⭐',
+                          label: 'PREMIUM'
+                        },
+                        'standard': {
+                          card: '',
+                          badge: '',
+                          icon: '',
+                          label: ''
+                        }
+                      }
+
+                      const currentStyle = premiumStyles[premiumLevel as keyof typeof premiumStyles] || premiumStyles.standard
 
                       return (
                         <div
@@ -361,17 +386,17 @@ export default function EvenementsPage() {
                           className={`
                             bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all cursor-pointer
                             ${hoveredEventId === event.id ? 'ring-2 ring-pink-500 shadow-xl scale-[1.02]' : ''}
-                            ${event.featured ? 'ring-2 ring-yellow-400 bg-gradient-to-br from-yellow-50 to-white' : ''}
+                            ${currentStyle.card}
                             ${isPast ? 'opacity-60' : ''}
                           `}
                           onMouseEnter={() => setHoveredEventId(event.id ?? null)}
                           onMouseLeave={() => setHoveredEventId(null)}
                         >
                           {/* Premium badge */}
-                          {event.featured && (
+                          {premiumLevel !== 'standard' && (
                             <div className="flex items-center gap-2 mb-2">
-                              <span className="px-2 py-1 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-xs font-bold rounded-full">
-                                ⭐ PREMIUM
+                              <span className={`px-2 py-1 text-xs font-bold rounded-full ${currentStyle.badge}`}>
+                                {currentStyle.icon} {currentStyle.label}
                               </span>
                             </div>
                           )}
