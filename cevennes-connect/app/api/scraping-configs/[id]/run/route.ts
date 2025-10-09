@@ -68,41 +68,47 @@ export async function POST(
       )
     }
 
-    // Call the scrape-events API
+    // Fetch the HTML content directly
     const baseUrl = request.url.split('/api/')[0]
-    const scrapeResponse = await axios.post(`${baseUrl}/api/scrape-events`, {
-      url: config.url
+    const htmlResponse = await axios.get(config.url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      },
+      timeout: 15000
     })
 
-    const scrapedEvents = scrapeResponse.data.events || []
+    const htmlContent = htmlResponse.data
 
-    if (scrapedEvents.length === 0) {
-      return NextResponse.json({
-        success: true,
-        eventsScraped: 0,
-        eventsInserted: 0,
-        duplicatesFound: 0,
-        summary: 'No events found to scrape'
-      })
-    }
-
-    // Use OpenAI to clean and structure the scraped data
-    console.log('Calling OpenAI to structure scraped events...')
+    // Use OpenAI to extract events directly from HTML
+    console.log('Calling OpenAI to extract events from HTML...')
     const openaiResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
       model: 'gpt-4-turbo',
-      temperature: 0.1,
+      temperature: 0,
       messages: [
         {
           role: 'system',
-          content: `Tu es un assistant qui structure des données d'événements scrapés.
-Ton job: extraire proprement le titre, la date, le lieu/adresse, et la description.
-IMPORTANT: Pour chaque événement, trouve l'adresse ou la ville la plus précise possible (cherche les noms de ville, adresses, lieux dans le texte brut).
-Si tu vois "Le Vigan", "Ganges", "Saint-Hippolyte", etc., utilise-le comme location.
-Retourne UNIQUEMENT un JSON array valide, AUCUN texte avant ou après.`
+          content: `Tu es un expert en extraction d'événements depuis du HTML.
+
+RÈGLES ABSOLUES:
+1. TITLE: Extrait le titre exact de l'événement
+2. DATE: Format "9 octobre 2025" ou "Du 9 au 12 octobre" ou "Jeudi 9 octobre à 14h00"
+3. LOCATION: Cherche la VRAIE ville/adresse dans le HTML (Florac, Chanac, Le Pompidou, Saint-Étienne-Vallée-Française, Massegros, etc.). NE JAMAIS inventer. Si pas trouvé, laisser vide.
+4. CATEGORY: Analyse le type et choisis: festival, marche, culture, sport, atelier, theatre
+   - Marché, marché de producteurs = "marche"
+   - Concert, cinéma, exposition, conférence = "culture"
+   - Randonnée, pétanque = "sport"
+   - Atelier = "atelier"
+   - Théâtre = "theatre"
+5. DESCRIPTION: Résume brièvement (1 phrase)
+6. IMAGE: URL complète de l'image
+
+IMPORTANT: N'extrais QUE les vrais événements. Ignore les éléments de navigation, menus, etc.
+
+Retourne UNIQUEMENT un JSON array: [{"title":"...","date":"...","location":"ville","category":"...","description":"...","imageUrl":"..."}]`
         },
         {
           role: 'user',
-          content: `Voici ${scrapedEvents.length} événements scrapés bruts. Nettoie et structure chaque événement en JSON avec les champs: title, date, location (ville ou adresse précise), description.\n\n${JSON.stringify(scrapedEvents, null, 2)}`
+          content: `Extrais TOUS les événements de ce HTML. Pour chaque événement, trouve la VRAIE ville/commune mentionnée dans le HTML (cherche bien!):\n\n${htmlContent.substring(0, 50000)}`
         }
       ]
     }, {
@@ -112,17 +118,30 @@ Retourne UNIQUEMENT un JSON array valide, AUCUN texte avant ou après.`
       }
     })
 
-    let cleanedEvents = scrapedEvents
+    let cleanedEvents = []
     try {
       const aiContent = openaiResponse.data.choices[0].message.content
       const jsonMatch = aiContent.match(/\[\s*\{[\s\S]*\}\s*\]/)
       if (jsonMatch) {
         cleanedEvents = JSON.parse(jsonMatch[0])
-        console.log(`OpenAI cleaned ${cleanedEvents.length} events`)
+        console.log(`OpenAI extracted ${cleanedEvents.length} events from HTML`)
       }
     } catch (aiError) {
-      console.error('OpenAI parsing error, using raw scraped data:', aiError)
-      // Continue with original scraped data
+      console.error('OpenAI parsing error:', aiError)
+      return NextResponse.json({
+        error: 'Failed to extract events with AI',
+        details: aiError
+      }, { status: 500 })
+    }
+
+    if (cleanedEvents.length === 0) {
+      return NextResponse.json({
+        success: true,
+        eventsScraped: 0,
+        eventsInserted: 0,
+        duplicatesFound: 0,
+        summary: 'No events found by AI'
+      })
     }
 
     // Geocode locations and prepare events for insertion
@@ -160,9 +179,14 @@ Retourne UNIQUEMENT un JSON array valide, AUCUN texte avant ou après.`
       const timeMatch = event.date?.match(/(\d{1,2}):(\d{2})/)
       const time = timeMatch ? `${timeMatch[1].padStart(2, '0')}:${timeMatch[2]}` : '14:00'
 
+      // Valider la catégorie
+      const validCategories = ['festival', 'marche', 'culture', 'sport', 'atelier', 'theatre']
+      const category = validCategories.includes(event.category) ? event.category : 'culture'
+
       eventsToInsert.push({
         scraping_config_id: parseInt(id),
         title: event.title || '',
+        category: category,
         date: parsedDate || null,
         time: time,
         location: event.location || '',
