@@ -18,7 +18,12 @@ interface ScrapedEvent {
 function cleanText(text: string): string {
   if (!text) return ''
   // Remplacer tous les espaces multiples, \n, \t par un seul espace
-  return text.replace(/\s+/g, ' ').trim()
+  let cleaned = text.replace(/\s+/g, ' ').trim()
+  // Remplacer les guillemets typographiques par des guillemets simples
+  cleaned = cleaned.replace(/[""]/g, "'")
+  // Remplacer les guillemets doubles par des guillemets simples pour éviter les erreurs JSON
+  cleaned = cleaned.replace(/"/g, "'")
+  return cleaned
 }
 
 // Fonction pour valider un titre
