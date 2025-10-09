@@ -76,9 +76,58 @@ export async function POST(
 
     const scrapedEvents = scrapeResponse.data.events || []
 
+    if (scrapedEvents.length === 0) {
+      return NextResponse.json({
+        success: true,
+        eventsScraped: 0,
+        eventsInserted: 0,
+        duplicatesFound: 0,
+        summary: 'No events found to scrape'
+      })
+    }
+
+    // Use OpenAI to clean and structure the scraped data
+    console.log('Calling OpenAI to structure scraped events...')
+    const openaiResponse = await axios.post('https://api.openai.com/v1/chat/completions', {
+      model: 'gpt-4-turbo',
+      temperature: 0.1,
+      messages: [
+        {
+          role: 'system',
+          content: `Tu es un assistant qui structure des données d'événements scrapés.
+Ton job: extraire proprement le titre, la date, le lieu/adresse, et la description.
+IMPORTANT: Pour chaque événement, trouve l'adresse ou la ville la plus précise possible (cherche les noms de ville, adresses, lieux dans le texte brut).
+Si tu vois "Le Vigan", "Ganges", "Saint-Hippolyte", etc., utilise-le comme location.
+Retourne UNIQUEMENT un JSON array valide, AUCUN texte avant ou après.`
+        },
+        {
+          role: 'user',
+          content: `Voici ${scrapedEvents.length} événements scrapés bruts. Nettoie et structure chaque événement en JSON avec les champs: title, date, location (ville ou adresse précise), description.\n\n${JSON.stringify(scrapedEvents, null, 2)}`
+        }
+      ]
+    }, {
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    let cleanedEvents = scrapedEvents
+    try {
+      const aiContent = openaiResponse.data.choices[0].message.content
+      const jsonMatch = aiContent.match(/\[\s*\{[\s\S]*\}\s*\]/)
+      if (jsonMatch) {
+        cleanedEvents = JSON.parse(jsonMatch[0])
+        console.log(`OpenAI cleaned ${cleanedEvents.length} events`)
+      }
+    } catch (aiError) {
+      console.error('OpenAI parsing error, using raw scraped data:', aiError)
+      // Continue with original scraped data
+    }
+
     // Geocode locations and prepare events for insertion
     const eventsToInsert = []
-    for (const event of scrapedEvents) {
+    for (const event of cleanedEvents) {
       let lat = null
       let lng = null
       let address = event.location || '30120 Le Vigan'
