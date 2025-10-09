@@ -2,15 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import axios from 'axios'
 
 export const dynamic = 'force-dynamic'
-
-// Limite de payload pour éviter erreur 413
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb'
-    }
-  }
-}
+export const maxDuration = 60 // Durée max 60 secondes
 
 export async function POST(request: NextRequest) {
   try {
