@@ -246,10 +246,10 @@ Retourne UNIQUEMENT un JSON array: [{"title":"...","date":"...","location":"vill
 
     return NextResponse.json({
       success: true,
-      eventsScraped: scrapedEvents.length,
+      eventsScraped: cleanedEvents.length,
       eventsInserted: insertedCount,
-      duplicatesFound: scrapedEvents.filter((e: any) => e.isDuplicate).length,
-      summary: `${scrapedEvents.length} events scraped, ${insertedCount} stored in pending table`
+      duplicatesFound: eventsToInsert.filter((e: any) => e.is_duplicate).length,
+      summary: `${cleanedEvents.length} events scraped, ${insertedCount} stored in pending table`
     })
 
   } catch (error: any) {
