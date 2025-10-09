@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getSupabaseAdmin } from '@/lib/supabase'
 
 export const dynamic = 'force-dynamic'
 
@@ -8,6 +8,8 @@ export async function POST(request: NextRequest) {
     const event = await request.json()
 
     console.log('📥 Événement reçu de l\'extension Chrome:', event.title)
+
+    const supabase = getSupabaseAdmin()
 
     // Insérer directement dans Supabase
     const { data, error } = await supabase
