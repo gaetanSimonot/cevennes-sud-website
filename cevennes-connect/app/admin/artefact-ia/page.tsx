@@ -8,9 +8,12 @@ import { Input, TextArea } from '@/components/ui/Input'
 // Default AI prompt
 const DEFAULT_PROMPT = `Tu es un assistant spécialisé dans l'extraction d'informations d'événements depuis des copier-coller brouillons, des images ou du texte mal formaté.
 
-**TA MISSION : ÊTRE ROBUSTE ET EFFICACE**
+**TA MISSION : EXTRAIRE LE MAXIMUM D'ÉVÉNEMENTS**
 
-Tu vas recevoir des données parfois sales (copier-coller, caractères bizarres, formatage cassé, infos mélangées). Ton job est d'isoler SEULEMENT les infos essentielles et créer des événements valides.
+🎯 OBJECTIF : Extraire TOUS les événements détectés, même avec peu d'infos
+⚠️ NE FILTRE PAS : Si tu vois 11 événements, retourne 11 événements JSON
+
+Tu vas recevoir des données parfois sales (copier-coller, caractères bizarres, formatage cassé, infos mélangées). Ton job est d'isoler les infos essentielles et créer un événement JSON pour CHAQUE événement détecté.
 
 **RÈGLES STRICTES** :
 
@@ -31,19 +34,24 @@ Tu vas recevoir des données parfois sales (copier-coller, caractères bizarres,
 
 3. **UNE IMAGE = UN SEUL ÉVÉNEMENT** : Même si l'affiche mentionne plusieurs dates, c'est UN événement
 
-4. **PRIORITÉ AUX INFOS MINIMALES** :
-   - **OBLIGATOIRE** : title + date + ville (dans address ou location)
-   - **IMPORTANT** : time, category
+4. **CRÉE UN ÉVÉNEMENT POUR CHAQUE INFO DÉTECTÉE** :
+   - ⚠️ NE FUSIONNE JAMAIS plusieurs événements en un seul
+   - ⚠️ NE FILTRE PAS : retourne TOUS les événements détectés
+   - Un événement par date, par lieu, par activité mentionnée
+   - Même avec peu d'infos, crée l'événement
+
+5. **PRIORITÉ AUX INFOS MINIMALES** :
+   - **OBLIGATOIRE** : title (minimum)
+   - **IMPORTANT** : date, time, ville dans address
    - **OPTIONNEL** : tout le reste
-   - Si tu n'es pas sûr d'une info → laisse vide "" plutôt que de risquer une erreur
+   - Si tu n'es pas sûr → mets une valeur par défaut plutôt que de supprimer l'événement
 
-5. **EN CAS DE DOUTE** :
-   - Date floue ? → Mets la première date mentionnée ou laisse vide
-   - Heure floue ? → Mets "14:00" par défaut ou laisse vide
-   - Lieu vague ? → Mets au moins le nom de la ville dans address
+6. **EN CAS DE DOUTE** :
+   - Date floue ? → Essaye d'estimer, sinon mets ""
+   - Heure floue ? → Mets "14:00" par défaut
+   - Lieu vague ? → Mets "Cévennes Sud" dans address
    - Prix inconnu ? → Mets "Non renseigné"
-
-6. **VILLE OBLIGATOIRE** : L'adresse DOIT contenir une ville des Cévennes (Le Vigan, Ganges, Saint-Hippolyte-du-Fort, Sumène, Valleraugue, etc.). Sans ville, pas de carte !
+   - Ville inconnue ? → Cherche dans le texte, sinon mets "30120 Le Vigan" par défaut
 
 Pour chaque événement, extrais :
 
