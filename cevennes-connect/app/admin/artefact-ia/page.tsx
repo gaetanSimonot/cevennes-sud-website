@@ -318,8 +318,17 @@ export default function ArtefactIAPage() {
       const convertedEvents: ExtractedEvent[] = data.events
       addLog(`✅ ${convertedEvents.length} événement(s) nettoyés par IA !`, 'success')
 
+      // Afficher les rejets si présents
+      if (data.rejected > 0 && data.rejectedEvents) {
+        addLog(`⚠️ ${data.rejected} événement(s) rejeté(s) (pas de ville valide):`, 'warning')
+        data.rejectedEvents.forEach((rejected: any) => {
+          addLog(`  • "${rejected.title}" - ${rejected.reason}: "${rejected.location}"`, 'warning')
+        })
+      }
+
       if (convertedEvents.length === 0) {
         addLog('❌ Aucun événement valide retourné par OpenAI', 'error')
+        addLog('💡 Astuce: Essayez le mode "Deep Scraping" pour obtenir plus d\'infos', 'info')
         return
       }
 

@@ -65,10 +65,12 @@ Retourne UNIQUEMENT un JSON array valide: [{"title":"...","category":"...","desc
     const cleanedEvents = JSON.parse(jsonMatch[0])
 
     // Filter out events without valid location
+    const rejectedEvents: any[] = []
     const validEvents = cleanedEvents.filter((event: any) => {
       // Reject if location is empty or too generic
       if (!event.location || event.location.trim().length < 3) {
         console.log(`❌ Rejected: "${event.title}" - No location`)
+        rejectedEvents.push({ title: event.title, reason: 'No location', location: event.location || 'empty' })
         return false
       }
 
@@ -80,6 +82,7 @@ Retourne UNIQUEMENT un JSON array valide: [{"title":"...","category":"...","desc
 
       if (isGeneric) {
         console.log(`❌ Rejected: "${event.title}" - Generic location: ${event.location}`)
+        rejectedEvents.push({ title: event.title, reason: 'Generic location', location: event.location })
         return false
       }
 
@@ -96,7 +99,8 @@ Retourne UNIQUEMENT un JSON array valide: [{"title":"...","category":"...","desc
       success: true,
       events: processedEvents,
       count: processedEvents.length,
-      rejected: cleanedEvents.length - validEvents.length
+      rejected: cleanedEvents.length - validEvents.length,
+      rejectedEvents: rejectedEvents // Pour debug
     })
 
   } catch (error: any) {
