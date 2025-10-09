@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 
 interface HeaderProps {
-  theme?: 'emerald' | 'purple' | 'pink' | 'blue' | 'orange'
+  theme?: 'emerald' | 'purple' | 'pink' | 'blue' | 'orange' | 'cyan'
 }
 
 export function Header({ theme = 'emerald' }: HeaderProps) {
@@ -16,6 +16,7 @@ export function Header({ theme = 'emerald' }: HeaderProps) {
     pink: 'from-pink-500 to-purple-600',
     blue: 'from-blue-500 to-cyan-600',
     orange: 'from-orange-500 to-red-600',
+    cyan: 'from-cyan-500 to-teal-600',
   }
 
   const hoverColors = {
@@ -24,6 +25,7 @@ export function Header({ theme = 'emerald' }: HeaderProps) {
     pink: 'hover:text-pink-600',
     blue: 'hover:text-blue-600',
     orange: 'hover:text-orange-600',
+    cyan: 'hover:text-cyan-600',
   }
 
   return (
