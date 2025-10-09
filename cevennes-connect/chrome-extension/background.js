@@ -30,6 +30,6 @@ chrome.runtime.onInstalled.addListener(() => {
 
   // Définir l'URL par défaut du serveur
   chrome.storage.sync.set({
-    serverUrl: 'http://localhost:3004'
+    serverUrl: 'https://cevennes-sud-website.vercel.app'
   })
 })

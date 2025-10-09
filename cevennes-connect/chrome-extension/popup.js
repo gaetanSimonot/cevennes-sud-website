@@ -11,6 +11,8 @@ const eventPreviewDiv = document.getElementById('eventPreview')
 chrome.storage.sync.get(['serverUrl'], (result) => {
   if (result.serverUrl) {
     serverUrlInput.value = result.serverUrl
+  } else {
+    serverUrlInput.value = 'https://cevennes-sud-website.vercel.app'
   }
 })
 
