@@ -340,13 +340,18 @@ export default function EvenementsPage() {
                     </h3>
                   </div>
 
-                  {/* Sort events: premium first */}
+                  {/* Sort events: mega-premium > premium > standard */}
                   {filteredEvents
                     .sort((a, b) => {
-                      // Premium events first
-                      const aPremium = a.featured ? 1 : 0
-                      const bPremium = b.featured ? 1 : 0
-                      if (aPremium !== bPremium) return bPremium - aPremium
+                      // Sort by premium level first
+                      const premiumOrder: Record<string, number> = {
+                        'mega-premium': 3,
+                        'premium': 2,
+                        'standard': 1
+                      }
+                      const aLevel = premiumOrder[a.premium_level || 'standard'] || 1
+                      const bLevel = premiumOrder[b.premium_level || 'standard'] || 1
+                      if (aLevel !== bLevel) return bLevel - aLevel
 
                       // Then by date (upcoming first)
                       return new Date(a.date).getTime() - new Date(b.date).getTime()
@@ -355,55 +360,43 @@ export default function EvenementsPage() {
                       const isPast = new Date(event.date) < new Date()
                       const categoryInfo = categories.find(c => c.key === event.category)
                       const premiumLevel = event.premium_level || 'standard'
-
-                      // Premium styling
-                      const premiumStyles = {
-                        'mega-premium': {
-                          card: 'ring-4 ring-purple-500 bg-gradient-to-br from-purple-50 via-pink-50 to-white shadow-2xl',
-                          badge: 'bg-gradient-to-r from-purple-600 to-pink-600 text-white',
-                          icon: '💎',
-                          label: 'MEGA PREMIUM'
-                        },
-                        'premium': {
-                          card: 'ring-2 ring-yellow-400 bg-gradient-to-br from-yellow-50 to-white shadow-xl',
-                          badge: 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white',
-                          icon: '⭐',
-                          label: 'PREMIUM'
-                        },
-                        'standard': {
-                          card: '',
-                          badge: '',
-                          icon: '',
-                          label: ''
-                        }
-                      }
-
-                      const currentStyle = premiumStyles[premiumLevel as keyof typeof premiumStyles] || premiumStyles.standard
+                      const isStandard = premiumLevel === 'standard'
 
                       return (
                         <div
                           key={event.id}
                           className={`
-                            bg-white rounded-2xl p-4 shadow-sm hover:shadow-lg transition-all cursor-pointer
+                            bg-white rounded-2xl transition-all cursor-pointer
                             ${hoveredEventId === event.id ? 'ring-2 ring-pink-500 shadow-xl scale-[1.02]' : ''}
-                            ${currentStyle.card}
                             ${isPast ? 'opacity-60' : ''}
+                            ${premiumLevel === 'mega-premium'
+                              ? 'ring-4 ring-purple-500 shadow-2xl p-6 bg-gradient-to-br from-purple-50 via-pink-50 to-white'
+                              : premiumLevel === 'premium'
+                              ? 'ring-2 ring-yellow-400 shadow-xl p-5 bg-gradient-to-br from-yellow-50 to-white'
+                              : 'shadow-sm p-3 hover:shadow-md'}
                           `}
                           onMouseEnter={() => setHoveredEventId(event.id ?? null)}
                           onMouseLeave={() => setHoveredEventId(null)}
                         >
                           {/* Premium badge */}
-                          {premiumLevel !== 'standard' && (
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className={`px-2 py-1 text-xs font-bold rounded-full ${currentStyle.badge}`}>
-                                {currentStyle.icon} {currentStyle.label}
+                          {premiumLevel === 'mega-premium' && (
+                            <div className="flex items-center gap-2 mb-3">
+                              <span className="px-3 py-1.5 text-sm font-bold rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg">
+                                💎 MEGA PREMIUM
+                              </span>
+                            </div>
+                          )}
+                          {premiumLevel === 'premium' && (
+                            <div className="flex items-center gap-2 mb-3">
+                              <span className="px-3 py-1.5 text-sm font-bold rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 text-white shadow-md">
+                                ⭐ PREMIUM
                               </span>
                             </div>
                           )}
 
-                          {/* Image */}
-                          {event.image_url && (
-                            <div className="w-full h-32 mb-3 rounded-xl overflow-hidden">
+                          {/* Image - Only for premium */}
+                          {!isStandard && event.image_url && (
+                            <div className={`w-full mb-3 rounded-xl overflow-hidden ${premiumLevel === 'mega-premium' ? 'h-48' : 'h-32'}`}>
                               <img
                                 src={event.image_url}
                                 alt={event.title}
@@ -416,36 +409,65 @@ export default function EvenementsPage() {
                           )}
 
                           {/* Title */}
-                          <h4 className="font-bold text-gray-900 mb-2 line-clamp-2">
+                          <h4 className={`font-bold text-gray-900 mb-2 ${isStandard ? 'text-base line-clamp-1' : 'text-lg line-clamp-2'}`}>
                             {event.title}
                           </h4>
 
-                          {/* Date and category */}
-                          <div className="flex items-center gap-2 mb-2 text-sm">
-                            <span className="flex items-center gap-1 text-gray-600">
-                              📅 {new Date(event.date).toLocaleDateString('fr-FR', {
-                                day: 'numeric',
-                                month: 'short'
-                              })}
-                              {isPast && ' (Passé)'}
-                            </span>
-                            <span className="px-2 py-1 bg-pink-100 text-pink-700 text-xs font-semibold rounded-full">
-                              {categoryInfo?.icon} {categoryInfo?.label}
-                            </span>
-                          </div>
+                          {/* Date and location - Compact for standard */}
+                          {isStandard ? (
+                            <div className="text-sm text-gray-600">
+                              <div className="flex items-center gap-2">
+                                <span>📅 {new Date(event.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                                {isPast && <span className="text-xs text-gray-400">(Passé)</span>}
+                              </div>
+                              {event.location && (
+                                <div className="truncate">📍 {event.location}</div>
+                              )}
+                            </div>
+                          ) : (
+                            <>
+                              {/* Date and category - Full for premium */}
+                              <div className="flex items-center gap-2 mb-2 text-sm">
+                                <span className="flex items-center gap-1 text-gray-600">
+                                  📅 {new Date(event.date).toLocaleDateString('fr-FR', {
+                                    day: 'numeric',
+                                    month: 'short'
+                                  })}
+                                  {isPast && ' (Passé)'}
+                                </span>
+                                <span className="px-2 py-1 bg-pink-100 text-pink-700 text-xs font-semibold rounded-full">
+                                  {categoryInfo?.icon} {categoryInfo?.label}
+                                </span>
+                              </div>
 
-                          {/* Location */}
-                          {event.location && (
-                            <p className="text-sm text-gray-600 truncate">
-                              📍 {event.location}
-                            </p>
-                          )}
+                              {/* Description - Only mega-premium */}
+                              {premiumLevel === 'mega-premium' && event.description && (
+                                <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                                  {event.description}
+                                </p>
+                              )}
 
-                          {/* Price */}
-                          {event.price && (
-                            <p className="text-sm text-gray-500 mt-1">
-                              💰 {event.price}
-                            </p>
+                              {/* Location */}
+                              {event.location && (
+                                <p className="text-sm text-gray-600 truncate">
+                                  📍 {event.location}
+                                </p>
+                              )}
+
+                              {/* Price */}
+                              {event.price && (
+                                <p className="text-sm text-gray-500 mt-1">
+                                  💰 {event.price}
+                                </p>
+                              )}
+
+                              {/* Organizer - Only mega-premium */}
+                              {premiumLevel === 'mega-premium' && event.organizer && (
+                                <p className="text-xs text-gray-500 mt-2">
+                                  👥 {event.organizer}
+                                </p>
+                              )}
+                            </>
                           )}
                         </div>
                       )
