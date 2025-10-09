@@ -3,6 +3,7 @@ console.log('🎯 Popup script loaded')
 
 const statusDiv = document.getElementById('status')
 const extractBtn = document.getElementById('extractBtn')
+const publishBtn = document.getElementById('publishBtn')
 const openAdminBtn = document.getElementById('openAdminBtn')
 const serverUrlInput = document.getElementById('serverUrl')
 const eventPreviewDiv = document.getElementById('eventPreview')
@@ -99,17 +100,20 @@ extractBtn.addEventListener('click', async () => {
       }
     }
 
-    // 5. Sauvegarder l'événement dans le storage pour l'admin
+    // 5. Sauvegarder l'événement dans le storage
     chrome.storage.local.set({ extractedEvent: event, timestamp: Date.now() })
 
-    updateStatus('✅ Événement extrait avec succès !', 'success')
+    // 6. Proposer publication directe
+    updateStatus('✅ Événement extrait ! Publier maintenant ?', 'success')
     showEventPreview(event)
 
     extractBtn.innerHTML = '✅ Événement extrait !'
-    setTimeout(() => {
-      extractBtn.innerHTML = '📥 Extraire cet événement'
-      extractBtn.disabled = false
-    }, 2000)
+    extractBtn.disabled = true
+
+    // Afficher bouton "Publier"
+    const publishBtn = document.getElementById('publishBtn')
+    publishBtn.style.display = 'block'
+    publishBtn.disabled = false
 
   } catch (error) {
     console.error('❌ Erreur:', error)
@@ -119,9 +123,58 @@ extractBtn.addEventListener('click', async () => {
   }
 })
 
+// Bouton publier
+publishBtn.addEventListener('click', async () => {
+  try {
+    publishBtn.disabled = true
+    publishBtn.innerHTML = '<span class="loader"></span> Publication...'
+    updateStatus('📤 Publication en cours...', 'info')
+
+    // Récupérer l'événement du storage
+    const storage = await chrome.storage.local.get(['extractedEvent'])
+    if (!storage.extractedEvent) {
+      throw new Error('Aucun événement à publier')
+    }
+
+    const event = storage.extractedEvent
+    const serverUrl = serverUrlInput.value || 'https://cevennes-sud-website.vercel.app'
+
+    // Envoyer à l'API
+    const response = await fetch(`${serverUrl}/api/chrome-extension/import-event`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(event)
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.details || 'Erreur publication')
+    }
+
+    const result = await response.json()
+    updateStatus('🎉 Événement publié avec succès !', 'success')
+
+    publishBtn.innerHTML = '🎉 Publié !'
+    setTimeout(() => {
+      // Réinitialiser
+      publishBtn.style.display = 'none'
+      extractBtn.disabled = false
+      extractBtn.innerHTML = '📥 Extraire cet événement'
+      eventPreviewDiv.style.display = 'none'
+      updateStatus('Prêt à extraire l\'événement', 'info')
+    }, 3000)
+
+  } catch (error) {
+    console.error('❌ Erreur publication:', error)
+    updateStatus(`❌ Erreur: ${error.message}`, 'error')
+    publishBtn.disabled = false
+    publishBtn.innerHTML = '✅ Publier directement sur le site'
+  }
+})
+
 // Bouton ouvrir admin
 openAdminBtn.addEventListener('click', () => {
-  const serverUrl = serverUrlInput.value || 'http://localhost:3004'
+  const serverUrl = serverUrlInput.value || 'https://cevennes-sud-website.vercel.app'
   chrome.tabs.create({ url: `${serverUrl}/admin/artefact-ia` })
 })
 
